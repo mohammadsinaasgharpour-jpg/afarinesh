@@ -1,0 +1,21 @@
+{
+  "name": "afarinesh-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Website of Afarinesh lower-secondary school (boys), Shiraz",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "node scripts/render-team.mjs && node scripts/vercel-config.mjs",
+    "build:images": "python -I scripts/build_images.py source-images public/assets/img",
+    "start": "node server/index.mjs",
+    "dev": "node --watch server/index.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "test:ui": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1"
+  }
+}

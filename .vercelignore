@@ -1,0 +1,7 @@
+source-images/
+data/
+tests/
+.claude/
+node_modules/
+.env*
+.vercel/
