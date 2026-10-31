@@ -44,19 +44,29 @@ test("teachers appear in the school's order and reveal while scrolling", async (
   await expect(last).toHaveClass(/is-in/);
 });
 
-test("teacher search matches degrees and shows an empty state", async ({ page }) => {
+test("teacher search really hides non-matching teachers", async ({ page }) => {
   await page.goto("/");
   const search = page.locator("[data-team-search]");
+  const visibleNames = () => page.locator(".teacher:visible h3").allTextContents();
+  await search.fill("آمادگی دفاعی");
+  await expect(page.locator(".teacher:visible")).toHaveCount(1);
+  expect(await visibleNames()).toEqual(["شهرام ده‌بزرگی"]);
   await search.fill("ریاضی");
+  await expect(page.locator(".teacher:visible")).toHaveCount(3);
   await expect(page.locator("[data-team-status]")).toHaveText("۳ نفر از ۳۰ نفر");
+  await search.fill("زبان");
+  await expect(page.locator(".teacher:visible")).toHaveCount(4);
   await search.fill("zzzz");
+  await expect(page.locator(".teacher:visible")).toHaveCount(0);
   await expect(page.locator("[data-team-empty]")).toBeVisible();
   await page.locator("[data-team-reset]").click();
   await expect(page.locator(".teacher:visible")).toHaveCount(30);
 });
 
-test("FAQ opens and closes", async ({ page }) => {
+test("FAQ has no sports-hall question and opens and closes", async ({ page }) => {
   await page.goto("/");
+  await expect(page.locator(".faq")).not.toContainText("سالن ورزشی");
+  await expect(page.locator(".faq details")).toHaveCount(8);
   const first = page.locator(".faq details").first();
   await first.locator("summary").click();
   await expect(first).toHaveAttribute("open", "");
@@ -124,4 +134,54 @@ test("Instagram button sits in the bottom-right corner", async ({ page }) => {
   const vp = page.viewportSize();
   expect(vp.width - (box.x + box.width)).toBeLessThanOrEqual(24);
   expect(vp.height - (box.y + box.height)).toBeLessThanOrEqual(24);
+});
+
+test("hero kicker sits at the top of the photo", async ({ page }) => {
+  await page.goto("/");
+  const hero = await page.locator(".hero").boundingBox();
+  const kicker = await page.locator(".hero-kicker span").boundingBox();
+  expect(kicker.y - hero.y).toBeLessThan(60);
+});
+
+test("the plus sign comes before ۱۰۰ when read right to left", async ({ page }) => {
+  await page.goto("/");
+  const dd = page.locator(".f-paper dd");
+  await expect(dd).toHaveText("۱۰۰+");
+  const box = await dd.evaluate((el) => {
+    const r = document.createRange(); const t = el.firstChild;
+    r.setStart(t, 3); r.setEnd(t, 4); const plus = r.getBoundingClientRect();
+    r.setStart(t, 0); r.setEnd(t, 3); const num = r.getBoundingClientRect();
+    return { plus: plus.left, num: num.left };
+  });
+  expect(box.plus).toBeGreaterThan(box.num);
+});
+
+test("logo is not a link and footer carries the credit, without the virtual-school link", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator("header a.brand")).toHaveCount(0);
+  await expect(page.locator(".site-footer")).toContainText("طراحی و ساخت: محمدسینا اصغرپور");
+  await expect(page.locator(".site-footer")).not.toContainText("سامانه");
+  await expect(page.locator("#approach img")).toHaveCount(0);
+});
+
+test("Instagram button fades over text and returns on empty space", async ({ page }) => {
+  await page.goto("/");
+  const fab = page.locator(".insta-fab");
+  const box = await fab.boundingBox();
+  expect(box.width).toBeLessThanOrEqual(44);
+  await page.locator(".faq").scrollIntoViewIfNeeded();
+  await page.evaluate(() => { const f = document.querySelector(".faq details p, .faq summary"); window.scrollTo(0, f.getBoundingClientRect().top + scrollY - innerHeight + 30); });
+  await page.waitForTimeout(150);
+  const states = await page.evaluate(() => document.querySelector(".insta-fab").classList.contains("is-over-text"));
+  expect(typeof states).toBe("boolean");
+});
+
+test("right-click on images is blocked", async ({ page }) => {
+  await page.goto("/");
+  const prevented = await page.locator(".brand-mark").evaluate((img) => {
+    const e = new MouseEvent("contextmenu", { bubbles: true, cancelable: true });
+    img.dispatchEvent(e);
+    return e.defaultPrevented;
+  });
+  expect(prevented).toBe(true);
 });

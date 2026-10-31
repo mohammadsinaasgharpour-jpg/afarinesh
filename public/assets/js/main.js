@@ -1,4 +1,5 @@
 import { validateInquiry, toPersianDigits, GRADE_LABEL } from "./validate.js";
+import { fold, searchTeachers } from "./search.js";
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
@@ -64,7 +65,7 @@ addEventListener("scroll", () => {
 }, { passive: true });
 toTop.addEventListener("click", () => {
   scrollTo({ top: 0, behavior: reduceMotion.matches ? "auto" : "smooth" });
-  $(".brand").focus({ preventScroll: true });
+  $("#main").focus({ preventScroll: true });
 });
 
 const navLinks = $$('#nav a[href^="#"]');
@@ -75,6 +76,28 @@ const spy = new IntersectionObserver((entries) => {
   }
 }, { rootMargin: "-45% 0px -50% 0px" });
 navLinks.forEach((a) => { const s = document.querySelector(a.hash); if (s) spy.observe(s); });
+
+/* ---------- Instagram button fades while it covers text ---------- */
+const fab = $(".insta-fab");
+const TEXTY = "p, h1, h2, h3, li, a, dt, dd, label, summary, figcaption, img, input, textarea, button, .btn";
+function fabOverText() {
+  const r = fab.getBoundingClientRect();
+  const points = [[r.left + r.width / 2, r.top + r.height / 2], [r.left + 4, r.top + 4], [r.right - 4, r.bottom - 4]];
+  return points.some(([x, y]) => document.elementsFromPoint(x, y).some((el) => el !== fab && !fab.contains(el) && el.closest(TEXTY) && el.closest(TEXTY) !== fab));
+}
+let fabTick = false;
+const updateFab = () => {
+  if (fabTick) return;
+  fabTick = true;
+  requestAnimationFrame(() => { fab.classList.toggle("is-over-text", fabOverText()); fabTick = false; });
+};
+addEventListener("scroll", updateFab, { passive: true });
+addEventListener("resize", updateFab);
+updateFab();
+
+/* ---------- images: no long-press save menu or drag-out ---------- */
+document.addEventListener("contextmenu", (e) => { if (e.target.closest("img, picture, .brand")) e.preventDefault(); });
+document.addEventListener("dragstart", (e) => { if (e.target.closest("img")) e.preventDefault(); });
 
 /* ---------- team: skeleton, reveal on scroll, search ---------- */
 document.documentElement.classList.add("js");
@@ -104,20 +127,24 @@ const reveal = new IntersectionObserver((entries) => {
 }, { rootMargin: "0px 0px -12% 0px" });
 cards.forEach((c) => reveal.observe(c));
 
-// Persian text arrives with mixed ی/ي and ک/ك and zero-width joiners; fold them before matching.
-const fold = (s) => s.toLowerCase().replace(/ي/g, "ی").replace(/ك/g, "ک").replace(/[‌\s-]+/g, "");
-for (const c of cards) c.dataset.haystack = fold(c.textContent);
+const items = cards.map((c) => ({
+  primary: fold($("h3", c).textContent + $(".teacher-role", c).textContent),
+  haystack: fold(c.textContent),
+}));
 
 function applyTeamSearch() {
-  const q = fold(search.value.trim());
-  let shown = 0;
-  for (const c of cards) {
-    const match = !q || c.dataset.haystack.includes(q);
-    c.hidden = !match;
-    if (match) { shown++; c.classList.add("is-in"); }
-  }
+  const q = search.value.trim();
+  const { matches, partial } = searchTeachers(items, q);
+  cards.forEach((c, i) => {
+    const show = !q || matches.has(i);
+    c.hidden = !show;
+    if (show) c.classList.add("is-in");
+  });
+  const shown = q ? matches.size : cards.length;
   empty.hidden = shown > 0;
-  status.textContent = q ? `${toPersianDigits(shown)} نفر از ${toPersianDigits(cards.length)} نفر` : "";
+  status.textContent = !q ? "" : partial
+    ? `نتیجه‌ی دقیقی نبود؛ ${toPersianDigits(shown)} نفر مرتبط`
+    : `${toPersianDigits(shown)} نفر از ${toPersianDigits(cards.length)} نفر`;
 }
 let searchTimer;
 search.addEventListener("input", () => { clearTimeout(searchTimer); searchTimer = setTimeout(applyTeamSearch, 120); });

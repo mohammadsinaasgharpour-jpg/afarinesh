@@ -98,6 +98,11 @@ def main(src_dir: str, out_dir: str):
         # a light denoise removes night-shot sensor grain, which otherwise dominates the file size
         img = Image.open(src / f).convert("RGB").filter(ImageFilter.MedianFilter(3))
         save_widths(img, out, name, widths, quality=HERO_QUALITY)
+    # phones get their own crop centred on the gate and the lit sign, upscaled 2x
+    gate = Image.open(src / HERO["wall"][0]).convert("RGB").crop((1740, 400, 2460, 1330))
+    gate = gate.filter(ImageFilter.MedianFilter(3)).resize((1440, 1860), Image.LANCZOS)
+    gate = gate.filter(ImageFilter.UnsharpMask(radius=1.4, percent=70, threshold=2))
+    save_widths(gate, out, "wall-gate", [720, 1080, 1440], quality=74)
     for name, (f, widths) in PHOTOS.items():
         save_widths(Image.open(src / f).convert("RGB"), out, name, widths)
     Image.open(src / HERO["wall"][0]).convert("RGB").resize((1200, 640), Image.LANCZOS).save(

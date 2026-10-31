@@ -25,10 +25,13 @@
 <link rel="apple-touch-icon" href="/assets/img/icon-180.png">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="preload" href="/assets/fonts/estedad-arabic.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" as="image" href="/assets/img/wall-1280.webp" imagesrcset="/assets/img/wall-640.webp 640w, /assets/img/wall-960.webp 960w, /assets/img/wall-1280.webp 1280w, /assets/img/wall-1920.webp 1920w" imagesizes="(max-width: 640px) 60vw, 100vw" fetchpriority="high">
+<link rel="preload" href="/assets/fonts/mirza-arabic-700.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" as="image" media="(max-width: 640px)" imagesrcset="/assets/img/wall-gate-720.webp 720w, /assets/img/wall-gate-1080.webp 1080w, /assets/img/wall-gate-1440.webp 1440w" imagesizes="100vw" fetchpriority="high">
+<link rel="preload" as="image" media="(min-width: 641px)" imagesrcset="/assets/img/wall-640.webp 640w, /assets/img/wall-960.webp 960w, /assets/img/wall-1280.webp 1280w, /assets/img/wall-1920.webp 1920w" imagesizes="100vw" fetchpriority="high">
 <script>(function(){var t;try{t=sessionStorage.getItem('theme')}catch(e){}if(!t){var h=new Date().getHours();t=h>=18||h<6?'dark':'light'}document.documentElement.dataset.theme=t;var m=document.querySelector('meta[name=theme-color]');if(m)m.content=t==='dark'?'#0d2131':'#f6f8fa'})();</script>
 <link rel="stylesheet" href="/assets/css/main.css">
 <link rel="modulepreload" href="/assets/js/validate.js">
+<link rel="modulepreload" href="/assets/js/search.js">
 <script type="module" src="/assets/js/main.js"></script>
 <script type="application/ld+json">
 {
@@ -56,7 +59,9 @@
   "@type": "FAQPage",
   "mainEntity": [
     {"@type": "Question", "name": "مراحل سنجش و پذیرش دبیرستان آفرینش چطور است؟", "acceptedAnswer": {"@type": "Answer", "text": "فرم پیش‌ثبت‌نام پایه‌ی مورد نظر را پر می‌کنید، معاونان مدرسه برای هماهنگی بازدید و مصاحبه تماس می‌گیرند، مصاحبه‌ی تخصصی با والدین و دانش‌آموز در مدرسه انجام می‌شود و سپس نتیجه‌ی پذیرش اعلام می‌شود."}},
-    {"@type": "Question", "name": "آیا دبیرستان آفرینش سالن ورزشی جدا دارد؟", "acceptedAnswer": {"@type": "Answer", "text": "بله. سالن ورزشی چندمنظوره (فوتسال، بسکتبال، والیبال) در انتهای خیابان یزدان‌مهر، کوچه‌ی ۸ خیابان ابریشمی، با سرویس رفت و برگشت مدرسه در اختیار همه‌ی دانش‌آموزان است."}},
+    {"@type": "Question", "name": "کلاس‌های انتخابی دبیرستان آفرینش چطور انتخاب می‌شوند؟", "acceptedAnswer": {"@type": "Answer", "text": "هر دانش‌آموز از میان شاخه‌های پژوهشی، هنری، زبان، فرهنگی، ورزشی و ویژه مسیر مورد علاقه‌اش را انتخاب می‌کند و این کلاس‌ها تا پایان سال تحصیلی ادامه دارند."}},
+    {"@type": "Question", "name": "کلاس‌های دبیرستان آفرینش چند نفره‌اند؟", "acceptedAnswer": {"@type": "Answer", "text": "کلاس‌ها ۱۵ تا ۱۷ نفره‌اند."}},
+    {"@type": "Question", "name": "دبیرستان آفرینش چه مشاورانی دارد؟", "acceptedAnswer": {"@type": "Answer", "text": "سه مشاور تخصصی در خود مدرسه: تحصیلی، بالینی و تغذیه."}},
     {"@type": "Question", "name": "دبیران آفرینش چه ویژگی‌ای دارند؟", "acceptedAnswer": {"@type": "Answer", "text": "دانش و توانایی بالا و ارتباط خوب و سازنده با دانش‌آموز؛ احترام متقابل اصل کار کادر اجرایی و آموزشی آفرینش است."}}
   ]
 }
@@ -99,10 +104,10 @@
 
 <header class="site-header" data-header>
   <div class="wrap header-row">
-    <a class="brand" href="/">
+    <div class="brand">
       <span class="brand-tile"><img src="/assets/img/logo-mark-96.webp" width="96" height="96" alt="" class="brand-mark"></span>
       <span class="brand-text"><b>دبیرستان آفرینش</b><small>مدرسه پژوهش‌محور</small></span>
-    </a>
+    </div>
     <nav class="nav" id="nav" aria-label="منوی اصلی">
       <ul>
         <li><a href="#approach">رویکرد ما</a></li>
@@ -124,14 +129,15 @@
   </div>
 </header>
 
-<main id="main">
+<main id="main" tabindex="-1">
 
   <section class="hero" aria-labelledby="hero-title">
     <picture class="hero-media">
-      <img src="/assets/img/wall-1280.webp" srcset="/assets/img/wall-640.webp 640w, /assets/img/wall-960.webp 960w, /assets/img/wall-1280.webp 1280w, /assets/img/wall-1920.webp 1920w" sizes="(max-width: 640px) 60vw, 100vw" width="1920" height="1024" alt="دیوار رنگی دبیرستان آفرینش در بلوار ارم شیراز، هنگام غروب" fetchpriority="high">
+      <source media="(max-width: 640px)" srcset="/assets/img/wall-gate-720.webp 720w, /assets/img/wall-gate-1080.webp 1080w, /assets/img/wall-gate-1440.webp 1440w" sizes="100vw" width="1440" height="1860">
+      <img src="/assets/img/wall-1280.webp" srcset="/assets/img/wall-640.webp 640w, /assets/img/wall-960.webp 960w, /assets/img/wall-1280.webp 1280w, /assets/img/wall-1920.webp 1920w" sizes="100vw" width="1920" height="1024" alt="دیوار رنگی و درِ ورودی دبیرستان آفرینش در بلوار ارم شیراز، هنگام غروب" fetchpriority="high">
     </picture>
+    <p class="wrap hero-kicker"><span>دوره اول متوسطه، پسرانه · شیراز، از ۱۳۸۷</span></p>
     <div class="wrap hero-body">
-      <p class="hero-kicker">دوره اول متوسطه، پسرانه · شیراز، از ۱۳۸۷</p>
       <h1 id="hero-title" class="display">ایده‌های بزرگ<br>برای ذهن‌های کنجکاو</h1>
       <p class="hero-lede">هر دانش‌آموز استعداد و علاقه‌ی خودش را دارد. در آفرینش به‌جای یک الگوی واحد برای همه، مسیرهای متنوع یادگیری می‌سازیم و دانش‌آموز آگاهانه انتخاب می‌کند.</p>
       <div class="hero-cta">
@@ -146,22 +152,18 @@
       <div class="fact f-sun"><dd>۱۵ تا ۱۷</dd><dt>دانش‌آموز در هر کلاس</dt></div>
       <div class="fact f-sky"><dd>۴</dd><dt>مرحله آزمون هماهنگ در سال</dt></div>
       <div class="fact f-brick"><dd>۳</dd><dt>مشاور تخصصی: تحصیلی، بالینی، تغذیه</dt></div>
-      <div class="fact f-paper"><dd>+۱۰۰</dd><dt>دانش‌آموز در مجموعه آفرینش</dt></div>
+      <div class="fact f-paper"><dd dir="ltr">۱۰۰+</dd><dt>دانش‌آموز در مجموعه آفرینش</dt></div>
       <div class="fact-fill f-ink" aria-hidden="true"></div>
     </dl>
   </section>
 
   <section id="approach" class="section" aria-labelledby="approach-title">
-    <div class="wrap split">
+    <div class="wrap split split-solo">
       <div class="split-text">
         <h2 id="approach-title" class="h2">از مدرسه‌ی زندگی تا پژوهش‌محوری</h2>
         <p>برنامه‌ی آفرینش بر تنوع، انتخاب آگاهانه و توجه به تفاوت‌های فردی بنا شده است. دانش‌آموزی که با علاقه در فعالیتی شرکت کند، استعدادش واقعی و پایدار شکوفا می‌شود؛ نتیجه‌اش انگیزه‌ی بیشتر، مشارکت فعال و رشد متوازن در علم، هنر، مهارت و زندگی اجتماعی است.</p>
         <p>مدرسه برای ما جایی پویا و شاد است که تربیت در آن به اندازه‌ی آموزش اهمیت دارد.</p>
       </div>
-      <figure class="split-figure">
-        <img src="/assets/img/sports-600.webp" width="600" height="400" loading="lazy" decoding="async" alt="دانش‌آموزان آفرینش در سالن ورزشی چندمنظوره">
-        <figcaption>سالن ورزشی چندمنظوره، با سرویس رفت و برگشت مدرسه</figcaption>
-      </figure>
     </div>
 
     <ul class="wrap features" role="list">
@@ -202,9 +204,9 @@
       </div>
       <div class="team-tools">
         <label class="search">
-          <span class="visually-hidden">جستجو در نام، درس یا مدرک</span>
+          <span class="visually-hidden">جستجو در نام، سمت، درس یا مدرک دبیران</span>
           <svg class="ic"><use href="#i-search"/></svg>
-          <input type="search" placeholder="جستجوی نام یا درس، مثلاً «ریاضی»" data-team-search autocomplete="off">
+          <input type="search" placeholder="نام، درس یا مدرک؛ مثلاً «آمادگی دفاعی» یا «زبان»" data-team-search autocomplete="off">
         </label>
       </div>
       <p class="team-status" role="status" aria-live="polite" data-team-status></p>
@@ -480,12 +482,32 @@
           </ol>
         </details>
         <details>
-          <summary>مدرسه سالن ورزشی جدا دارد؟<svg class="ic"><use href="#i-plus"/></svg></summary>
-          <p>بله. سالن ورزشی چندمنظوره (فوتسال، بسکتبال، والیبال) در انتهای خیابان یزدان‌مهر، کوچه‌ی ۸ خیابان ابریشمی، برای همه‌ی دانش‌آموزان در نظر گرفته شده و سرویس رفت و برگشت آن با مدرسه است.</p>
+          <summary>کلاس‌های انتخابی چطور انتخاب می‌شوند؟<svg class="ic"><use href="#i-plus"/></svg></summary>
+          <p>هر دانش‌آموز از میان شاخه‌های پژوهشی، هنری، زبان، فرهنگی، ورزشی و ویژه مسیر مورد علاقه‌اش را انتخاب می‌کند. این کلاس‌ها مقطعی نیستند و تا پایان سال تحصیلی ادامه دارند.</p>
+        </details>
+        <details>
+          <summary>هر کلاس چند دانش‌آموز دارد؟<svg class="ic"><use href="#i-plus"/></svg></summary>
+          <p>کلاس‌ها ۱۵ تا ۱۷ نفره‌اند تا دبیر بتواند با تک‌تک دانش‌آموزان کار کند.</p>
+        </details>
+        <details>
+          <summary>ریاضی و علوم چطور تدریس می‌شوند؟<svg class="ic"><use href="#i-plus"/></svg></summary>
+          <p>کتاب ریاضی در دو درس جدا، حساب و هندسه، و کتاب علوم در دو درس فیزیک‌-شیمی و زیست‌-زمین، هر کدام با دبیر متخصص همان بخش تدریس می‌شود.</p>
+        </details>
+        <details>
+          <summary>مدرسه چه مشاورانی دارد؟<svg class="ic"><use href="#i-plus"/></svg></summary>
+          <p>سه مشاور تخصصی در خود مدرسه: مشاور تحصیلی، مشاور بالینی و مشاور تغذیه.</p>
+        </details>
+        <details>
+          <summary>آزمون‌های مدرسه چطور است؟<svg class="ic"><use href="#i-plus"/></svg></summary>
+          <p>در طول سال چهار مرحله آزمون هماهنگ تستی و تشریحی برگزار می‌شود و دانش‌آموزان کتاب‌های اختصاصی مجموعه‌ی تمرینات مدرسه را دارند.</p>
         </details>
         <details>
           <summary>دبیران آفرینش چه ویژگی‌ای دارند؟<svg class="ic"><use href="#i-plus"/></svg></summary>
           <p>دانش و توانایی بالا، و ارتباط خوب و سازنده با دانش‌آموز. احترام متقابل اصل کار کادر اجرایی و آموزشی آفرینش است.</p>
+        </details>
+        <details>
+          <summary>ساعت کاری دفتر مدرسه چیست؟<svg class="ic"><use href="#i-plus"/></svg></summary>
+          <p>شنبه تا چهارشنبه، ساعت ۷ تا ۱۴. شماره‌ها: <a href="tel:+987132293194">۰۷۱-۳۲۲۹۳۱۹۴</a> و <a href="tel:+987132295122">۰۷۱-۳۲۲۹۵۱۲۲</a>.</p>
         </details>
       </div>
     </div>
@@ -560,12 +582,11 @@
       <ul role="list">
         <li><a href="https://survey.porsline.ir/s/xh2U29e" target="_blank" rel="noopener">پیش‌ثبت‌نام پایه‌های هفتم تا نهم</a></li>
         <li><a href="https://survey.porsline.ir/s/MMpQEYX" target="_blank" rel="noopener">دعوت به همکاری</a></li>
-        <li><a href="http://www.taraz.org" target="_blank" rel="noopener">سامانه‌ی آموزش مجازی</a></li>
         <li><a href="https://instagram.com/afarinesh_sch" target="_blank" rel="noopener"><svg class="ic"><use href="#i-insta"/></svg>اینستاگرام مدرسه</a></li>
       </ul>
     </nav>
   </div>
-  <p class="wrap copy">© ۱۴۰۵ دبیرستان آفرینش شیراز</p>
+  <div class="wrap copy"><p>© ۱۴۰۵ دبیرستان آفرینش شیراز</p><p class="credit">طراحی و ساخت: محمدسینا اصغرپور</p></div>
 </footer>
 
 <a class="insta-fab" href="https://instagram.com/afarinesh_sch" target="_blank" rel="noopener" aria-label="اینستاگرام مدرسه (afarinesh_sch)"><svg class="ic" aria-hidden="true"><use href="#i-insta"/></svg></a>
