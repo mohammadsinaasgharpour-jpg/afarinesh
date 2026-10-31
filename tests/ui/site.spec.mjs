@@ -34,10 +34,10 @@ test("no horizontal scrolling", async ({ page }) => {
 test("teachers appear in the school's order and reveal while scrolling", async ({ page }) => {
   await page.goto("/");
   const names = page.locator(".teacher h3");
-  await expect(names).toHaveCount(29);
+  await expect(names).toHaveCount(30);
   await expect(names.nth(0)).toHaveText("فرشید فلاحی");
   await expect(names.nth(1)).toHaveText("عبدالرحمان یدالهی");
-  await expect(names.nth(28)).toHaveText("حسین قاسمی");
+  await expect(names.nth(29)).toHaveText("حسین قاسمی");
   const last = page.locator(".teacher").last();
   await expect(last).not.toHaveClass(/is-in/);
   await last.scrollIntoViewIfNeeded();
@@ -48,11 +48,11 @@ test("teacher search matches degrees and shows an empty state", async ({ page })
   await page.goto("/");
   const search = page.locator("[data-team-search]");
   await search.fill("ریاضی");
-  await expect(page.locator("[data-team-status]")).toHaveText("۳ نفر از ۲۹ نفر");
+  await expect(page.locator("[data-team-status]")).toHaveText("۳ نفر از ۳۰ نفر");
   await search.fill("zzzz");
   await expect(page.locator("[data-team-empty]")).toBeVisible();
   await page.locator("[data-team-reset]").click();
-  await expect(page.locator(".teacher:visible")).toHaveCount(29);
+  await expect(page.locator(".teacher:visible")).toHaveCount(30);
 });
 
 test("FAQ opens and closes", async ({ page }) => {

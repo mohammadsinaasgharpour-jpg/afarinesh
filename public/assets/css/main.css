@@ -311,28 +311,6 @@ button, input, textarea { font: inherit; color: inherit; }
   .c-research h3 { font-size: 2.1rem; }
 }
 
-/* ---------- news: stories from the school group ---------- */
-.news { padding-bottom: var(--s8) !important; }
-.story { display: grid; grid-template-columns: 1.15fr .85fr; gap: var(--s6); align-items: center; margin-bottom: var(--s8); }
-.story:last-child { margin-bottom: 0; }
-.story-birthday { grid-template-columns: .85fr 1.15fr; }
-.story-birthday .story-media { order: 2; }
-.story-media { display: grid; gap: 8px; padding: 8px; background: var(--rule); border-radius: 4px; }
-.story-hafez .story-media { grid-template-columns: 1.7fr 1fr; align-items: stretch; }
-.story-birthday .story-media { grid-template-columns: 1fr 1fr; }
-.story-media img { width: 100%; height: 100%; object-fit: cover; background: var(--line); }
-.story-hafez .m-wide { aspect-ratio: 4 / 5; object-position: 60% 50%; }
-.story-hafez .m-tall { aspect-ratio: 9 / 16; height: auto; align-self: end; border-top: 8px solid var(--sun); }
-.story-birthday .story-media img { aspect-ratio: 2 / 3; }
-.story-date { margin: 0 0 var(--s2); font-size: var(--t-sm); font-weight: 700; color: var(--brick); }
-.story h3 { font-family: var(--display); font-weight: 400; font-size: clamp(1.7rem, 1.3rem + 1.4vw, 2.3rem); line-height: 1.25; margin-bottom: var(--s3); }
-.story-text p:last-child { color: var(--ink-2); margin: 0; max-width: 52ch; }
-@media (max-width: 860px) {
-  .story, .story-birthday { grid-template-columns: 1fr; gap: var(--s5); }
-  .story-birthday .story-media { order: 0; }
-  .story-hafez .m-wide { aspect-ratio: 4 / 5; }
-}
-
 /* ---------- team ---------- */
 .team-tools { margin-bottom: var(--s3); }
 .search { position: relative; display: block; max-width: 420px; }

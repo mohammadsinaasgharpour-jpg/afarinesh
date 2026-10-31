@@ -15,13 +15,6 @@ from PIL import Image, ImageFilter, ImageOps
 HERO = {"wall": ("PXL_20251209_025859000.NIGHT_-scaled.jpg", [640, 960, 1280, 1920])}
 HERO_QUALITY = 52
 PHOTOS = {"sports": ("IMG_20240306_120206.jpg", [600])}
-# from the school's official WhatsApp group (published with the school's consent)
-NEWS = {
-    "hafez-rehearsal": ("news/hafez-rehearsal.jpg", [640, 960]),
-    "hafez-stage": ("news/hafez-stage.jpg", [400, 648]),
-    "birthday-mehr": ("news/birthday-mehr.jpg", [400, 800]),
-    "birthday-aban": ("news/birthday-aban.jpg", [400, 800]),
-}
 TEACHERS = {
     "fallahi": "IMG-20240313-WA0000.jpg",
     "yadollahi": "raees.jpg",
@@ -43,6 +36,7 @@ TEACHERS = {
     "dehbozorgi-a": "PXL_20260415_090323959.jpg",
     "rabiei": "IMG-20251114-WA0147-1.jpg",
     "jafarian": "IMG-20240314-WA0006.jpg",
+    "ghezelbash": "IMG_20250402_082658_014.jpg",
     "abbasi": "IMG_20230608_195211_194-Copy.jpg",
     "zarepour": "zaree.jpg",
     "shokouhi": "IMG_20251229_152956_266-1.jpg",
@@ -106,9 +100,6 @@ def main(src_dir: str, out_dir: str):
         save_widths(img, out, name, widths, quality=HERO_QUALITY)
     for name, (f, widths) in PHOTOS.items():
         save_widths(Image.open(src / f).convert("RGB"), out, name, widths)
-    (out / "news").mkdir(exist_ok=True)
-    for name, (f, widths) in NEWS.items():
-        save_widths(ImageOps.exif_transpose(Image.open(src / f)).convert("RGB"), out / "news", name, widths)
     Image.open(src / HERO["wall"][0]).convert("RGB").resize((1200, 640), Image.LANCZOS).save(
         out / "og-cover.jpg", quality=82, optimize=True, progressive=True)
     for name, f in TEACHERS.items():
