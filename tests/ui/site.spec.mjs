@@ -168,7 +168,8 @@ test("Instagram button fades over text and returns on empty space", async ({ pag
   await page.goto("/");
   const fab = page.locator(".insta-fab");
   const box = await fab.boundingBox();
-  expect(box.width).toBeLessThanOrEqual(44);
+  expect(box.width).toBeGreaterThanOrEqual(48);
+  expect(box.width).toBeLessThanOrEqual(56);
   await page.locator(".faq").scrollIntoViewIfNeeded();
   await page.evaluate(() => { const f = document.querySelector(".faq details p, .faq summary"); window.scrollTo(0, f.getBoundingClientRect().top + scrollY - innerHeight + 30); });
   await page.waitForTimeout(150);
@@ -184,4 +185,43 @@ test("right-click on images is blocked", async ({ page }) => {
     return e.defaultPrevented;
   });
   expect(prevented).toBe(true);
+});
+
+test("tabs split leadership from teachers and work with search", async ({ page }) => {
+  await page.goto("/");
+  const visible = page.locator(".teacher:visible");
+  await page.locator('[data-tab="leadership"]').click();
+  await expect(visible).toHaveCount(6);
+  await expect(page.locator('[data-tab="leadership"]')).toHaveAttribute("aria-selected", "true");
+  await expect(page.locator(".teacher:visible h3").first()).toHaveText("فرشید فلاحی");
+  await page.locator('[data-tab="teaching"]').click();
+  await expect(visible).toHaveCount(27);
+  await page.locator("[data-team-search]").fill("ریاضی");
+  await expect(visible).toHaveCount(3);
+  await page.locator('[data-tab="leadership"]').click();
+  await expect(visible).toHaveCount(0);
+  await page.locator('[data-tab="all"]').click();
+  await expect(visible).toHaveCount(3);
+});
+
+test("every part of the page follows the light/dark switch, even when toggled quickly", async ({ page }) => {
+  await page.clock.setFixedTime(new Date(2026, 9, 31, 10));
+  await page.goto("/");
+  const probe = () => page.evaluate(() => {
+    const bg = (sel) => getComputedStyle(document.querySelector(sel)).backgroundColor;
+    const fg = (sel) => getComputedStyle(document.querySelector(sel)).color;
+    return [bg("body"), bg(".site-header"), bg(".tabs"), bg(".teacher"), bg(".form"), bg(".search input"), bg(".programs"), fg("h2"), fg(".teacher h3")].join("|");
+  });
+  const light = await probe();
+  const btn = page.locator("[data-theme-toggle]");
+  await btn.click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await page.waitForTimeout(700);
+  const dark = await probe();
+  const lightParts = light.split("|"), darkParts = dark.split("|");
+  lightParts.forEach((v, i) => expect(darkParts[i], `part ${i} did not change`).not.toBe(v));
+  for (let i = 0; i < 5; i++) await btn.click();
+  await page.waitForTimeout(700);
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  expect(await probe()).toBe(light);
 });

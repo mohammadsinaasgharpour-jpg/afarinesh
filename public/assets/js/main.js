@@ -29,11 +29,22 @@ function syncTheme() {
   themeBtn.setAttribute("aria-label", isDark() ? "تغییر به حالت روشن" : "تغییر به حالت تاریک");
   if (themeMeta) themeMeta.content = isDark() ? "#0d2131" : "#f6f8fa";
 }
+// Every colour flips in the same frame: transitions are paused while the theme changes, the page is
+// forced to restyle, and where supported the switch is a single crossfade of the whole page.
+// (Per-element transitions and the blurred header used to leave parts of the page in the old theme.)
+function setTheme(next) {
+  const root = document.documentElement;
+  root.classList.add("theme-switching");
+  root.dataset.theme = next;
+  void root.offsetHeight;
+  syncTheme();
+  requestAnimationFrame(() => requestAnimationFrame(() => root.classList.remove("theme-switching")));
+}
 themeBtn.addEventListener("click", () => {
   const next = isDark() ? "light" : "dark";
-  document.documentElement.dataset.theme = next;
   try { sessionStorage.setItem("theme", next); } catch {}
-  syncTheme();
+  if (document.startViewTransition && !reduceMotion.matches) document.startViewTransition(() => setTheme(next));
+  else setTheme(next);
 });
 syncTheme();
 
@@ -99,8 +110,18 @@ updateFab();
 document.addEventListener("contextmenu", (e) => { if (e.target.closest("img, picture, .brand")) e.preventDefault(); });
 document.addEventListener("dragstart", (e) => { if (e.target.closest("img")) e.preventDefault(); });
 
-/* ---------- team: skeleton, reveal on scroll, search ---------- */
+/* ---------- sections rise in once ---------- */
 document.documentElement.classList.add("js");
+const revealOnce = new IntersectionObserver((entries) => {
+  for (const entry of entries) {
+    if (!entry.isIntersecting) continue;
+    entry.target.classList.add("is-in");
+    revealOnce.unobserve(entry.target);
+  }
+}, { rootMargin: "0px 0px -8% 0px" });
+$$(".reveal, .reveal-stagger").forEach((el) => revealOnce.observe(el));
+
+/* ---------- team: skeleton, reveal on scroll, search ---------- */
 const team = $("[data-team]");
 const cards = $$(".teacher", team);
 const search = $("[data-team-search]");
@@ -132,24 +153,59 @@ const items = cards.map((c) => ({
   haystack: fold(c.textContent),
 }));
 
+const tabs = $$("[data-tab]");
+const tabInk = $(".tab-ink");
+let activeTab = "all";
+const inTab = (c) => activeTab === "all" || c.dataset.tags.split(" ").includes(activeTab);
+for (const t of tabs) {
+  const n = t.dataset.tab === "all" ? cards.length : cards.filter((c) => c.dataset.tags.split(" ").includes(t.dataset.tab)).length;
+  $("[data-count-for]", t).textContent = toPersianDigits(n);
+}
+function moveTabInk() {
+  const t = tabs.find((x) => x.dataset.tab === activeTab);
+  if (!t || !tabInk) return;
+  tabInk.style.width = `${t.offsetWidth}px`;
+  tabInk.style.transform = `translateX(${t.offsetLeft}px)`;
+}
+
 function applyTeamSearch() {
   const q = search.value.trim();
-  const { matches, partial } = searchTeachers(items, q);
+  const pool = cards.map((c, i) => (inTab(c) ? i : -1)).filter((i) => i >= 0);
+  const { matches, partial } = searchTeachers(pool.map((i) => items[i]), q);
+  const shownSet = new Set(q ? [...matches].map((k) => pool[k]) : pool);
   cards.forEach((c, i) => {
-    const show = !q || matches.has(i);
+    const show = shownSet.has(i);
     c.hidden = !show;
     if (show) c.classList.add("is-in");
   });
-  const shown = q ? matches.size : cards.length;
-  empty.hidden = shown > 0;
+  empty.hidden = shownSet.size > 0;
   status.textContent = !q ? "" : partial
-    ? `نتیجه‌ی دقیقی نبود؛ ${toPersianDigits(shown)} نفر مرتبط`
-    : `${toPersianDigits(shown)} نفر از ${toPersianDigits(cards.length)} نفر`;
+    ? `نتیجه‌ی دقیقی نبود؛ ${toPersianDigits(shownSet.size)} نفر مرتبط`
+    : `${toPersianDigits(shownSet.size)} نفر از ${toPersianDigits(pool.length)} نفر`;
 }
+tabs.forEach((t) => t.addEventListener("click", () => {
+  activeTab = t.dataset.tab;
+  tabs.forEach((x) => x.setAttribute("aria-selected", String(x === t)));
+  moveTabInk();
+  applyTeamSearch();
+}));
+// arrow keys move between tabs (left/right swap in RTL)
+$("[data-team-tabs]").addEventListener("keydown", (e) => {
+  if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) return;
+  const i = tabs.indexOf(document.activeElement);
+  if (i < 0) return;
+  const next = e.key === "Home" ? 0 : e.key === "End" ? tabs.length - 1 : (i + (e.key === "ArrowLeft" ? 1 : -1) + tabs.length) % tabs.length;
+  tabs[next].focus();
+  tabs[next].click();
+  e.preventDefault();
+});
+addEventListener("resize", moveTabInk);
+moveTabInk();
 let searchTimer;
 search.addEventListener("input", () => { clearTimeout(searchTimer); searchTimer = setTimeout(applyTeamSearch, 120); });
 $("[data-team-reset]").addEventListener("click", () => {
   search.value = "";
+  tabs[0].click();
   applyTeamSearch();
   search.focus();
 });

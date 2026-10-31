@@ -61,28 +61,31 @@ def portrait(img: Image.Image, size=400) -> Image.Image:
 
 
 def logo_mark(src: Path, out: Path):
-    """Cut the emblem out of the JPEG logo and turn its white background into transparency."""
+    """The school's real logo: cut the emblem from the original JPEG, enlarge it 3x and make the white transparent."""
     img = Image.open(src).convert("RGB")
     mark = img.crop((288, 0, img.width, img.height))
+    mark = mark.resize((mark.width * 3, mark.height * 3), Image.LANCZOS).filter(ImageFilter.MedianFilter(3))
+    mark = mark.filter(ImageFilter.UnsharpMask(radius=2, percent=60, threshold=3))
     px = []
     for r, g, b in mark.get_flattened_data():
         a = 255 - min(r, g, b)  # distance from white
-        if a < 18:
+        if a < 22:
             px.append((0, 0, 0, 0))
             continue
-        a = min(255, int(a * 1.6))
+        a = min(255, int(a * 1.7))
         k = a / 255
-        # un-premultiply against white so edges keep the true colour
+        # un-premultiply against white so the edges keep the logo's own colours
         un = lambda c: max(0, min(255, round((c - 255 * (1 - k)) / k)))
         px.append((un(r), un(g), un(b), a))
     rgba = Image.new("RGBA", mark.size)
     rgba.putdata(px)
     rgba = rgba.crop(rgba.getbbox())
-    rgba.save(out / "logo-mark.webp", "WEBP", quality=90, method=6)
-    small = rgba.copy()
-    small.thumbnail((96, 96), Image.LANCZOS)  # 2x of the 44px header mark
-    small.save(out / "logo-mark-96.webp", "WEBP", quality=88, method=6)
+    rgba.thumbnail((384, 384), Image.LANCZOS)
+    rgba.save(out / "logo-mark.webp", "WEBP", quality=92, method=6)
     rgba.save(out / "logo-mark.png", optimize=True)
+    small = rgba.copy()
+    small.thumbnail((144, 144), Image.LANCZOS)  # 3x of the 48px header tile
+    small.save(out / "logo-mark-96.webp", "WEBP", quality=92, method=6)
     for s in (32, 180, 192, 512):
         canvas = Image.new("RGBA", (s, s), (255, 255, 255, 255 if s >= 180 else 0))
         m = rgba.copy()
