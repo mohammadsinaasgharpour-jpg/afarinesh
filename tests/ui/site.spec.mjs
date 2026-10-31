@@ -187,22 +187,6 @@ test("right-click on images is blocked", async ({ page }) => {
   expect(prevented).toBe(true);
 });
 
-test("tabs split leadership from teachers and work with search", async ({ page }) => {
-  await page.goto("/");
-  const visible = page.locator(".teacher:visible");
-  await page.locator('[data-tab="leadership"]').click();
-  await expect(visible).toHaveCount(6);
-  await expect(page.locator('[data-tab="leadership"]')).toHaveAttribute("aria-selected", "true");
-  await expect(page.locator(".teacher:visible h3").first()).toHaveText("فرشید فلاحی");
-  await page.locator('[data-tab="teaching"]').click();
-  await expect(visible).toHaveCount(27);
-  await page.locator("[data-team-search]").fill("ریاضی");
-  await expect(visible).toHaveCount(3);
-  await page.locator('[data-tab="leadership"]').click();
-  await expect(visible).toHaveCount(0);
-  await page.locator('[data-tab="all"]').click();
-  await expect(visible).toHaveCount(3);
-});
 
 test("every part of the page follows the light/dark switch, even when toggled quickly", async ({ page }) => {
   await page.clock.setFixedTime(new Date(2026, 9, 31, 10));
@@ -210,7 +194,7 @@ test("every part of the page follows the light/dark switch, even when toggled qu
   const probe = () => page.evaluate(() => {
     const bg = (sel) => getComputedStyle(document.querySelector(sel)).backgroundColor;
     const fg = (sel) => getComputedStyle(document.querySelector(sel)).color;
-    return [bg("body"), bg(".site-header"), bg(".tabs"), bg(".teacher"), bg(".form"), bg(".search input"), bg(".programs"), fg("h2"), fg(".teacher h3")].join("|");
+    return [bg("body"), bg(".site-header"), bg(".teacher"), bg(".form"), bg(".search input"), bg(".programs"), fg("h2"), fg(".teacher h3")].join("|");
   });
   const light = await probe();
   const btn = page.locator("[data-theme-toggle]");
