@@ -248,22 +248,28 @@ button, input, textarea { font: inherit; color: inherit; }
 .split-figure figcaption { font-size: var(--t-sm); color: var(--ink-2); margin-top: var(--s2); }
 @media (max-width: 860px) { .split { grid-template-columns: 1fr; gap: var(--s6); } }
 
-.features { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: var(--s8); border-top: 1px solid var(--line); }
-.features li { padding: var(--s6) var(--s5) var(--s5) var(--s5); border-bottom: 1px solid var(--line); }
-.features li:not(:nth-child(3n + 1)) { border-inline-start: 1px solid var(--line); }
-.features .ic { width: 30px; height: 30px; color: var(--sky-text); margin-bottom: var(--s3); }
-.features h3 { font-size: var(--t-md); font-weight: 750; margin-bottom: var(--s1); }
-.features p { margin: 0; color: var(--ink-2); font-size: .98rem; line-height: 1.8; }
+/* the six strengths as another stretch of the school wall: uneven blocks between thick rules */
+.features {
+  display: grid; grid-template-columns: repeat(12, 1fr); gap: 8px; padding: 8px;
+  margin-top: var(--s8); background: var(--rule); border-radius: 4px;
+}
+.features li { --fg: var(--ink); --muted: var(--ink-2); padding: var(--s5); background: #fff; color: var(--fg); display: flex; flex-direction: column; min-height: 210px; }
+.features li:nth-child(1) { grid-column: span 5; background: #f2a516; --fg: #1d1404; --muted: #3d2c05; }
+.features li:nth-child(2) { grid-column: span 4; background: #fff; --fg: #0e2a3f; --muted: #4b5f6f; }
+.features li:nth-child(3) { grid-column: span 3; background: #16789c; --fg: #fff; --muted: #fff; }
+.features li:nth-child(4) { grid-column: span 3; background: #c6382c; --fg: #fff; --muted: #fff; }
+.features li:nth-child(5) { grid-column: span 4; background: #d4e9f5; --fg: #0e2a3f; --muted: #34495a; }
+.features li:nth-child(6) { grid-column: span 5; background: #fff; --fg: #0e2a3f; --muted: #4b5f6f; }
+.features .ic { width: 34px; height: 34px; margin-bottom: auto; color: var(--fg); }
+.features h3 { font-family: var(--display); font-weight: 400; font-size: 1.6rem; line-height: 1.25; margin: var(--s5) 0 var(--s1); }
+.features p { margin: 0; color: var(--muted); font-size: .98rem; line-height: 1.8; max-width: 38ch; }
 @media (max-width: 860px) {
-  .features { grid-template-columns: 1fr 1fr; }
-  .features li:not(:nth-child(3n + 1)) { border-inline-start: 0; }
-  .features li:nth-child(even) { border-inline-start: 1px solid var(--line); }
+  .features li:nth-child(n) { grid-column: span 6; }
 }
 @media (max-width: 560px) {
-  .features { grid-template-columns: 1fr; }
-  .features li:nth-child(even) { border-inline-start: 0; }
-  .features li { display: grid; grid-template-columns: 30px 1fr; column-gap: var(--s4); padding-inline: 0; }
-  .features .ic { grid-row: span 2; margin: 4px 0 0; }
+  .features { gap: 6px; padding: 6px; }
+  .features li:nth-child(n) { grid-column: 1 / -1; min-height: 0; }
+  .features h3 { margin-top: var(--s3); }
 }
 
 /* ---------- programs: the wall ---------- */
