@@ -445,6 +445,18 @@ button, input, textarea { font: inherit; color: inherit; }
 /* ---------- floating ---------- */
 .to-top { position: fixed; bottom: 20px; inset-inline-end: 20px; z-index: 30; background: var(--surface); border: 1px solid var(--line); box-shadow: 0 6px 20px rgba(14, 42, 63, .14); }
 .to-top[hidden] { display: none; }
+/* Instagram stays in the bottom-right corner (physical right, so it never collides with the to-top button in RTL) */
+.insta-fab {
+  position: fixed; bottom: 20px; right: 20px; z-index: 30;
+  display: grid; place-items: center; width: 52px; height: 52px; border-radius: 16px; color: #fff;
+  background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285aeb 90%);
+  box-shadow: 0 8px 22px rgba(214, 36, 159, .35);
+  transition: transform .18s var(--ease), box-shadow .18s;
+}
+.insta-fab .ic { width: 28px; height: 28px; stroke-width: 1.9; }
+.insta-fab:hover { transform: translateY(-2px) scale(1.04); box-shadow: 0 12px 28px rgba(214, 36, 159, .45); }
+.insta-fab:focus-visible { outline-offset: 4px; }
+@media (max-width: 520px) { .insta-fab { width: 48px; height: 48px; bottom: 16px; right: 16px; } }
 
 .dialog {
   width: min(100% - 32px, 520px); border: 0; border-radius: var(--r); padding: var(--s6);
@@ -484,6 +496,6 @@ button, input, textarea { font: inherit; color: inherit; }
 }
 
 @media print {
-  .site-header, .to-top, .form, .enrol, .hero-media { display: none; }
+  .site-header, .to-top, .insta-fab, .form, .enrol, .hero-media { display: none; }
   .hero { color: #000; min-height: 0; background: none; }
 }

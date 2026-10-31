@@ -115,3 +115,13 @@ test.describe("callback form", () => {
     await expect(page.locator("#f-name")).toHaveValue("مریم احمدی");
   });
 });
+
+test("Instagram button sits in the bottom-right corner", async ({ page }) => {
+  await page.goto("/");
+  const fab = page.locator(".insta-fab");
+  await expect(fab).toHaveAttribute("href", "https://instagram.com/afarinesh_sch");
+  const box = await fab.boundingBox();
+  const vp = page.viewportSize();
+  expect(vp.width - (box.x + box.width)).toBeLessThanOrEqual(24);
+  expect(vp.height - (box.y + box.height)).toBeLessThanOrEqual(24);
+});
