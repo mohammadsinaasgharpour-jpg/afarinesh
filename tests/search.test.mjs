@@ -1,10 +1,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { fold, parseQuery, searchTeachers } from "../public/assets/js/search.js";
+import { fold, parseQuery, searchTeachers, searchItem, distance } from "../public/assets/js/search.js";
 
 const team = JSON.parse(await readFile(new URL("../content/team.json", import.meta.url), "utf8"));
-const items = team.map((p) => ({ primary: fold(p.name + p.role), haystack: fold([p.name, p.role, ...p.edu, p.note ?? ""].join(" ")) }));
+const items = team.map((p) => searchItem(`${p.name} ${p.role}`, [p.name, p.role, ...p.edu, p.note ?? ""].join(" ")));
 const names = (q) => [...searchTeachers(items, q).matches].map((i) => team[i].name).sort();
 
 test("fold unifies Arabic and Persian letters, joiners and spaces", () => {
@@ -60,4 +60,22 @@ test("a partly matching query falls back to related results", () => {
   const r = searchTeachers(items, "رباتیک فوتبال");
   assert.equal(r.partial, true);
   assert.ok([...r.matches].some((i) => team[i].name === "حسین مهبودی"));
+});
+
+test("edit distance", () => {
+  assert.equal(distance("ریاضی", "ریاظی"), 1);
+  assert.equal(distance("abc", "abcdef", 2), 3);
+});
+
+test("typos still find the right teachers", () => {
+  assert.ok(names("ریاظی").includes("مجید میرزایی"));
+  assert.deepEqual(names("میرزائی"), ["مجید میرزایی"]);
+  assert.ok(names("رباطیک").includes("حسین مهبودی"));
+});
+
+test("more everyday words and English work", () => {
+  assert.ok(names("ناظم").includes("سینا عباسلو"));
+  assert.ok(names("پرورشی").includes("فرهاد نادری"));
+  assert.ok(names("math").includes("کریم کشاورز"));
+  assert.ok(names("english").includes("امین محب"));
 });

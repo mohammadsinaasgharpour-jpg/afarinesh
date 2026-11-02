@@ -58,7 +58,7 @@ test("stores a valid inquiry", async () => {
   const res = await post(valid);
   assert.equal(res.status, 201);
   const { id } = await res.json();
-  const lines = (await readFile(join(dataDir, "inquiries.jsonl"), "utf8")).trim().split("\n").map(JSON.parse);
+  const lines = (await readFile(join(dataDir, "inquiry.jsonl"), "utf8")).trim().split("\n").map(JSON.parse);
   assert.ok(lines.some((l) => l.id === id && l.phone === "09171234567"));
 });
 
@@ -100,9 +100,68 @@ test("vercel.json carries the current CSP hash of the page", async () => {
 });
 
 test("forms posted seconds after page load are dropped silently", async () => {
-  const before = (await readFile(join(dataDir, "inquiries.jsonl"), "utf8")).split("\n").length;
+  const before = (await readFile(join(dataDir, "inquiry.jsonl"), "utf8")).split("\n").length;
   const res = await post({ ...valid, startedAt: Date.now() - 500 });
   assert.equal(res.status, 201);
-  const after = (await readFile(join(dataDir, "inquiries.jsonl"), "utf8")).split("\n").length;
+  const after = (await readFile(join(dataDir, "inquiry.jsonl"), "utf8")).split("\n").length;
   assert.equal(after, before);
+});
+
+const goodPre = {
+  fullName: "آرین رضایی", nationalId: "0499370899", birthDate: "1393/04/23", studentMobile: "09171234567",
+  address: "شیراز، بلوار ارم، کوچه ۵", motherMobile: "09171111111", fatherMobile: "09172222222",
+  currentSchool: "دبستان نمونه", gpa: "19.5", discipline: "عالی", grade: "8", consent: true,
+};
+const postTo = (path, body, headers = {}) => fetch(base + path, { method: "POST", headers: { "Content-Type": "application/json", ...headers }, body: JSON.stringify(body) });
+
+test("form pages are served at clean URLs", async () => {
+  for (const p of ["/pre-registration", "/careers"]) {
+    const res = await fetch(base + p);
+    assert.equal(res.status, 200, p);
+    assert.match(await res.text(), /<form/);
+  }
+});
+
+test("pre-registration is stored once per national ID and never logs personal data", async () => {
+  const logged = [];
+  const res = await postTo("/api/pre-registration", goodPre);
+  assert.equal(res.status, 201);
+  const again = await postTo("/api/pre-registration", goodPre);
+  assert.equal(again.status, 429);
+  assert.equal((await again.json()).error, "duplicate");
+  const rows = (await readFile(join(dataDir, "preRegistration.jsonl"), "utf8")).trim().split("\n").map(JSON.parse);
+  assert.equal(rows.filter((r) => r.nationalId === "0499370899").length, 1);
+  assert.equal(rows[0].consent, undefined);
+  assert.equal(logged.length, 0);
+});
+
+test("pre-registration rejects an invalid national ID", async () => {
+  const res = await postTo("/api/pre-registration", { ...goodPre, nationalId: "1234567890" });
+  assert.equal(res.status, 422);
+  assert.ok((await res.json()).errors.nationalId);
+});
+
+test("job applications are stored", async () => {
+  const res = await postTo("/api/careers", { fullName: "مریم احمدی", field: "ریاضی", degree: "کارشناسی", experience: "زیر ۵ سال", phone: "07132293194", consent: true });
+  assert.equal(res.status, 201);
+});
+
+test("a forged X-Forwarded-For does not reset the rate limit", async () => {
+  const s = createServer(createApp({ publicDir, dataDir, logger: {}, rateLimit: { limit: 2, windowMs: 60_000 } }));
+  await new Promise((r) => s.listen(0, "127.0.0.1", r));
+  const b = `http://127.0.0.1:${s.address().port}`;
+  const codes = [];
+  for (let i = 0; i < 4; i++) {
+    const r = await fetch(`${b}/api/inquiries`, { method: "POST", headers: { "Content-Type": "application/json", "X-Forwarded-For": `10.0.0.${i}` }, body: JSON.stringify({ ...valid, phone: `0917000000${i}` }) });
+    codes.push(r.status);
+  }
+  await new Promise((r) => s.close(r));
+  assert.deepEqual(codes, [201, 201, 429, 429]);
+});
+
+test("every page's inline script is allowed by the CSP built from index.html", async () => {
+  const idx = inlineScriptHashes(await readFile(join(publicDir, "index.html"), "utf8"));
+  for (const f of ["pre-registration.html", "careers.html"]) {
+    for (const h of inlineScriptHashes(await readFile(join(publicDir, f), "utf8"))) assert.ok(idx.includes(h), `${f}: ${h}`);
+  }
 });

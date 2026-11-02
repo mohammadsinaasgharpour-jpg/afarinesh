@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>دبیرستان غیردولتی آفرینش شیراز | دوره اول پسرانه</title>
-<meta name="description" content="دبیرستان غیردولتی پسرانه آفرینش، دوره اول متوسطه در ناحیه ۲ شیراز. کلاس‌های ۱۵ تا ۱۷ نفره، تدریس تفکیک‌شده ریاضی و علوم، کلاس‌های پژوهشی، هنری، زبان و ورزش. ثبت‌نام پایه‌های هفتم، هشتم و نهم سال تحصیلی ۱۴۰۵–۱۴۰۶.">
+<meta name="description" content="دبیرستان غیردولتی پسرانه آفرینش، دوره اول متوسطه در ناحیه ۲ شیراز. کلاس‌های ۱۵ تا ۱۷ نفره، تدریس تفکیک‌شده ریاضی و علوم، کلاس‌های پژوهشی، هنری، زبان و ورزش. ثبت‌نام پایه‌های هفتم، هشتم و نهم سال تحصیلی ۱۴۰۶–۱۴۰۷.">
 <link rel="canonical" href="https://afarineshshiraz.ir/">
 <meta name="theme-color" content="#f6f8fa">
 <meta name="color-scheme" content="light dark">
@@ -32,6 +32,7 @@
 <link rel="stylesheet" href="/assets/css/main.css">
 <link rel="modulepreload" href="/assets/js/validate.js">
 <link rel="modulepreload" href="/assets/js/search.js">
+<link rel="modulepreload" href="/assets/js/common.js">
 <script type="module" src="/assets/js/main.js"></script>
 <script type="application/ld+json">
 {
@@ -121,7 +122,7 @@
       <button class="icon-btn" type="button" data-theme-toggle aria-label="تغییر به حالت تاریک">
         <svg class="ic ic-moon"><use href="#i-moon"/></svg><svg class="ic ic-sun"><use href="#i-sun"/></svg>
       </button>
-      <a class="btn btn-primary btn-sm hide-sm" href="https://survey.porsline.ir/s/xh2U29e" target="_blank" rel="noopener">پیش‌ثبت‌نام</a>
+      <a class="btn btn-primary btn-sm hide-sm" href="/pre-registration">پیش‌ثبت‌نام</a>
       <button class="icon-btn menu-btn" type="button" aria-controls="nav" aria-expanded="false" aria-label="باز کردن منو" data-menu>
         <svg class="ic ic-open"><use href="#i-menu"/></svg><svg class="ic ic-shut"><use href="#i-close"/></svg>
       </button>
@@ -141,7 +142,7 @@
       <h1 id="hero-title" class="display">ایده‌های بزرگ<br>برای ذهن‌های کنجکاو</h1>
       <p class="hero-lede">هر دانش‌آموز استعداد و علاقه‌ی خودش را دارد. در آفرینش به‌جای یک الگوی واحد برای همه، مسیرهای متنوع یادگیری می‌سازیم و دانش‌آموز آگاهانه انتخاب می‌کند.</p>
       <div class="hero-cta">
-        <a class="btn btn-primary" href="https://survey.porsline.ir/s/xh2U29e" target="_blank" rel="noopener">پیش‌ثبت‌نام ۱۴۰۵–۱۴۰۶<svg class="ic"><use href="#i-external"/></svg></a>
+        <a class="btn btn-primary" href="/pre-registration">پیش‌ثبت‌نام ۱۴۰۶–۱۴۰۷</a>
         <a class="btn btn-ghost" href="#contact">درخواست مشاوره</a>
       </div>
     </div>
@@ -515,10 +516,10 @@
   <section class="enrol" aria-labelledby="enrol-title">
     <div class="wrap enrol-row">
       <div>
-        <h2 id="enrol-title" class="display display-sm">ثبت‌نام سال تحصیلی ۱۴۰۵–۱۴۰۶ آغاز شد</h2>
+        <h2 id="enrol-title" class="display display-sm">ثبت‌نام سال تحصیلی ۱۴۰۶–۱۴۰۷ آغاز شد</h2>
         <p>پایه‌های هفتم، هشتم و نهم. پس از پر کردن فرم، معاونان مدرسه برای بازدید و مصاحبه با شما تماس می‌گیرند.</p>
       </div>
-      <a class="btn btn-ink" href="https://survey.porsline.ir/s/xh2U29e" target="_blank" rel="noopener">پر کردن فرم پیش‌ثبت‌نام<svg class="ic"><use href="#i-external"/></svg></a>
+      <a class="btn btn-ink" href="/pre-registration">پر کردن فرم پیش‌ثبت‌نام</a>
     </div>
   </section>
 
@@ -536,7 +537,7 @@
         </ul>
       </div>
 
-      <form class="form" novalidate data-inquiry action="/api/inquiries" method="post">
+      <form class="form" id="inquiry" novalidate data-inquiry action="/api/inquiries" method="post">
         <h3>درخواست تماس مشاور</h3>
         <div class="field">
           <label for="f-name">نام ولی</label>
@@ -560,7 +561,7 @@
         <div class="field">
           <label for="f-msg">پیام <span class="optional">(اختیاری)</span></label>
           <textarea id="f-msg" name="message" rows="3" maxlength="500"></textarea>
-          <p class="hint counter" aria-live="off"><span data-count>۰</span> از ۵۰۰</p>
+          <p class="hint counter" aria-live="off"><span data-count-for="message">۰</span> از ۵۰۰</p>
         </div>
         <input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
         <input type="hidden" name="startedAt" data-started>
@@ -579,8 +580,9 @@
     <nav aria-label="دسترسی سریع">
       <h2 class="footer-h">دسترسی سریع</h2>
       <ul role="list">
-        <li><a href="https://survey.porsline.ir/s/xh2U29e" target="_blank" rel="noopener">پیش‌ثبت‌نام پایه‌های هفتم تا نهم</a></li>
-        <li><a href="https://survey.porsline.ir/s/MMpQEYX" target="_blank" rel="noopener">دعوت به همکاری</a></li>
+        <li><a href="/pre-registration">پیش‌ثبت‌نام پایه‌های هفتم تا نهم</a></li>
+        <li><a href="/careers">دعوت به همکاری</a></li>
+        <li><a href="https://afarinash-library.vercel.app/" target="_blank" rel="noopener">کتابخانه‌ی مدرسه<svg class="ic" aria-hidden="true"><use href="#i-external"/></svg><span class="visually-hidden"> (در برگه‌ی تازه)</span></a></li>
         <li><a href="https://instagram.com/afarinesh_sch" target="_blank" rel="noopener"><svg class="ic"><use href="#i-insta"/></svg>اینستاگرام مدرسه</a></li>
       </ul>
     </nav>

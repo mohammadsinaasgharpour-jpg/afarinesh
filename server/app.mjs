@@ -5,9 +5,9 @@ import { createGzip, createBrotliCompress } from "node:zlib";
 import { extname, join, normalize, resolve, sep } from "node:path";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
-import { createInquiryHandler, send } from "./inquiry.mjs";
+import { createFormHandler, createTelegramSender, send } from "./forms.mjs";
 
-export { createRateLimiter } from "./inquiry.mjs";
+export { createRateLimiter } from "./forms.mjs";
 
 const TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -51,22 +51,29 @@ export const buildSecurityHeaders = (scriptHashes = []) => ({
   "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
 });
 
-export function createApp({ publicDir, dataDir, logger = console, rateLimit = { limit: 5, windowMs: 10 * 60_000 } }) {
+export function createApp({ publicDir, dataDir, logger = console, rateLimit, trustProxy }) {
   const root = resolve(publicDir);
   const securityHeaders = buildSecurityHeaders(inlineScriptHashes(readFileSync(join(root, "index.html"), "utf8")));
 
-  const handleInquiry = createInquiryHandler({
-    logger,
-    rateLimit,
-    async save(record) {
-      await mkdir(dataDir, { recursive: true });
-      await appendFile(join(dataDir, "inquiries.jsonl"), JSON.stringify(record) + "\n", "utf8");
-    },
-  });
+  // Each submission is appended to data/<form>.jsonl (readable only by the server account) and, when the
+  // Telegram variables are set, also sent to the school's channel.
+  const telegram = process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID
+    ? createTelegramSender({ token: process.env.TELEGRAM_BOT_TOKEN, chatId: process.env.TELEGRAM_CHAT_ID })
+    : null;
+  const save = async (record) => {
+    await mkdir(dataDir, { recursive: true, mode: 0o700 });
+    await appendFile(join(dataDir, `${record.kind}.jsonl`), JSON.stringify(record) + "\n", { encoding: "utf8", mode: 0o600 });
+    if (telegram) await telegram(record);
+  };
+  const forms = {
+    "/api/inquiries": createFormHandler("inquiry", { logger, rateLimit, save, trustProxy }),
+    "/api/pre-registration": createFormHandler("preRegistration", { logger, save, trustProxy }),
+    "/api/careers": createFormHandler("career", { logger, save, trustProxy }),
+  };
 
   async function api(req, res, path) {
     if (path === "/api/health") return send(res, 200, { ok: true });
-    if (path === "/api/inquiries") return handleInquiry(req, res);
+    if (forms[path]) return forms[path](req, res);
     return send(res, 404, { error: "not_found" });
   }
 
@@ -78,6 +85,8 @@ export function createApp({ publicDir, dataDir, logger = console, rateLimit = { 
     if (file !== root && !file.startsWith(root + sep)) return send(res, 403, "Forbidden");
 
     let info = await stat(file).catch(() => null);
+    // clean URLs: /careers serves careers.html (as on Vercel)
+    if (!info && !extname(file)) { const html = `${file}.html`; info = await stat(html).catch(() => null); if (info) file = html; }
     if (info?.isDirectory()) { file = join(file, "index.html"); info = await stat(file).catch(() => null); }
     let status = 200;
     if (!info) { status = 404; file = join(root, "404.html"); info = await stat(file).catch(() => null); }

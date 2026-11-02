@@ -14,7 +14,7 @@ from PIL import Image, ImageFilter, ImageOps
 # the hero sits under a dark gradient, so it tolerates stronger compression
 HERO = {"wall": ("PXL_20251209_025859000.NIGHT_-scaled.jpg", [640, 960, 1280, 1920])}
 HERO_QUALITY = 52
-PHOTOS = {"sports": ("IMG_20240306_120206.jpg", [600])}
+PHOTOS = {}
 TEACHERS = {
     "fallahi": "IMG-20240313-WA0000.jpg",
     "yadollahi": "raees.jpg",
@@ -82,7 +82,6 @@ def logo_mark(src: Path, out: Path):
     rgba = rgba.crop(rgba.getbbox())
     rgba.thumbnail((384, 384), Image.LANCZOS)
     rgba.save(out / "logo-mark.webp", "WEBP", quality=92, method=6)
-    rgba.save(out / "logo-mark.png", optimize=True)
     small = rgba.copy()
     small.thumbnail((144, 144), Image.LANCZOS)  # 3x of the 48px header tile
     small.save(out / "logo-mark-96.webp", "WEBP", quality=92, method=6)

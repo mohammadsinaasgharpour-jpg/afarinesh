@@ -168,8 +168,8 @@ test("Instagram button fades over text and returns on empty space", async ({ pag
   await page.goto("/");
   const fab = page.locator(".insta-fab");
   const box = await fab.boundingBox();
-  expect(box.width).toBeGreaterThanOrEqual(48);
-  expect(box.width).toBeLessThanOrEqual(56);
+  expect(box.width).toBeGreaterThanOrEqual(54);
+  expect(box.width).toBeLessThanOrEqual(62);
   await page.locator(".faq").scrollIntoViewIfNeeded();
   await page.evaluate(() => { const f = document.querySelector(".faq details p, .faq summary"); window.scrollTo(0, f.getBoundingClientRect().top + scrollY - innerHeight + 30); });
   await page.waitForTimeout(150);
@@ -208,4 +208,75 @@ test("every part of the page follows the light/dark switch, even when toggled qu
   await page.waitForTimeout(700);
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   expect(await probe()).toBe(light);
+});
+
+test("pre-registration buttons lead to our own page for 1406–1407", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator('a[href*="porsline"]')).toHaveCount(0);
+  await expect(page.locator(".hero .btn-primary")).toContainText("۱۴۰۶–۱۴۰۷");
+  await page.locator(".hero .btn-primary").click();
+  await expect(page).toHaveURL(/\/pre-registration$/);
+  await expect(page.locator("h1")).toContainText("۱۴۰۶–۱۴۰۷");
+});
+
+test("pre-registration form validates, reviews and sends", async ({ page }) => {
+  let sent;
+  await page.route("**/api/pre-registration", async (route) => {
+    sent = route.request().postDataJSON();
+    await route.fulfill({ status: 201, contentType: "application/json", body: '{"ok":true,"id":"abcdef12-0000"}' });
+  });
+  await page.goto("/pre-registration");
+  await page.locator("[data-submit]").click();
+  await expect(page.locator("#p-nationalId").locator("xpath=..").locator("[data-error]")).not.toBeEmpty();
+  await page.fill("#p-fullName", "آرین رضایی");
+  await page.fill("#p-nationalId", "۰۴۹۹۳۷۰۸۹۹");
+  await page.fill("#p-birthDate", "۱۳۹۳/۰۴/۲۳");
+  await page.fill("#p-studentMobile", "09171234567");
+  await page.fill("#p-address", "شیراز، بلوار ارم، کوچه ۵");
+  await page.fill("#p-motherMobile", "09171111111");
+  await page.fill("#p-fatherMobile", "09172222222");
+  await page.fill("#p-currentSchool", "دبستان نمونه");
+  await page.fill("#p-gpa", "۱۹٫۵");
+  await page.selectOption("#p-motherEducation", "لیسانس");
+  await page.locator(".segmented label", { hasText: "عالی" }).click();
+  await page.locator(".segmented label", { hasText: "هشتم" }).click();
+  await page.locator(".check").click();
+  await page.locator("[data-submit]").click();
+  const dialog = page.locator("[data-confirm-dialog]");
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toContainText("۰۴۹۹۳۷۰۸۹۹");
+  await page.locator("[data-confirm-yes]").click();
+  await expect(page.locator(".toast.ok")).toContainText("abcdef12");
+  expect(sent).toMatchObject({ nationalId: "0499370899", birthDate: "1393/04/23", gpa: "19.5", grade: "8", motherEducation: "لیسانس", consent: true });
+});
+
+test("careers page sends a job application", async ({ page }) => {
+  let sent;
+  await page.route("**/api/careers", async (route) => {
+    sent = route.request().postDataJSON();
+    await route.fulfill({ status: 201, contentType: "application/json", body: '{"ok":true,"id":"12345678"}' });
+  });
+  await page.goto("/careers");
+  await page.fill("#c-fullName", "مریم احمدی");
+  await page.fill("#c-field", "ریاضی محض");
+  await page.locator(".segmented label", { hasText: "کارشناسی ارشد" }).click();
+  await page.locator(".segmented label", { hasText: "بالای ۵ سال" }).click();
+  await page.fill("#c-phone", "071 3229 3194");
+  await page.locator(".check").click();
+  await page.locator("[data-submit]").click();
+  await page.locator("[data-confirm-yes]").click();
+  await expect(page.locator(".toast.ok")).toBeVisible();
+  expect(sent).toMatchObject({ degree: "کارشناسی ارشد", experience: "بالای ۵ سال", phone: "07132293194" });
+});
+
+test("subpages share the home page's header, theme and footer", async ({ page }) => {
+  await page.clock.setFixedTime(new Date(2026, 10, 2, 20));
+  await page.goto("/careers");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await expect(page.locator('#nav a[href="/#team"]')).toHaveCount(1);
+  await expect(page.locator(".site-footer")).toContainText("کتابخانه");
+  const errors = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.reload();
+  expect(errors).toEqual([]);
 });

@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { createTelegramSender, formatInquiry } from "../server/inquiry.mjs";
+import { createTelegramSender, formatInquiry } from "../server/forms.mjs";
 
 const record = { id: "12345678-aaaa", receivedAt: "2026-10-31T08:00:00Z", parentName: "مریم احمدی", phone: "09171234567", grade: "8", message: "<b>سلام</b>" };
 
