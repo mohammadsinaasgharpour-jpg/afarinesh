@@ -136,11 +136,17 @@ test("Instagram button sits in the bottom-right corner", async ({ page }) => {
   expect(vp.height - (box.y + box.height)).toBeLessThanOrEqual(24);
 });
 
-test("hero kicker sits at the top of the photo", async ({ page }) => {
+test("the hero lede names the school level, city and founding year", async ({ page }) => {
   await page.goto("/");
-  const hero = await page.locator(".hero").boundingBox();
-  const kicker = await page.locator(".hero-kicker span").boundingBox();
-  expect(kicker.y - hero.y).toBeLessThan(60);
+  await expect(page.locator(".hero-kicker")).toHaveCount(0);
+  await expect(page.locator(".hero-lede")).toContainText("دوره اول متوسطه در شیراز، از ۱۳۸۷");
+});
+
+test("touch targets in contact and footer are at least 44px tall", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto("/");
+  const heights = await page.locator(".contact-list a, .site-footer a").evaluateAll((els) => els.map((el) => el.getBoundingClientRect().height));
+  for (const h of heights) expect(h).toBeGreaterThanOrEqual(44);
 });
 
 test("the plus sign comes before ۱۰۰ when read right to left", async ({ page }) => {
@@ -210,13 +216,13 @@ test("every part of the page follows the light/dark switch, even when toggled qu
   expect(await probe()).toBe(light);
 });
 
-test("pre-registration buttons lead to our own page for 1406–1407", async ({ page }) => {
+test("pre-registration buttons lead to our own page for 1406-1407", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator('a[href*="porsline"]')).toHaveCount(0);
-  await expect(page.locator(".hero .btn-primary")).toContainText("۱۴۰۶–۱۴۰۷");
+  await expect(page.locator(".hero .btn-primary")).toContainText("۱۴۰۶-۱۴۰۷");
   await page.locator(".hero .btn-primary").click();
   await expect(page).toHaveURL(/\/pre-registration$/);
-  await expect(page.locator("h1")).toContainText("۱۴۰۶–۱۴۰۷");
+  await expect(page.locator("h1")).toContainText("۱۴۰۶-۱۴۰۷");
 });
 
 test("pre-registration form validates, reviews and sends", async ({ page }) => {

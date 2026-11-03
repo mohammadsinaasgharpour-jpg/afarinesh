@@ -114,7 +114,7 @@ def main(src_dir: str, out_dir: str):
             out / "team" / f"{name}.webp", "WEBP", quality=76, method=6)
     logo_mark(src / "azmoon.jpeg", out)
     total = sum(p.stat().st_size for p in out.rglob("*") if p.is_file())
-    print(f"done — {sum(1 for _ in out.rglob('*.webp'))} webp files, {total / 1024:.0f} KB total")
+    print(f"done: {sum(1 for _ in out.rglob('*.webp'))} webp files, {total / 1024:.0f} KB total")
 
 
 if __name__ == "__main__":

@@ -106,7 +106,7 @@ export const EXPERIENCE = ["زیر ۵ سال", "بالای ۵ سال"];
 
 const choice = (value, list) => (list.includes(String(value ?? "")) ? String(value) : "");
 
-/** Online pre-registration — the same questions as the school's earlier Porsline form. */
+/** Online pre-registration: the same questions as the school's earlier Porsline form. */
 export function validatePreRegistration(input) {
   const e = {};
   const text = (k, max = LIMITS.shortMax) => cleanText(input?.[k]).slice(0, max + 1);
@@ -153,7 +153,7 @@ export function validatePreRegistration(input) {
   return result(e, v);
 }
 
-/** Job application (دعوت به همکاری) — the same questions as the earlier Porsline form. */
+/** Job application (دعوت به همکاری): the same questions as the earlier Porsline form. */
 export function validateCareer(input) {
   const e = {};
   const v = {

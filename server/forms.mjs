@@ -8,7 +8,7 @@ import {
 const MIN_FILL_MS = 3000;
 const HOUR = 60 * 60_000;
 const fmtTime = (iso) => new Intl.DateTimeFormat("fa-IR", { timeZone: "Asia/Tehran", dateStyle: "medium", timeStyle: "short" }).format(new Date(iso));
-const or = (v) => v || "—";
+const or = (v) => v || "ثبت نشده";
 
 /**
  * Per form: validation, the Telegram text for staff, request size and abuse limits.
@@ -36,7 +36,7 @@ export const FORMS = {
     perKey: { limit: 1, windowMs: 24 * HOUR },
     dedupeKey: "nationalId",
     lines: (r) => [
-      "پیش‌ثبت‌نام تازه، سال تحصیلی ۱۴۰۶–۱۴۰۷",
+      "پیش‌ثبت‌نام تازه، سال تحصیلی ۱۴۰۶-۱۴۰۷",
       "",
       "◼ دانش‌آموز",
       `نام: ${r.fullName}`,

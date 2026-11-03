@@ -1,4 +1,4 @@
-// Shared by every page: header, theme, menu, Instagram button, image protection, reveals, toasts and forms.
+// Shared by every page: header, theme, menu, Instagram button, image protection, toasts and forms.
 import { toPersianDigits } from "./validate.js";
 
 export const $ = (sel, root = document) => root.querySelector(sel);
@@ -6,7 +6,7 @@ export const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 export const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
 const SCHOOL_PHONE = "۰۷۱-۳۲۲۹۳۱۹۴";
 
-/* ---------- toasts ---------- */
+/* toasts */
 export function toast(text, kind = "ok", ms = 5200) {
   const box = $("[data-toasts]");
   const el = document.createElement("div");
@@ -102,16 +102,6 @@ export function initChrome() {
   /* images: no long-press save menu or drag-out */
   document.addEventListener("contextmenu", (e) => { if (e.target.closest("img, picture, .brand")) e.preventDefault(); });
   document.addEventListener("dragstart", (e) => { if (e.target.closest("img")) e.preventDefault(); });
-
-  /* sections rise in once */
-  const revealOnce = new IntersectionObserver((entries) => {
-    for (const entry of entries) {
-      if (!entry.isIntersecting) continue;
-      entry.target.classList.add("is-in");
-      revealOnce.unobserve(entry.target);
-    }
-  }, { rootMargin: "0px 0px -8% 0px" });
-  $$(".reveal, .reveal-stagger").forEach((el) => revealOnce.observe(el));
 }
 
 /**

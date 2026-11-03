@@ -4,7 +4,7 @@ import { $, $$, initChrome, createFormController } from "./common.js";
 
 initChrome();
 
-/* ---------- nav: highlight the section in view ---------- */
+/* nav: highlight the section in view */
 const navLinks = $$('#nav a[href^="#"]');
 const spy = new IntersectionObserver((entries) => {
   for (const entry of entries) {
@@ -14,7 +14,7 @@ const spy = new IntersectionObserver((entries) => {
 }, { rootMargin: "-45% 0px -50% 0px" });
 navLinks.forEach((a) => { const s = document.querySelector(a.hash); if (s) spy.observe(s); });
 
-/* ---------- team: skeleton, reveal on scroll, search ---------- */
+/* team: skeleton, reveal on scroll, search */
 const team = $("[data-team]");
 const cards = $$(".teacher", team);
 const search = $("[data-team-search]");
@@ -65,7 +65,7 @@ $("[data-team-reset]").addEventListener("click", () => {
   search.focus();
 });
 
-/* ---------- callback request ---------- */
+/* callback request */
 createFormController({
   form: $("[data-inquiry]"),
   validate: validateInquiry,

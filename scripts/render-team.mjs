@@ -6,14 +6,11 @@ import { pathToFileURL } from "node:url";
 const root = new URL("../", import.meta.url);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
-// photo frames cycle through the colours of the school wall
-const ACCENTS = ["sky", "sun", "brick", "ink"];
-
 export function renderTeam(people) {
-  return people.map((p, i) => {
+  return people.map((p) => {
     const edu = p.edu.map((e) => `<li>${esc(e)}</li>`).join("");
     const note = p.note ? `\n              <p class="teacher-note">${esc(p.note)}</p>` : "";
-    return `        <li class="teacher" data-accent="${ACCENTS[i % ACCENTS.length]}">
+    return `        <li class="teacher">
           <div class="teacher-photo"><img src="/assets/img/team/${esc(p.id)}.webp" width="400" height="400" loading="lazy" decoding="async" alt="${esc(p.name)}، ${esc(p.role)}"></div>
           <div class="teacher-body">
             <p class="teacher-role">${esc(p.role)}</p>
