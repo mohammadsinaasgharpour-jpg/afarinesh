@@ -79,7 +79,9 @@ export function createApp({ publicDir, dataDir, logger = console, rateLimit, tru
 
   async function serveStatic(req, res, path) {
     if (req.method !== "GET" && req.method !== "HEAD") return send(res, 405, "Method Not Allowed", { Allow: "GET, HEAD" });
-    let rel = normalize(decodeURIComponent(path)).replace(/^([/\\])+/, "");
+    let decoded;
+    try { decoded = decodeURIComponent(path); } catch { return send(res, 400, "Bad Request"); }
+    let rel = normalize(decoded).replace(/^([/\\])+/, "");
     if (rel === "" || rel.endsWith(sep)) rel = join(rel, "index.html");
     let file = resolve(root, rel);
     if (file !== root && !file.startsWith(root + sep)) return send(res, 403, "Forbidden");

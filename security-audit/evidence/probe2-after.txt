@@ -1,0 +1,18 @@
+type confusion	422	{"error":"invalid","errors":{"parentName":"نام و نام خانوادگی را کامل بنویسید.","phone":"شماره همراه ۱۱ رقمی ر
+XSS/template payload in name	201	{"ok":true,"id":"6e9250f6-1b38-49f9-8abe-d149c2373cf8"}
+template payload in message	201	{"ok":true,"id":"be05fad7-78a9-4afc-ac80-7b09416e53b3"}
+proto pollution	201	{"ok":true,"id":"cfc3b042-fe06-4035-bb72-21fa0d05cfc7"}
+proto polluted: false
+mass assignment	201	{"ok":true,"id":"6bf810f5-e0b0-4acc-8012-4a079e784b78"}
+honeypot	201	{"ok":true}
+no startedAt (timing check skipped)	201	{"ok":true,"id":"a9f3c055-031c-46c3-8f5d-da4a09053e6c"}
+bidi/zero-width in name	201	{"ok":true,"id":"c01aad0b-c901-4ff0-83fd-6a84a2ef61cd"}
+link in message	422	{"error":"invalid","errors":{"message":"لطفاً پیام را بدون لینک بنویسید."}}
+phone dedupe 1	201	{"ok":true,"id":"477ccff4-458b-46ca-b8fc-c646f19c353c"}
+phone dedupe 2	201	{"ok":true,"id":"4f6f1326-cb05-4ca8-992a-caeef6abd977"}
+phone dedupe 3	429	{"error":"duplicate"}
+XFF spoof: client sends 'x, 1.2.3.4' (proxy appends real)	201	{"ok":true,"id":"08a09699-e400-41d4-a095-71f7a2753c72"}
+junk to careers from 125 IPs: {"400":125}
+legit career from fresh IP after junk flood	201	{"ok":true,"id":"f46c9e9a-37ec-465f-b71c-c9596c6944f7"}
+stored inquiry records: 9; mass-assigned id stored: false; names: "img src=x onerror=alert(1)" "آزمون امنیتی" "آزمون امنیتی" "آزمون امنیتی" "آزمون امنیتی" "آزمونامنیتی" "آزمون امنیتی" "آزمون امنیتی" "آزمون امنیتی"
+messages: "" "7*7 $7*7 scriptalert(1)/script" "" "" "" "" "" "" ""

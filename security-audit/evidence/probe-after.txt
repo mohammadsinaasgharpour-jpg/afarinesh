@@ -1,0 +1,47 @@
+T	GET /../server/forms.mjs	404	<!doctype html> <html lang="fa" dir="rtl"> <head> <meta charset="utf-8"> <meta name="viewp
+T	GET /%2e%2e/server/forms.mjs	404	<!doctype html> <html lang="fa" dir="rtl"> <head> <meta charset="utf-8"> <meta name="viewp
+T	GET /..%2fserver%2fforms.mjs	404	<!doctype html> <html lang="fa" dir="rtl"> <head> <meta charset="utf-8"> <meta name="viewp
+T	GET /..%5cserver%5cforms.mjs	404	<!doctype html> <html lang="fa" dir="rtl"> <head> <meta charset="utf-8"> <meta name="viewp
+T	GET /%2e%2e%2f.env.local	404	<!doctype html> <html lang="fa" dir="rtl"> <head> <meta charset="utf-8"> <meta name="viewp
+T	GET /assets/../../.env.local	404	<!doctype html> <html lang="fa" dir="rtl"> <head> <meta charset="utf-8"> <meta name="viewp
+T	GET /%00	404	<!doctype html> <html lang="fa" dir="rtl"> <head> <meta charset="utf-8"> <meta name="viewp
+T	GET /%E0%A4%A	400	Bad Request
+T	GET /.git/config	404	<!doctype html> <html lang="fa" dir="rtl"> <head> <meta charset="utf-8"> <meta name="viewp
+T	GET /data/inquiry.jsonl	404	<!doctype html> <html lang="fa" dir="rtl"> <head> <meta charset="utf-8"> <meta name="viewp
+T	GET //etc/passwd	404	<!doctype html> <html lang="fa" dir="rtl"> <head> <meta charset="utf-8"> <meta name="viewp
+T	HEAD /	200	
+T	POST / (static)	405	Method Not Allowed
+T	TRACE /	405	Method Not Allowed
+HDR	/	content-security-policy=yes strict-transport-security=yes x-content-type-options=yes referrer-policy=yes permissions-policy=yes cross-origin-opener-policy=yes x-frame-options=NO x-powered-by=NO server=NO
+HDR	/nope status 404 csp=true
+HDR	/api/health 200 csp=true cache=no-store acao=none
+A	GET /api/inquiries	405	{"error":"method_not_allowed"}
+A	OPTIONS preflight	405	{"error":"method_not_allowed"}
+A	text/plain body (form-CSRF shape)	415	{"error":"unsupported_type"}
+A	foreign Origin	403	{"error":"forbidden_origin"}
+A	Origin=null	403	{"error":"forbidden_origin"}
+A	forged X-Forwarded-Host matches evil Origin	403	{"error":"forbidden_origin"}
+A	oversized declared	413	{"error":"too_large"}
+A	oversized chunked	ERR	socket hang up
+A	bad json	400	{"error":"bad_json"}
+A	array body	400	{"error":"bad_json"}
+A	null body	400	{"error":"bad_json"}
+A	type confusion (objects)	429	{"error":"rate_limited"}
+A	XSS/injection payload in name	429	{"error":"rate_limited"}
+A	proto pollution keys	429	{"error":"rate_limited"}
+PP	Object.prototype polluted? false
+A	mass assignment (id/kind/receivedAt)	429	{"error":"rate_limited"}
+A	honeypot filled (fake success)	429	{"error":"rate_limited"}
+A	startedAt omitted (timing check skipped)	429	{"error":"rate_limited"}
+A	startedAt in future	429	{"error":"rate_limited"}
+A	unknown path	200	{"ok":true}
+A	malformed URL	400	Bad Request
+B	pre-reg attacker submits victim national ID	201	{"ok":true,"id":"7b4b9f91-594f-469a-ad88-dece1cacdd6f"}
+B	pre-reg real owner then blocked 24h	201	{"ok":true,"id":"62a6db8c-d28e-4fd4-933b-75cbd3c3991c"}
+B	pre-reg consent missing	422	{"error":"invalid","errors":{"nationalId":"کد ملی ۱۰ رقمی معتبر نیست؛ دوباره بررسی کنید.",
+RL	careers x8 same IP	201,201,201,429,429,429,429,429
+RL	inquiry junk x130 same IP	{"429":130}
+DATA	files=career.jsonl,preRegistration.jsonl inquiry records=0 keys=
+DATA	mass-assignment stored? false
+DATA	payload stored as: (rejected)
+LOGS	no errors

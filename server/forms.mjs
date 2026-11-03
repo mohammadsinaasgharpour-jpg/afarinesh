@@ -33,7 +33,8 @@ export const FORMS = {
     validate: validatePreRegistration,
     maxBytes: 8 * 1024,
     perIp: { limit: 4, windowMs: HOUR },
-    perKey: { limit: 1, windowMs: 24 * HOUR },
+    // more than one, so whoever knows a child's ID cannot lock the family out; repeats are flagged to staff
+    perKey: { limit: 3, windowMs: 24 * HOUR },
     dedupeKey: "nationalId",
     lines: (r) => [
       "پیش‌ثبت‌نام تازه، سال تحصیلی ۱۴۰۶-۱۴۰۷",
@@ -77,7 +78,10 @@ export const FORMS = {
 /** Plain-text Telegram message (no parse_mode, so nothing a visitor types can change formatting). */
 export function formatRecord(record) {
   const form = FORMS[record.kind] ?? FORMS.inquiry;
-  return [...form.lines(record), "", `زمان: ${fmtTime(record.receivedAt)}`, `کد پیگیری: ${record.id.slice(0, 8)}`]
+  const repeat = record.repeat > 1
+    ? [`⚠ ارسال شماره‌ی ${toPersianDigits(record.repeat)} با همین ${form.dedupeKey === "nationalId" ? "کد ملی" : "شماره"} در ۲۴ ساعت گذشته؛ پیش از اقدام تلفنی بررسی شود.`, ""]
+    : [];
+  return [...repeat, ...form.lines(record), "", `زمان: ${fmtTime(record.receivedAt)}`, `کد پیگیری: ${record.id.slice(0, 8)}`]
     .filter((l) => l !== null).join("\n").slice(0, 4000);
 }
 export const formatInquiry = (record) => formatRecord({ kind: "inquiry", ...record });
@@ -100,19 +104,25 @@ export function createTelegramSender({ token, chatId, fetchImpl = fetch }) {
  * Fixed-window limiter. In memory, so it is exact for one server process (the school's own host)
  * and best-effort on serverless platforms, where each instance counts separately.
  */
-export function createRateLimiter({ limit, windowMs, now = Date.now }) {
+export function createRateLimiter({ limit, windowMs, now = Date.now, maxKeys = 50_000 }) {
   const hits = new Map();
-  return (key) => {
+  const allow = (key) => {
     const t = now();
     const entry = hits.get(key);
     if (!entry || t - entry.start >= windowMs) {
+      hits.delete(key);
       hits.set(key, { start: t, count: 1 });
       if (hits.size > 10_000) for (const [k, v] of hits) if (t - v.start >= windowMs) hits.delete(k);
+      // a flood from many addresses must not grow memory without bound: drop the oldest windows
+      for (const k of hits.keys()) { if (hits.size <= maxKeys) break; hits.delete(k); }
       return true;
     }
     entry.count++;
     return entry.count <= limit;
   };
+  /** How many attempts this key has made in its current window. */
+  allow.count = (key) => hits.get(key)?.count ?? 0;
+  return allow;
 }
 
 export function send(res, status, body, headers = {}) {
@@ -157,7 +167,9 @@ export function createFormHandler(kind, { save, logger = console, rateLimit, tru
   const form = FORMS[kind];
   const perIp = createRateLimiter(rateLimit ?? form.perIp);
   const perKey = createRateLimiter(form.perKey);
-  const global = createRateLimiter({ limit: 120, windowMs: HOUR }); // flood guard for the staff channel
+  // flood guard for the staff channel; only accepted submissions count, so junk cannot lock real families out
+  const global = createRateLimiter({ limit: 120, windowMs: HOUR });
+  const proxy = trustProxy ?? (process.env.TRUST_PROXY || (process.env.VERCEL ? "vercel" : ""));
 
   return async function handleForm(req, res) {
     try {
@@ -165,15 +177,15 @@ export function createFormHandler(kind, { save, logger = console, rateLimit, tru
 
       // the page always posts from its own origin; anything else is another site using a visitor's browser
       const origin = req.headers.origin;
-      const host = req.headers["x-forwarded-host"] || req.headers.host;
+      const host = (proxy && req.headers["x-forwarded-host"]) || req.headers.host;
       if (origin) {
         let originHost = "";
         try { originHost = new URL(origin).host; } catch {}
         if (originHost !== host) return send(res, 403, { error: "forbidden_origin" });
       }
 
-      const ip = clientIp(req, trustProxy);
-      if (!perIp(ip) || !global("all")) return send(res, 429, { error: "rate_limited" }, { "Retry-After": "600" });
+      const ip = clientIp(req, proxy);
+      if (!perIp(ip)) return send(res, 429, { error: "rate_limited" }, { "Retry-After": "600" });
 
       const body = await readJson(req, form.maxBytes);
       if (!body || typeof body !== "object" || Array.isArray(body)) return send(res, 400, { error: "bad_json" });
@@ -184,10 +196,13 @@ export function createFormHandler(kind, { save, logger = console, rateLimit, tru
 
       const result = form.validate(body);
       if (!result.ok) return send(res, 422, { error: "invalid", errors: result.errors });
-      if (!perKey(`${kind}:${result.value[form.dedupeKey]}`)) return send(res, 429, { error: "duplicate" }, { "Retry-After": "3600" });
+      const key = `${kind}:${result.value[form.dedupeKey]}`;
+      if (!perKey(key)) return send(res, 429, { error: "duplicate" }, { "Retry-After": "3600" });
+      if (!global("all")) return send(res, 429, { error: "rate_limited" }, { "Retry-After": "600" });
 
       const { consent, ...value } = result.value;
-      const record = { kind, id: randomUUID(), receivedAt: new Date().toISOString(), ...value };
+      const repeat = perKey.count(key);
+      const record = { kind, id: randomUUID(), receivedAt: new Date().toISOString(), ...value, ...(repeat > 1 && { repeat }) };
       await save(record);
       logger.info?.(`${kind} ${record.id}`); // ids only: personal data never goes to logs
       return send(res, 201, { ok: true, id: record.id });

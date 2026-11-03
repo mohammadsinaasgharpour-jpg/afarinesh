@@ -122,19 +122,6 @@ test("form pages are served at clean URLs", async () => {
   }
 });
 
-test("pre-registration is stored once per national ID and never logs personal data", async () => {
-  const logged = [];
-  const res = await postTo("/api/pre-registration", goodPre);
-  assert.equal(res.status, 201);
-  const again = await postTo("/api/pre-registration", goodPre);
-  assert.equal(again.status, 429);
-  assert.equal((await again.json()).error, "duplicate");
-  const rows = (await readFile(join(dataDir, "preRegistration.jsonl"), "utf8")).trim().split("\n").map(JSON.parse);
-  assert.equal(rows.filter((r) => r.nationalId === "0499370899").length, 1);
-  assert.equal(rows[0].consent, undefined);
-  assert.equal(logged.length, 0);
-});
-
 test("pre-registration rejects an invalid national ID", async () => {
   const res = await postTo("/api/pre-registration", { ...goodPre, nationalId: "1234567890" });
   assert.equal(res.status, 422);
@@ -164,4 +151,66 @@ test("every page's inline script is allowed by the CSP built from index.html", a
   for (const f of ["pre-registration.html", "careers.html"]) {
     for (const h of inlineScriptHashes(await readFile(join(publicDir, f), "utf8"))) assert.ok(idx.includes(h), `${f}: ${h}`);
   }
+});
+
+/* security regressions (security-audit/VULNERABILITY_REGISTER.md) */
+const startApp = async (opts = {}) => {
+  const dir = await mkdtemp(join(tmpdir(), "afarinesh-sec-"));
+  const srv = createServer(createApp({ publicDir, dataDir: dir, logger: {}, ...opts }));
+  await new Promise((r) => srv.listen(0, "127.0.0.1", r));
+  const url = `http://127.0.0.1:${srv.address().port}`;
+  return { url, dir, close: async () => { await new Promise((r) => srv.close(r)); await rm(dir, { recursive: true, force: true }); } };
+};
+const career = { fullName: "متقاضی آزمونی", field: "ریاضی", degree: "کارشناسی", experience: "زیر ۵ سال", phone: "09125550000", consent: true };
+
+test("junk requests from many addresses do not lock real applicants out (SEC-01)", async () => {
+  const app = await startApp({ trustProxy: "proxy" });
+  try {
+    for (let i = 0; i < 125; i++) {
+      await fetch(`${app.url}/api/careers`, { method: "POST", headers: { "Content-Type": "application/json", "X-Forwarded-For": `203.0.113.${i}` }, body: "{bad" });
+    }
+    const res = await fetch(`${app.url}/api/careers`, { method: "POST", headers: { "Content-Type": "application/json", "X-Forwarded-For": "192.0.2.77" }, body: JSON.stringify(career) });
+    assert.equal(res.status, 201);
+  } finally { await app.close(); }
+});
+
+test("objects and arrays in place of text are rejected (SEC-05)", async () => {
+  const res = await post({ parentName: { a: 1 }, phone: ["09171234567"], grade: ["7"] });
+  assert.equal(res.status, 422);
+  assert.deepEqual(Object.keys((await res.json()).errors).sort(), ["grade", "parentName", "phone"]);
+});
+
+test("a malformed URL gets 400, not a server error (SEC-06)", async () => {
+  const res = await fetch(base + "/%E0%A4%A");
+  assert.equal(res.status, 400);
+});
+
+test("X-Forwarded-Host is ignored when no proxy is configured (SEC-07)", async () => {
+  const res = await post(valid, { Origin: "https://evil.example", "X-Forwarded-Host": "evil.example" });
+  assert.equal(res.status, 403);
+});
+
+test("the rate limiter keeps a bounded number of addresses (SEC-08)", () => {
+  let t = 0;
+  const allow = createRateLimiter({ limit: 1, windowMs: 1000, now: () => t, maxKeys: 100 });
+  for (let i = 0; i < 1000; i++) allow(`ip-${i}`);
+  assert.equal(allow.count("ip-0"), 0);
+  assert.equal(allow.count("ip-999"), 1);
+});
+
+test("a national ID can be resubmitted a few times, repeats are flagged, then it is refused (SEC-02)", async () => {
+  const app = await startApp({ trustProxy: "proxy" });
+  const send = (body, ip) => fetch(`${app.url}/api/pre-registration`, { method: "POST", headers: { "Content-Type": "application/json", "X-Forwarded-For": ip }, body: JSON.stringify(body) });
+  try {
+    assert.equal((await send(goodPre, "203.0.113.1")).status, 201);
+    // whoever submits first with someone else's ID cannot lock the real family out
+    assert.equal((await send({ ...goodPre, fullName: "صاحب واقعی کد" }, "192.0.2.10")).status, 201);
+    assert.equal((await send(goodPre, "203.0.113.2")).status, 201);
+    const fourth = await send(goodPre, "203.0.113.3");
+    assert.equal(fourth.status, 429);
+    assert.equal((await fourth.json()).error, "duplicate");
+    const rows = (await readFile(join(app.dir, "preRegistration.jsonl"), "utf8")).trim().split("\n").map(JSON.parse);
+    assert.deepEqual(rows.map((r) => r.repeat), [undefined, 2, 3]);
+    assert.equal(rows[0].consent, undefined);
+  } finally { await app.close(); }
 });

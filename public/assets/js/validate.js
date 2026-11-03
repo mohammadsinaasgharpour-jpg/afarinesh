@@ -3,8 +3,11 @@
 const FA_DIGITS = "۰۱۲۳۴۵۶۷۸۹";
 const AR_DIGITS = "٠١٢٣٤٥٦٧٨٩";
 
+// Form fields arrive as strings (or numbers); objects and arrays from a crafted request count as empty.
+const scalar = (value) => (typeof value === "string" || typeof value === "number" ? String(value) : "");
+
 export function toLatinDigits(value) {
-  return String(value ?? "").replace(/[۰-۹٠-٩]/g, (d) => {
+  return scalar(value).replace(/[۰-۹٠-٩]/g, (d) => {
     const i = FA_DIGITS.indexOf(d);
     return String(i >= 0 ? i : AR_DIGITS.indexOf(d));
   });
@@ -19,7 +22,7 @@ export function toPersianDigits(value) {
  * half-space ZWNJ is kept), angle brackets and braces dropped, whitespace collapsed.
  */
 export function cleanText(value, { multiline = false } = {}) {
-  let s = String(value ?? "")
+  let s = scalar(value)
     .normalize("NFC")
     // C0/C1 controls except tab/newline, bidi overrides and isolates, zero-width chars other than ZWNJ, BOM
     .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F​‍-‏‪-‮⁠-⁩﻿]/g, "")
@@ -81,7 +84,7 @@ export function validateInquiry(input) {
   const errors = {};
   const parentName = cleanText(input?.parentName);
   const phone = normalizeMobile(input?.phone);
-  const grade = String(input?.grade ?? "");
+  const grade = scalar(input?.grade);
   const message = cleanText(input?.message, { multiline: true });
 
   if (parentName.length < LIMITS.nameMin) errors.parentName = NAME_ERR;
@@ -104,7 +107,7 @@ export const REFERRAL = ["جستجو در اینترنت", "دبیران", "مس
 export const DEGREES = ["کارشناسی", "کارشناسی ارشد", "دکتری"];
 export const EXPERIENCE = ["زیر ۵ سال", "بالای ۵ سال"];
 
-const choice = (value, list) => (list.includes(String(value ?? "")) ? String(value) : "");
+const choice = (value, list) => (list.includes(scalar(value)) ? scalar(value) : "");
 
 /** Online pre-registration: the same questions as the school's earlier Porsline form. */
 export function validatePreRegistration(input) {
@@ -128,7 +131,7 @@ export function validatePreRegistration(input) {
     gpa: toLatinDigits(input?.gpa).trim().replace(/[٫/,،]/, "."),
     gpaDescriptive: choice(input?.gpaDescriptive, GPA_DESCRIPTIVE),
     discipline: choice(input?.discipline, DISCIPLINE),
-    grade: ["7", "8", "9"].includes(String(input?.grade ?? "")) ? String(input.grade) : "",
+    grade: ["7", "8", "9"].includes(scalar(input?.grade)) ? scalar(input.grade) : "",
     referral: choice(input?.referral, REFERRAL),
     consent: input?.consent === true || input?.consent === "on" || input?.consent === "true",
   };

@@ -26,3 +26,9 @@ test("sender turns a Telegram error into 503", async () => {
   const send = createTelegramSender({ token: "T", chatId: "1", fetchImpl: async () => ({ ok: false, status: 401 }) });
   await assert.rejects(send(record), (e) => e.status === 503);
 });
+
+test("repeat submissions for one national ID are flagged at the top of the message", async () => {
+  const { formatRecord } = await import("../server/forms.mjs");
+  const text = formatRecord({ kind: "preRegistration", id: "abcdef12-x", receivedAt: "2026-11-03T08:00:00Z", repeat: 2, fullName: "آزمون", nationalId: "0499370899", birthDate: "1393/04/23", studentMobile: "09171234567", address: "شیراز", motherMobile: "09171111111", fatherMobile: "09172222222", currentSchool: "مدرسه", gpa: "19.5", discipline: "عالی", grade: "8" });
+  assert.match(text.split("\n")[0], /ارسال شماره‌ی ۲ با همین کد ملی/);
+});
