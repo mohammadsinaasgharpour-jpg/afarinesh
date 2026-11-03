@@ -1,0 +1,42 @@
+import { createServer, request } from "node:http";
+import { mkdtemp, readFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+const root = process.argv[2];
+delete process.env.TELEGRAM_BOT_TOKEN; delete process.env.TELEGRAM_CHAT_ID;
+const { createApp } = await import(`file:///${root}/server/app.mjs`);
+const dataDir = await mkdtemp(join(tmpdir(), "afa-probe2-"));
+const app = createApp({ publicDir: `${root}/public`, dataDir, trustProxy: "proxy", logger: { info() {}, error() {} } });
+const srv = createServer(app).listen(0, "127.0.0.1"); await new Promise((r) => srv.once("listening", r));
+const port = srv.address().port;
+let ipN = 1;
+const post = (path, obj, ip = `198.51.100.${ipN++ % 250}`, extra = {}) => new Promise((resolve) => {
+  const body = typeof obj === "string" ? obj : JSON.stringify(obj);
+  const req = request({ host: "127.0.0.1", port, path, method: "POST", headers: { host: `127.0.0.1:${port}`, "content-type": "application/json", "x-forwarded-for": ip, ...extra } }, (res) => { let d = ""; res.on("data", (c) => (d += c)); res.on("end", () => resolve({ status: res.statusCode, body: d })); });
+  req.end(body);
+});
+const old = Date.now() - 60_000;
+const inq = (n) => ({ parentName: "آزمون امنیتی", phone: `0912${String(3000000 + n)}`, grade: "7", message: "", website: "", startedAt: old });
+const o = [];
+const L = (d, r) => o.push(`${d}\t${r.status}\t${r.body.slice(0, 110)}`);
+L("type confusion", await post("/api/inquiries", { parentName: { a: 1 }, phone: ["09121111111"], grade: 7, startedAt: old }));
+L("XSS/template payload in name", await post("/api/inquiries", { ...inq(1), parentName: "<img src=x onerror=alert(1)>" }));
+L("template payload in message", await post("/api/inquiries", { ...inq(2), message: "{{7*7}} ${7*7} <script>alert(1)</script>" }));
+L("proto pollution", await post("/api/inquiries", `{"parentName":"آزمون امنیتی","phone":"09123000003","grade":"7","startedAt":${old},"__proto__":{"admin":true}}`));
+o.push(`proto polluted: ${({}).admin === true}`);
+L("mass assignment", await post("/api/inquiries", { ...inq(4), id: "attacker-id", kind: "career", receivedAt: "1999" }));
+L("honeypot", await post("/api/inquiries", { ...inq(5), website: "x" }));
+L("no startedAt (timing check skipped)", await post("/api/inquiries", { ...inq(6), startedAt: undefined }));
+L("bidi/zero-width in name", await post("/api/inquiries", { ...inq(7), parentName: "آزمون\u202Eامنیتی\u200B" }));
+L("link in message", await post("/api/inquiries", { ...inq(8), message: "see https://evil.example" }));
+L("phone dedupe 1", await post("/api/inquiries", inq(9))); L("phone dedupe 2", await post("/api/inquiries", inq(9))); L("phone dedupe 3", await post("/api/inquiries", inq(9)));
+L("XFF spoof: client sends 'x, 1.2.3.4' (proxy appends real)", await post("/api/inquiries", inq(10), "1.2.3.4, 203.0.113.9"));
+// global bucket: junk from 125 distinct IPs, then one legitimate request from a fresh IP
+const codes = {};
+for (let i = 0; i < 125; i++) { const r = await post("/api/careers", "{bad", `203.0.113.${i}`); codes[r.status] = (codes[r.status] || 0) + 1; }
+o.push(`junk to careers from 125 IPs: ${JSON.stringify(codes)}`);
+L("legit career from fresh IP after junk flood", await post("/api/careers", { fullName: "متقاضی واقعی", field: "ریاضی", degree: "کارشناسی", experience: "زیر ۵ سال", phone: "09125550000", consent: true, startedAt: old }, "192.0.2.77"));
+const rec = (await readFile(join(dataDir, "inquiry.jsonl"), "utf8")).trim().split("\n").map((l) => JSON.parse(l));
+o.push(`stored inquiry records: ${rec.length}; mass-assigned id stored: ${rec.some((r) => r.id === "attacker-id")}; names: ${rec.map((r) => JSON.stringify(r.parentName)).join(" ")}`);
+o.push(`messages: ${rec.map((r) => JSON.stringify(r.message)).join(" ")}`);
+console.log(o.join("\n")); srv.close();

@@ -1,0 +1,18 @@
+type confusion	201	{"ok":true,"id":"6e3d3dd9-0549-43bc-bf1c-06ce837e9bf3"}
+XSS/template payload in name	201	{"ok":true,"id":"c035f83d-1ec2-4265-ad92-4516a5bf3eaa"}
+template payload in message	201	{"ok":true,"id":"5706ace2-71ab-4910-a6a8-889d6dd585dc"}
+proto pollution	201	{"ok":true,"id":"b205690a-82bd-41ca-96f6-f4187760def3"}
+proto polluted: false
+mass assignment	201	{"ok":true,"id":"a42e2707-c3ea-49dc-b9d7-3b226ae2be9c"}
+honeypot	201	{"ok":true}
+no startedAt (timing check skipped)	201	{"ok":true,"id":"80c5387a-f036-4203-930a-592d2ac0aad5"}
+bidi/zero-width in name	201	{"ok":true,"id":"995a6351-2705-4274-a196-2891bdb850c5"}
+link in message	422	{"error":"invalid","errors":{"message":"لطفاً پیام را بدون لینک بنویسید."}}
+phone dedupe 1	201	{"ok":true,"id":"1c7ad1d1-0915-4dc7-8dab-f660b46b3799"}
+phone dedupe 2	201	{"ok":true,"id":"607d36d6-9a81-45ec-97ef-929ccb372faa"}
+phone dedupe 3	429	{"error":"duplicate"}
+XFF spoof: client sends 'x, 1.2.3.4' (proxy appends real)	201	{"ok":true,"id":"da6013ea-556c-46d6-9e1f-ed98e577a029"}
+junk to careers from 125 IPs: {"400":120,"429":5}
+legit career from fresh IP after junk flood	429	{"error":"rate_limited"}
+stored inquiry records: 10; mass-assigned id stored: false; names: "[object Object]" "img src=x onerror=alert(1)" "آزمون امنیتی" "آزمون امنیتی" "آزمون امنیتی" "آزمون امنیتی" "آزمونامنیتی" "آزمون امنیتی" "آزمون امنیتی" "آزمون امنیتی"
+messages: "" "" "7*7 $7*7 scriptalert(1)/script" "" "" "" "" "" "" ""
