@@ -109,7 +109,7 @@ test("forms posted seconds after page load are dropped silently", async () => {
 
 const goodPre = {
   fullName: "آرین رضایی", nationalId: "0499370899", birthDate: "1393/04/23", studentMobile: "09171234567",
-  address: "شیراز، بلوار ارم، کوچه ۵", motherMobile: "09171111111", fatherMobile: "09172222222",
+  address: "شیراز، بلوار ارم، کوچه ۵، پلاک ۱۲", motherName: "مریم احمدی", fatherName: "علی رضایی", motherMobile: "09171111112", fatherMobile: "09172222223",
   currentSchool: "دبستان نمونه", gpa: "19.5", discipline: "عالی", grade: "8", consent: true,
 };
 const postTo = (path, body, headers = {}) => fetch(base + path, { method: "POST", headers: { "Content-Type": "application/json", ...headers }, body: JSON.stringify(body) });

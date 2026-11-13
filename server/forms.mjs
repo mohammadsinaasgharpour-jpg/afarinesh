@@ -52,7 +52,7 @@ export const FORMS = {
       "",
       "◼ اطلاعات آموزشی",
       `مدرسه‌ی فعلی: ${r.currentSchool}`,
-      `معدل: ${toPersianDigits(r.gpa)}${r.gpaDescriptive ? ` (${r.gpaDescriptive})` : ""}`,
+      r.grade === "7" ? `نمره‌ی توصیفی کارنامه‌ی ششم: ${r.gpaDescriptive || r.gpa}` : `معدل پایه‌ی ${r.grade === "8" ? "هفتم" : "هشتم"}: ${toPersianDigits(r.gpa)}`,
       `انضباط: ${r.discipline}`,
       `پایه‌ی درخواستی: ${GRADE_LABEL[r.grade]}`,
       `نحوه‌ی آشنایی: ${or(r.referral)}`,

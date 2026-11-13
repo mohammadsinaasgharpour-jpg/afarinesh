@@ -64,13 +64,20 @@ export function isValidNationalId(value) {
   return sum < 2 ? check === sum : check === 11 - sum;
 }
 
+/** Solar Hijri leap year (33-year cycle; right for every year this form can see). */
+export const isJalaliLeap = (y) => [1, 5, 9, 13, 17, 22, 26, 30].includes(((y % 33) + 33) % 33);
+/** Days in a Solar Hijri month: 31 for the first six, 30 for the next five, 29 or 30 for Esfand. */
+export const jalaliMonthDays = (y, m) => (m <= 6 ? 31 : m <= 11 ? 30 : isJalaliLeap(y) ? 30 : 29);
+/** Birth years the pre-registration form offers (students entering grades 7 to 9). */
+export const BIRTH_YEARS = { min: 1380, max: 1400 };
+
 /** Solar Hijri date written as 1394/05/12 (Persian digits allowed); returns the normalised string or null. */
-export function normalizeJalaliDate(value, { minYear = 1380, maxYear = 1405 } = {}) {
+export function normalizeJalaliDate(value, { minYear = BIRTH_YEARS.min, maxYear = BIRTH_YEARS.max } = {}) {
   const m = toLatinDigits(value).trim().replace(/[-.\s]/g, "/").match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
   if (!m) return null;
   const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])];
   if (y < minYear || y > maxYear || mo < 1 || mo > 12 || d < 1) return null;
-  if (d > (mo <= 6 ? 31 : 30)) return null; // Esfand has 30 days only in leap years; accepted here
+  if (d > jalaliMonthDays(y, mo)) return null;
   return `${y}/${String(mo).padStart(2, "0")}/${String(d).padStart(2, "0")}`;
 }
 
@@ -85,6 +92,32 @@ export const isPersianName = (s) => PERSIAN_LETTERS.test(s) && !/(.)\1\1/.test(s
 export const isFullPersianName = (s) => isPersianName(s) && s.split(/[ ‌]+/).filter((w) => w.length >= 2).length >= 2;
 /** Free text (address, school, job, message): Persian letters present and no Latin letters. */
 export const isPersianText = (s) => /[ء-ی]/.test(s) && !/[A-Za-z]/.test(s);
+
+// Rows of the standard Persian keyboard: four neighbouring keys in a row are typed, not written.
+const KEY_ROWS = ["ضصثقفغعهخحجچ", "شسیبلاتنمکگ", "ظطزرذدپو"];
+const LETTERS_ONLY = (s) => s.replace(/[^ء-یپچژکگ]/g, "");
+/**
+ * Keyboard mashing and filler: a run of four neighbouring keys, one letter typed three times in a row,
+ * a long word with no vowel letter, or the same short chunk repeated.
+ */
+export function looksLikeGibberish(value) {
+  const s = scalar(value);
+  const letters = LETTERS_ONLY(s);
+  if (!letters) return false;
+  if (/(.)\1\1/.test(letters) || /(.{2,3})\1\1/.test(letters)) return true;
+  for (const row of KEY_ROWS) {
+    for (const line of [row, [...row].reverse().join("")]) {
+      for (let i = 0; i + 4 <= line.length; i++) if (letters.includes(line.slice(i, i + 4))) return true;
+    }
+  }
+  for (const word of s.split(/[\s‌،,.\-/]+/).map(LETTERS_ONLY)) {
+    if (word.length >= 7 && !/[اآویهئأؤ]/.test(word)) return true;
+    if (word.length >= 4 && /^(.{1,3})\1+$/.test(word)) return true;
+  }
+  return false;
+}
+/** A person's full name in Persian that is not keyboard filler. */
+export const isRealFullName = (s) => isFullPersianName(s) && !looksLikeGibberish(s);
 
 function result(errors, value) {
   return Object.keys(errors).length ? { ok: false, errors } : { ok: true, value };
@@ -147,30 +180,131 @@ export function validatePreRegistration(input) {
     consent: input?.consent === true || input?.consent === "on" || input?.consent === "true",
   };
 
-  if (v.fullName.length < LIMITS.nameMin || v.fullName.length > LIMITS.nameMax || !isFullPersianName(v.fullName)) e.fullName = NAME_ERR;
-  if (!isValidNationalId(v.nationalId)) e.nationalId = "این کد ملی معتبر نیست؛ ۱۰ رقم را دوباره بررسی کنید.";
-  if (!v.birthDate) e.birthDate = "روز، ماه و سال تولد را انتخاب کنید.";
-  if (!v.studentMobile) e.studentMobile = "شماره همراه باید ۱۱ رقم باشد و با ۰۹ شروع شود.";
-  if (v.address.length > LIMITS.addressMax) e.address = `نشانی حداکثر ${toPersianDigits(LIMITS.addressMax)} حرف است.`;
-  else if (!isPersianText(v.address)) e.address = "نشانی را به فارسی بنویسید.";
-  else if (v.address.length < 10 || v.address.split(/[\s،,]+/).filter(Boolean).length < 3) e.address = "نشانی را کامل بنویسید؛ مثلاً: شیراز، بلوار ارم، کوچه‌ی ۵، پلاک ۱۲.";
-  for (const k of ["motherName", "fatherName"]) {
-    if (v[k] && (v[k].length > LIMITS.shortMax || !isPersianName(v[k]))) e[k] = "نام را فقط با حروف فارسی بنویسید.";
+  if (!v.fullName) e.fullName = "نام و نام خانوادگی دانش‌آموز را بنویسید.";
+  else e.fullName = personNameError(v.fullName, "دانش‌آموز");
+  if (!v.nationalId) e.nationalId = "کد ملی دانش‌آموز را بنویسید.";
+  else if (v.nationalId.length !== 10) e.nationalId = `کد ملی ۱۰ رقم است؛ شما ${toPersianDigits(v.nationalId.length)} رقم نوشته‌اید.`;
+  else if (!isValidNationalId(v.nationalId)) e.nationalId = "این کد ملی معتبر نیست؛ رقم‌ها را از روی کارت ملی یا شناسنامه دوباره بررسی کنید.";
+  e.birthDate = birthDateError(input?.birthDate, v.birthDate);
+  if (!v.studentMobile) e.studentMobile = mobileError(input?.studentMobile, "دانش‌آموز");
+  e.address = addressError(v.address);
+
+  for (const [name, job, mobile, label] of [["motherName", "motherJob", "motherMobile", "مادر"], ["fatherName", "fatherJob", "fatherMobile", "پدر"]]) {
+    if (!v[name]) e[name] = `نام و نام خانوادگی ${label} را بنویسید.`;
+    else e[name] = personNameError(v[name], label);
+    if (!e[name] && v[name] === v.fullName) e[name] = `این نام دانش‌آموز است؛ نام و نام خانوادگی ${label} را بنویسید.`;
+    if (v[job]) e[job] = jobError(v[job], label);
+    if (!v[mobile]) e[mobile] = mobileError(input?.[mobile], label);
+    else if (v[mobile] === v.studentMobile) e[mobile] = `این همان شماره‌ی دانش‌آموز است؛ شماره‌ی همراه خودِ ${label} را بنویسید.`;
   }
-  for (const k of ["motherJob", "fatherJob"]) {
-    if (v[k] && (v[k].length > LIMITS.shortMax || !looksLikeName(v[k]) || !isPersianText(v[k]))) e[k] = FA_ERR;
+  if (!e.fatherName && !e.motherName && v.fatherName === v.motherName) e.fatherName = "نام پدر و مادر یکی نوشته شده است؛ لطفاً دقت کنید.";
+  if (!e.fatherMobile && !e.motherMobile && v.fatherMobile === v.motherMobile) e.fatherMobile = "این شماره را برای مادر نوشته‌اید؛ شماره‌ی همراه خودِ پدر را بنویسید.";
+
+  if (!v.grade) e.grade = "پایه‌ای را که فرزندتان در آن ثبت‌نام می‌کند انتخاب کنید.";
+  else e.grade = gradeAgeError(v.grade, v.birthDate);
+  e.currentSchool = schoolError(v.currentSchool);
+  if (v.grade === "7") {
+    // from primary school: the report card is descriptive only
+    // the report card is descriptive; it is also stored as the record's grade (the database needs one)
+    if (!v.gpaDescriptive) e.gpaDescriptive = "نمره‌ی توصیفی کارنامه‌ی پایه‌ی ششم را انتخاب کنید.";
+    v.gpa = v.gpaDescriptive;
+  } else if (v.grade) {
+    v.gpaDescriptive = "";
+    const gpa = Number(v.gpa);
+    const of = v.grade === "8" ? "هفتم" : "هشتم";
+    if (v.gpa === "") e.gpa = `معدل کارنامه‌ی پایه‌ی ${of} را بنویسید.`;
+    else if (!/^\d{1,2}(\.\d{1,2})?$/.test(v.gpa)) e.gpa = "معدل را فقط با عدد بنویسید؛ مثلاً ۱۹٫۵۰.";
+    else if (gpa > 20) e.gpa = "معدل بیشتر از ۲۰ نمی‌شود؛ لطفاً دقت کنید.";
+    else if (gpa < 10) e.gpa = "معدل قبولی دست‌کم ۱۰ است؛ عدد را دوباره بررسی کنید.";
   }
-  if (!v.motherMobile) e.motherMobile = "شماره همراه مادر باید ۱۱ رقم باشد و با ۰۹ شروع شود.";
-  if (!v.fatherMobile) e.fatherMobile = "شماره همراه پدر باید ۱۱ رقم باشد و با ۰۹ شروع شود.";
-  if (v.currentSchool.length < 2 || v.currentSchool.length > LIMITS.shortMax) e.currentSchool = "نام مدرسه‌ی فعلی را بنویسید.";
-  else if (!isPersianText(v.currentSchool)) e.currentSchool = "نام مدرسه را به فارسی بنویسید.";
-  const gpa = Number(v.gpa);
-  if (v.gpa === "" || !/^\d{1,2}(\.\d{1,2})?$/.test(v.gpa) || gpa < 0 || gpa > 20) e.gpa = "معدل را به عدد بین ۰ تا ۲۰ بنویسید؛ مثلاً ۱۹٫۵۰.";
   if (!v.discipline) e.discipline = "نمره‌ی انضباط را انتخاب کنید.";
-  if (!v.grade) e.grade = "پایه‌ی مورد نظر را انتخاب کنید.";
   if (!v.consent) e.consent = "برای ثبت، موافقت با استفاده از اطلاعات برای پذیرش لازم است.";
 
+  for (const k of Object.keys(e)) if (!e[k]) delete e[k];
   return result(e, v);
+}
+
+/* pre-registration: one specific message per field, so the visitor knows exactly what to fix */
+
+function personNameError(s, label) {
+  if (s.length > LIMITS.nameMax) return `نام حداکثر ${toPersianDigits(LIMITS.nameMax)} حرف است.`;
+  if (/[A-Za-z]/.test(s)) return "نام را با حروف فارسی بنویسید، نه انگلیسی.";
+  if (/[0-9۰-۹٠-٩]/.test(s)) return "نام نباید عدد داشته باشد.";
+  if (!PERSIAN_LETTERS.test(s)) return "نام را فقط با حروف فارسی بنویسید؛ بدون علامت و نماد.";
+  if (looksLikeGibberish(s)) return `این نام درست به نظر نمی‌رسد؛ نام واقعی ${label} را بنویسید.`;
+  const words = s.split(/[ ‌]+/).filter(Boolean);
+  if (words.length < 2) return `نام خانوادگی ${label} را هم بنویسید؛ مثلاً «${label === "مادر" ? "مریم احمدی" : label === "پدر" ? "علی رضایی" : "آرین رضایی"}».`;
+  if (words.some((w) => w.length < 2)) return "هر بخش نام دست‌کم دو حرف است؛ نام را کامل بنویسید.";
+  return "";
+}
+
+function mobileError(raw, label) {
+  const digits = toLatinDigits(raw).replace(/[\s\-()+]/g, "");
+  if (!digits) return `شماره‌ی همراه ${label} را بنویسید.`;
+  if (/\D/.test(digits)) return "شماره را فقط با عدد بنویسید.";
+  if (!/^(0098|98|0)?9/.test(digits)) return "شماره‌ی همراه با ۰۹ شروع می‌شود.";
+  if (/^09\d{9}$/.test(digits) || /^9\d{9}$/.test(digits)) return "این شماره ساختگی به نظر می‌رسد؛ شماره‌ی واقعی را بنویسید.";
+  return `شماره‌ی همراه ۱۱ رقم است؛ شما ${toPersianDigits(digits.length)} رقم نوشته‌اید.`;
+}
+
+function birthDateError(raw, normalized) {
+  if (normalized) return "";
+  const parts = toLatinDigits(raw).split("/").filter(Boolean);
+  if (parts.length < 3) return "روز، ماه و سال تولد را از سه فهرست انتخاب کنید.";
+  const [y, m, d] = parts.map(Number);
+  if (y < BIRTH_YEARS.min || y > BIRTH_YEARS.max) return "سال تولد برای دانش‌آموز دوره اول متوسطه درست نیست؛ لطفاً دقت کنید.";
+  const max = jalaliMonthDays(y, m);
+  if (d > max) return `تاریخ اشتباه است؛ ماه ${MONTHS[m - 1] ?? ""} ${toPersianDigits(max)} روز دارد. لطفاً دقت کنید.`;
+  return "تاریخ اشتباه است؛ لطفاً دقت کنید.";
+}
+export const MONTHS = ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"];
+
+// Entering grade g in Mehr 1406, a child is usually born in 1401 - g (grade 7: 1394); one year younger
+// or two years older is still accepted (early birthdays, a repeated year).
+function gradeAgeError(grade, birthDate) {
+  if (!birthDate) return "";
+  const y = Number(birthDate.slice(0, 4));
+  const born = 1401 - Number(grade);
+  if (y < born - 2 || y > born + 1) return `تاریخ تولد (${toPersianDigits(y)}) با پایه‌ی ${GRADE_LABEL[grade]} جور نیست؛ پایه یا تاریخ تولد را بررسی کنید.`;
+  return "";
+}
+
+const STREET = /(خیابان|خ\.|بلوار|بولوار|بزرگراه|اتوبان|میدان|جاده|شهرک|فلکه|چهارراه)/;
+const ALLEY = /(کوچه|ک\.|بن‌بست|بن بست|بنبست|کوی|نبش|فرعی)/;
+const PLATE = /(پلاک|پ\.)\s*[‌ی]?\s*[0-9۰-۹]/;
+function addressError(s) {
+  if (!s) return "نشانی محل سکونت را بنویسید.";
+  if (s.length > LIMITS.addressMax) return `نشانی حداکثر ${toPersianDigits(LIMITS.addressMax)} حرف است.`;
+  if (/[A-Za-z]/.test(s)) return "نشانی را به فارسی بنویسید، نه انگلیسی.";
+  if (looksLikeGibberish(s)) return "این نشانی درست به نظر نمی‌رسد؛ نشانی واقعی منزل را بنویسید.";
+  const plain = s.replace(/[‌،,.]/g, " ").replace(/\s+/g, " ").trim();
+  if (plain.includes("چنچنه خیابان نارون کوچه ی ۵ پلاک ۱۲") || /کوچه\s*ی?\s*[۵5]\s*پلاک\s*[۱1][۲2]\s*واحد\s*[۳3]/.test(plain)) return "این همان مثالِ فرم است؛ نشانی منزل خودتان را بنویسید.";
+  if (/نارون/.test(s) && /(۱۴|14)/.test(s) && !/پلاک/.test(s.replace(/کوچه[‌ی\s]*(۱۴|14)/, ""))) return "این نشانی خود مدرسه است؛ نشانی منزل را بنویسید.";
+  if (!/^(شیراز|شهر شیراز|صدرا|شهر صدرا)/.test(plain)) return "نشانی را با نام شهر شروع کنید؛ مثلاً «شیراز، ...».";
+  if (!STREET.test(s)) return "نام خیابان یا بلوار را بنویسید؛ مثلاً «خیابان زند».";
+  if (!ALLEY.test(s)) return "کوچه را بنویسید؛ مثلاً «کوچه‌ی ۸» (اگر کوچه ندارد، «نبش» یا «بن‌بست» را بنویسید).";
+  if (!PLATE.test(s)) return "پلاک را با عدد بنویسید؛ مثلاً «پلاک ۲۴».";
+  return "";
+}
+
+function jobError(s, label) {
+  if (s.length > LIMITS.shortMax) return `شغل حداکثر ${toPersianDigits(LIMITS.shortMax)} حرف است.`;
+  if (!looksLikeName(s)) return "شغل را بدون لینک بنویسید.";
+  if (/[A-Za-z]/.test(s)) return "شغل را به فارسی بنویسید، نه انگلیسی.";
+  if (/[0-9۰-۹٠-٩]/.test(s)) return "شغل نباید عدد داشته باشد.";
+  if (!isPersianText(s) || LETTERS_ONLY(s).length < 2) return `شغل ${label} را به فارسی بنویسید؛ مثلاً «معلم» یا «کارمند».`;
+  if (looksLikeGibberish(s)) return `این شغل درست به نظر نمی‌رسد؛ شغل واقعی ${label} را بنویسید.`;
+  return "";
+}
+
+function schoolError(s) {
+  if (!s) return "نام مدرسه‌ای را که فرزندتان امسال در آن درس می‌خواند بنویسید.";
+  if (s.length > LIMITS.shortMax) return `نام مدرسه حداکثر ${toPersianDigits(LIMITS.shortMax)} حرف است.`;
+  if (/[A-Za-z]/.test(s)) return "نام مدرسه را به فارسی بنویسید.";
+  if (/آفرینش/.test(s)) return "آفرینش مدرسه‌ای است که در آن ثبت‌نام می‌کنید؛ نام مدرسه‌ی فعلی فرزندتان را بنویسید.";
+  if (!isPersianText(s) || LETTERS_ONLY(s).length < 3) return "نام مدرسه را کامل بنویسید؛ مثلاً «دبستان شهید دستغیب».";
+  if (looksLikeGibberish(s)) return "این نام مدرسه درست به نظر نمی‌رسد؛ نام واقعی مدرسه را بنویسید.";
+  return "";
 }
 
 /** Job application (دعوت به همکاری): the same questions as the earlier Porsline form. */

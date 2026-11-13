@@ -35,6 +35,12 @@ for (const img of $$(".teacher-photo img", team)) {
   }
 }
 
+/* FAQ: opening one question closes the others (browsers without the details name attribute) */
+const faqItems = $$(".faq details");
+faqItems.forEach((d) => d.addEventListener("toggle", () => {
+  if (d.open) faqItems.forEach((o) => { if (o !== d && o.open) o.open = false; });
+}));
+
 const reveal = new IntersectionObserver((entries) => {
   for (const entry of entries) {
     if (!entry.isIntersecting) continue;
@@ -54,21 +60,8 @@ let done = false;
 try { done = sessionStorage.getItem("team-seen") === "1"; } catch {}
 const inDeck = () => track.classList.contains("is-deck");
 const stepLen = () => innerHeight * 0.14;
-const strip = document.createElement("div");
-strip.className = "team-strip";
-strip.setAttribute("aria-label", "رفتن به دبیر");
-strip.append(...cards.map((c, i) => {
-  const b = document.createElement("button");
-  b.type = "button";
-  b.setAttribute("aria-label", $(".teacher-name", c).textContent);
-  const img = document.createElement("img");
-  Object.assign(img, { src: $("img", c).getAttribute("src"), alt: "", loading: "lazy", decoding: "async", width: 44, height: 44 });
-  b.append(img);
-  b.addEventListener("click", () => goTo(i));
-  return b;
-}));
-team.after(strip);
-const stripButtons = [...strip.children];
+const phone = matchMedia("(max-width: 700px)");
+const inSwipe = () => track.classList.contains("is-swipe");
 
 const setIndex = (i) => {
   if (i === index) return;
@@ -78,11 +71,36 @@ const setIndex = (i) => {
     c.classList.toggle("is-near", Math.abs(n - i) <= 1);
     c.classList.toggle("is-before", n < i);
   });
-  stripButtons.forEach((b, n) => b.setAttribute("aria-current", String(n === i)));
-  stripButtons[i]?.scrollIntoView({ block: "nearest", inline: "center", behavior: "instant" });
   $("[data-team-now]").textContent = toPersianDigits(i + 1);
   $("[data-team-progress]").style.setProperty("--p", String((i + 1) / cards.length));
 };
+/* phones: swipe mode, no pinning */
+// the horizontal distance that centres card i in the row (from the rectangles, so it works right to left)
+const swipeTo = (i, smooth = true) => {
+  i = Math.max(0, Math.min(cards.length - 1, i));
+  const row = team.getBoundingClientRect();
+  const card = cards[i].getBoundingClientRect();
+  team.scrollBy({ left: card.left - row.left - (row.width - card.width) / 2, behavior: smooth && !reduceMotion.matches ? "smooth" : "instant" });
+  setIndex(i);
+};
+const nearestCard = () => {
+  const row = team.getBoundingClientRect();
+  const mid = row.left + row.width / 2;
+  let best = 0, dist = Infinity;
+  cards.forEach((c, n) => {
+    const r = c.getBoundingClientRect();
+    const d = Math.abs(r.left + r.width / 2 - mid);
+    if (d < dist) { dist = d; best = n; }
+  });
+  return best;
+};
+let swipeTick = false;
+team.addEventListener("scroll", () => {
+  if (!inSwipe() || swipeTick) return;
+  swipeTick = true;
+  requestAnimationFrame(() => { setIndex(nearestCard()); swipeTick = false; });
+}, { passive: true });
+
 const pinned = () => {
   const r = track.getBoundingClientRect();
   return inDeck() && !done && r.top <= 80 && r.bottom >= innerHeight - 4;
@@ -107,25 +125,32 @@ const syncDeck = () => {
   if (r.bottom < innerHeight * 0.6) { setIndex(cards.length - 1); finish(); return; }
   setIndex(Math.max(0, Math.min(cards.length - 1, Math.floor(-r.top / stepLen()))));
 };
+// on: one at a time (pinned deck on wide screens, swipe row on phones); off: the plain list
 const setDeck = (on) => {
-  if (on === inDeck()) return;
-  track.classList.toggle("is-deck", on);
-  track.classList.toggle("is-done", on && done);
+  const mode = !on ? "list" : phone.matches ? "swipe" : "deck";
+  const was = inDeck() ? "deck" : inSwipe() ? "swipe" : "list";
+  if (mode === was) return;
+  track.classList.toggle("is-deck", mode === "deck");
+  track.classList.toggle("is-swipe", mode === "swipe");
+  track.classList.toggle("is-done", mode === "deck" && done);
   bar.hidden = false;
   $("[data-team-prev]").hidden = $("[data-team-next]").hidden = !on;
   bar.querySelector(".team-count").hidden = bar.querySelector(".team-progress").hidden = !on;
   allBtn.textContent = on ? "نمایش همه" : "نمایش یکی‌یکی";
   index = -1;
-  if (on && done) setIndex(0);
-  else if (on) syncDeck();
+  if (mode === "swipe") { team.scrollLeft = 0; setIndex(0); }
+  else if (mode === "deck" && done) setIndex(0);
+  else if (mode === "deck") syncDeck();
   else cards.forEach((c) => c.classList.remove("is-current", "is-near", "is-before"));
 };
 const goTo = (i) => {
   i = Math.max(0, Math.min(cards.length - 1, i));
+  if (inSwipe()) return swipeTo(i);
   if (done) return setIndex(i);
   scrollTo({ top: scrollY + track.getBoundingClientRect().top + (i + 0.5) * stepLen(), behavior: "instant" });
   setIndex(i);
 };
+phone.addEventListener("change", () => { if (wantsDeck && !search.value.trim()) { setDeck(false); setDeck(true); } });
 track.style.setProperty("--steps", String(cards.length));
 // the scroll length is set in pixels from the same numbers the script counts with
 const sizeDeck = () => { track.style.setProperty("--deck-h", `${innerHeight}px`); track.style.setProperty("--step-len", `${stepLen()}px`); };
@@ -133,9 +158,9 @@ sizeDeck();
 addEventListener("resize", sizeDeck);
 $("[data-team-total]").textContent = toPersianDigits(cards.length);
 $("[data-team-prev]").addEventListener("click", () => goTo(index - 1));
-$("[data-team-next]").addEventListener("click", () => (index >= cards.length - 1 && !done ? $("#faq").scrollIntoView() : goTo(index + 1)));
+$("[data-team-next]").addEventListener("click", () => (index >= cards.length - 1 && inDeck() && !done ? $("#faq").scrollIntoView() : goTo(index + 1)));
 allBtn.addEventListener("click", () => {
-  wantsDeck = !inDeck();
+  wantsDeck = !(inDeck() || inSwipe());
   setDeck(wantsDeck);
   track.scrollIntoView();
 });

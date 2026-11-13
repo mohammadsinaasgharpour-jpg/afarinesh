@@ -15,8 +15,9 @@ const PAGES = {
       ["همراه دانش‌آموز", fa(v.studentMobile)], ["نشانی", v.address],
       ["مادر", [v.motherName, v.motherEducation, v.motherJob].filter(Boolean).join("، ")], ["همراه مادر", fa(v.motherMobile)],
       ["پدر", [v.fatherName, v.fatherEducation, v.fatherJob].filter(Boolean).join("، ")], ["همراه پدر", fa(v.fatherMobile)],
-      ["مدرسه‌ی فعلی", v.currentSchool], ["معدل", fa(v.gpa) + (v.gpaDescriptive ? ` (${v.gpaDescriptive})` : "")],
-      ["انضباط", v.discipline], ["پایه", GRADE_LABEL[v.grade]], ["نحوه‌ی آشنایی", v.referral],
+      ["پایه", GRADE_LABEL[v.grade]], ["مدرسه‌ی فعلی", v.currentSchool],
+      v.grade === "7" ? ["نمره‌ی توصیفی", v.gpaDescriptive] : ["معدل", fa(v.gpa)],
+      ["انضباط", v.discipline], ["نحوه‌ی آشنایی", v.referral],
     ],
   },
   career: {
@@ -28,3 +29,21 @@ const PAGES = {
 
 // personal identifiers (national ID, address) are never kept as a browser draft
 createFormController({ form, ...PAGES[form.dataset.form] });
+
+// pre-registration: the report card asked for depends on the grade applied for
+// (grade 7 comes from primary school, whose report card is descriptive only)
+const gradeInputs = form.querySelectorAll('input[name="grade"]');
+const gpaField = $("[data-gpa-field]", form);
+const descField = $("[data-gpa-desc-field]", form);
+if (gradeInputs.length && gpaField && descField) {
+  const gpaLabel = $("[data-gpa-label]", form);
+  const sync = () => {
+    const g = form.querySelector('input[name="grade"]:checked')?.value;
+    gpaField.hidden = !g || g === "7";
+    descField.hidden = g !== "7";
+    if (gpaLabel && g && g !== "7") gpaLabel.textContent = `معدل کارنامه‌ی پایه‌ی ${g === "8" ? "هفتم" : "هشتم"}`;
+  };
+  form.addEventListener("change", (e) => { if (e.target.name === "grade") sync(); });
+  form.addEventListener("reset", () => setTimeout(sync, 0));
+  sync();
+}

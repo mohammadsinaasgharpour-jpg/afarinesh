@@ -31,7 +31,8 @@ test("no horizontal scrolling", async ({ page }) => {
   expect(overflow).toBeLessThanOrEqual(0);
 });
 
-test("teachers come one at a time while the section is pinned, in the school's order", async ({ page }) => {
+test("teachers come one at a time while the section is pinned, in the school's order", async ({ page, isMobile }) => {
+  test.skip(isMobile, "phones swipe instead of pinning");
   await page.goto("/");
   const names = page.locator(".teacher .teacher-name");
   await expect(names).toHaveCount(29);
@@ -57,15 +58,15 @@ test("teachers come one at a time while the section is pinned, in the school's o
   await expect(current).toHaveText("شهرام صدری");
   await page.keyboard.press("ArrowUp");
   await expect(current).toHaveText("کریم کشاورز");
-  // the faces strip jumps straight to a teacher
-  await page.locator(".team-strip button").nth(10).click();
-  await expect(current).toHaveText("فرهاد نادری");
+  // the strip of small faces is gone
+  await expect(page.locator(".team-strip")).toHaveCount(0);
   await page.locator("[data-team-all]").click();
   await expect(page.locator("[data-team-track]")).not.toHaveClass(/is-deck/);
   await expect(page.locator(".teacher")).toHaveCount(29);
 });
 
-test("after the last teacher the list stops pinning, without moving the page", async ({ page }) => {
+test("after the last teacher the list stops pinning, without moving the page", async ({ page, isMobile }) => {
+  test.skip(isMobile, "phones swipe instead of pinning");
   await page.goto("/");
   const track = page.locator("[data-team-track]");
   await page.evaluate(() => { const t = document.querySelector("[data-team-track]"); scrollTo({ top: t.offsetTop + t.offsetHeight - 200, behavior: "instant" }); });
@@ -97,8 +98,38 @@ test("teacher search really hides non-matching teachers", async ({ page }) => {
   await expect(page.locator("[data-team-empty]")).toBeVisible();
   await page.locator("[data-team-reset]").click();
   // with the search cleared the section goes back to one teacher at a time
-  await expect(page.locator("[data-team-track]")).toHaveClass(/is-deck/);
+  await expect(page.locator("[data-team-track]")).toHaveClass(/is-deck|is-swipe/);
   await expect(page.locator(".teacher.is-current")).toHaveCount(1);
+});
+
+test("phones: teachers are swiped one at a time, starting with the founder, each card whole", async ({ page, isMobile }) => {
+  test.skip(!isMobile, "swipe mode is for phones");
+  await page.goto("/");
+  // the page opens at the top, not inside the teachers section
+  expect(await page.evaluate(() => scrollY)).toBe(0);
+  const track = page.locator("[data-team-track]");
+  await expect(track).toHaveClass(/is-swipe/);
+  await track.scrollIntoViewIfNeeded();
+  const current = page.locator(".teacher.is-current .teacher-name");
+  await expect(current).toHaveText("فرشید فلاحی");
+  await expect(page.locator("[data-team-now]")).toHaveText("۱");
+  await page.locator("[data-team-next]").click();
+  await expect(current).toHaveText("عبدالرحمان یدالهی");
+  await page.locator("[data-team-next]").click();
+  await expect(current).toHaveText("سینا عباسلو");
+  // the card on screen is the one counted, its photo and name belong together, and it fits the screen width
+  const fits = await page.evaluate(() => {
+    const row = document.querySelector("[data-team]").getBoundingClientRect();
+    const c = document.querySelector(".teacher.is-current");
+    const r = c.getBoundingClientRect();
+    return { inside: r.left >= row.left - 2 && r.right <= row.right + 2, alt: c.querySelector("img").alt };
+  });
+  expect(fits.inside).toBe(true);
+  expect(fits.alt).toContain("سینا عباسلو");
+  await page.locator("[data-team-prev]").click();
+  await expect(current).toHaveText("عبدالرحمان یدالهی");
+  // the page itself never scrolls sideways
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0);
 });
 
 test("FAQ has no sports-hall question and opens and closes", async ({ page }) => {
@@ -110,6 +141,20 @@ test("FAQ has no sports-hall question and opens and closes", async ({ page }) =>
   await expect(first).toHaveAttribute("open", "");
   await first.locator("summary").click();
   await expect(first).not.toHaveAttribute("open", "");
+  // one question open at a time, and the open one is blue
+  const second = page.locator(".faq details").nth(1);
+  await first.locator("summary").click();
+  await second.locator("summary").click();
+  await expect(second).toHaveAttribute("open", "");
+  await expect(first).not.toHaveAttribute("open", "");
+  await page.mouse.move(0, 0);
+  await expect.poll(() => second.locator("summary").evaluate((el) => getComputedStyle(el).backgroundColor)).toBe("rgb(22, 120, 156)");
+});
+
+test("elective classes: sport lists only futsal and chess", async ({ page }) => {
+  await page.goto("/");
+  const sport = page.locator(".c-sport .chips li");
+  await expect(sport).toHaveText(["فوتسال", "شطرنج"]);
 });
 
 test("mobile menu opens and closes", async ({ page, isMobile }) => {
@@ -236,7 +281,8 @@ test("Instagram button fades while over text and stays on top", async ({ page })
   await page.goto("/");
   const fab = page.locator(".insta-fab");
   const box = await fab.boundingBox();
-  expect(box.width).toBeGreaterThanOrEqual(page.viewportSize().width < 520 ? 64 : 58);
+  expect(box.width).toBeGreaterThanOrEqual(44);
+  expect(box.width).toBeLessThanOrEqual(50);
   for (const y of [0, 600, 1400, 2600]) {
     await page.evaluate((top) => scrollTo(0, top), y);
     await page.waitForTimeout(120);
@@ -296,8 +342,18 @@ test("pre-registration goes step by step, validates each step, reviews and sends
     await route.fulfill({ status: 201, contentType: "application/json", body: '{"ok":true,"id":"abcdef12-0000"}' });
   });
   await page.goto("/pre-registration");
+  await expect(page.locator(".conditions")).toContainText("کارنامه‌ی پایه‌ی هشتم");
   const next = () => page.locator("[data-step-next]").click();
   const error = page.locator(".step.is-active [data-error]").first();
+  // lists open in a sheet drawn by the site, not the phone's own picker
+  const pick = async (trigger, option) => {
+    await trigger.click();
+    const sheet = page.locator(".sheet[open]");
+    await expect(sheet).toBeVisible();
+    await sheet.getByRole("option", { name: option, exact: true }).click();
+    await expect(sheet).toBeHidden();
+  };
+  const picker = (sel) => page.locator(`${sel} + .picker`);
   await expect(page.locator("[data-step-label]")).toHaveText("مرحله‌ی ۱ از ۱۰");
   await expect(page.locator("#p-nationalId")).toBeHidden();
   await next();
@@ -310,28 +366,49 @@ test("pre-registration goes step by step, validates each step, reviews and sends
   await page.fill("#p-nationalId", "۰۴۹۹۳۷۰۸۹۹");
   await next();
   await next();
-  await expect(error).toContainText("تولد");
-  await page.selectOption('[data-date-part="day"]', "23");
-  await page.selectOption('[data-date-part="month"]', "04");
-  await page.selectOption('[data-date-part="year"]', "1393");
+  await expect(error).toContainText("روز، ماه و سال");
+  await pick(picker('[data-date-part="month"]'), "مهر");
+  await pick(picker('[data-date-part="year"]'), "۱۳۹۳");
+  // Mehr has 30 days: day 31 cannot be picked
+  await picker('[data-date-part="day"]').click();
+  await expect(page.locator(".sheet[open]").getByRole("option", { name: "۳۱", exact: true })).toBeDisabled();
+  await page.locator(".sheet[open]").getByRole("option", { name: "۲۳", exact: true }).click();
   await next();
   await page.fill("#p-studentMobile", "09171234567");
   await next();
   await page.fill("#p-address", "Shiraz, Eram");
   await next();
   await expect(error).toContainText("فارسی");
+  await page.fill("#p-address", "بلوار ارم، کوچه ۵، پلاک ۱۲");
+  await next();
+  await expect(error).toContainText("شهر");
   await page.fill("#p-address", "شیراز، بلوار ارم، کوچه ۵، پلاک ۱۲");
   await next();
-  await page.selectOption("#p-motherEducation", "لیسانس");
+  await page.fill("#p-motherName", "مریم");
+  await page.fill("#p-motherMobile", "09171234567");
+  await next();
+  await expect(page.locator("#p-motherName ~ [data-error]")).toContainText("نام خانوادگی");
+  await expect(page.locator("#p-motherMobile ~ [data-error]")).toContainText("دانش‌آموز");
+  await page.fill("#p-motherName", "مریم احمدی");
+  await pick(picker("#p-motherEducation"), "لیسانس");
   await page.fill("#p-motherMobile", "09171111112");
   await next();
+  await page.fill("#p-fatherName", "علی رضایی");
   await page.fill("#p-fatherMobile", "۰۹۱۷۲۲۲۲۲۲۳");
   await next();
-  await page.fill("#p-currentSchool", "دبستان نمونه");
+  // grade first; it decides whether a number or a descriptive grade is asked for
+  await page.locator(".step.is-active .segmented label", { hasText: "هفتم" }).click();
+  await expect(page.locator("#p-gpa")).toBeHidden();
+  await expect(picker("#p-gpaDescriptive")).toBeVisible();
+  await page.locator(".step.is-active .segmented label", { hasText: "هشتم" }).click();
+  await expect(page.locator("[data-gpa-label]")).toHaveText("معدل کارنامه‌ی پایه‌ی هفتم");
+  await page.fill("#p-currentSchool", "دبیرستان آفرینش");
   await page.fill("#p-gpa", "۱۹٫۵");
   await next();
+  await expect(page.locator("#p-currentSchool ~ [data-error]")).toContainText("آفرینش");
+  await page.fill("#p-currentSchool", "دبیرستان شهید دستغیب");
+  await next();
   await page.locator(".step.is-active .segmented label", { hasText: "عالی" }).click();
-  await page.locator(".step.is-active .segmented label", { hasText: "هشتم" }).click();
   await next();
   await page.locator(".check input").check();
   await page.locator("[data-submit]").click();
@@ -340,7 +417,7 @@ test("pre-registration goes step by step, validates each step, reviews and sends
   await expect(dialog).toContainText("۰۴۹۹۳۷۰۸۹۹");
   await page.locator("[data-confirm-yes]").click();
   await expect(page.locator(".toast.ok")).toContainText("abcdef12");
-  expect(sent).toMatchObject({ nationalId: "0499370899", birthDate: "1393/04/23", fatherMobile: "09172222223", gpa: "19.5", grade: "8", motherEducation: "لیسانس", consent: true });
+  expect(sent).toMatchObject({ nationalId: "0499370899", birthDate: "1393/07/23", motherName: "مریم احمدی", fatherMobile: "09172222223", gpa: "19.5", grade: "8", motherEducation: "لیسانس", consent: true });
 });
 
 test("careers page sends a job application", async ({ page }) => {

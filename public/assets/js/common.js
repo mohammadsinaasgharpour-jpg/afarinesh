@@ -1,5 +1,5 @@
 // Shared by every page: header, theme, menu, Instagram button, image protection, toasts and forms.
-import { toPersianDigits } from "./validate.js";
+import { toPersianDigits, jalaliMonthDays } from "./validate.js";
 
 export const $ = (sel, root = document) => root.querySelector(sel);
 export const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
@@ -179,14 +179,22 @@ export function createFormController({ form, validate, review, success, draftKey
   };
   const errorsNow = () => { const r = validate(read()); return r.ok ? {} : r.errors; };
 
-  /* a date picked from three lists (day, month, year) */
+  /* a date picked from three lists (day, month, year); days a month does not have cannot be picked */
   for (const box of $$("[data-date]", form)) {
     const target = $('input[type="hidden"]', box.closest(".field"));
-    box.addEventListener("change", () => {
-      const [d, m, y] = ["day", "month", "year"].map((k) => $(`[data-date-part="${k}"]`, box).value);
+    const part = (k) => $(`[data-date-part="${k}"]`, box);
+    const sync = () => {
+      const [d, m, y] = ["day", "month", "year"].map((k) => part(k).value);
+      const max = m ? jalaliMonthDays(Number(y) || 1399, Number(m)) : 31;
+      for (const o of part("day").options) if (o.value) o.disabled = Number(o.value) > max;
       target.value = d && m && y ? `${y}/${m}/${d}` : "";
-    });
+      // a whole date that cannot exist is reported at once, not only when the step is left
+      if (d && m && y) showErrors(errorsNow(), [target.name]);
+    };
+    box.addEventListener("change", sync);
+    form.addEventListener("reset", () => setTimeout(sync, 0));
   }
+  enhanceSelects(form);
 
   form.addEventListener("input", (e) => {
     const counter = $(`[data-count-for="${e.target.name}"]`, form);
@@ -311,4 +319,89 @@ export function createFormController({ form, validate, review, success, draftKey
       submitLabel.textContent = idleLabel;
     }
   });
+}
+
+/**
+ * Lists drawn by the site instead of the phone's own picker (which looks different on every device):
+ * each <select> stays in the form and keeps the value; a button shows the choice and opens a sheet in
+ * the site's colours. Options disabled in the native list (days a month does not have) are disabled here.
+ */
+let sheet;
+function getSheet() {
+  if (sheet) return sheet;
+  sheet = document.createElement("dialog");
+  sheet.className = "sheet";
+  sheet.innerHTML = `<div class="sheet-head"><h3 class="sheet-title"></h3><button type="button" class="icon-btn sheet-close" aria-label="بستن"><svg class="ic" aria-hidden="true"><use href="#i-close"/></svg></button></div><div class="sheet-list" role="listbox"></div>`;
+  $(".sheet-close", sheet).addEventListener("click", () => sheet.close());
+  // a tap on the dimmed backdrop closes the sheet
+  sheet.addEventListener("click", (e) => { if (e.target === sheet) sheet.close(); });
+  document.body.append(sheet);
+  return sheet;
+}
+
+export function enhanceSelects(root) {
+  for (const select of $$("select", root)) {
+    if (select.dataset.enhanced) continue;
+    select.dataset.enhanced = "1";
+    const field = select.closest(".field");
+    const own = select.id ? $(`label[for="${select.id}"]`) : null;
+    const label = (select.getAttribute("aria-label") || own?.textContent || field?.querySelector("legend")?.textContent || "").replace("*", "").trim();
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "picker";
+    btn.setAttribute("aria-haspopup", "dialog");
+    if (select.dataset.datePart) btn.dataset.datePart = select.dataset.datePart;
+    const text = document.createElement("span");
+    btn.append(text);
+    btn.insertAdjacentHTML("beforeend", '<svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>');
+    select.classList.add("native-select");
+    select.tabIndex = -1;
+    select.setAttribute("aria-hidden", "true");
+    select.after(btn);
+    const sync = () => {
+      const o = select.selectedOptions[0];
+      text.textContent = o?.textContent || "";
+      btn.classList.toggle("is-empty", !select.value);
+      btn.setAttribute("aria-label", `${label}: ${select.value ? o.textContent : "انتخاب نشده"}`);
+      btn.setAttribute("aria-invalid", select.getAttribute("aria-invalid") || "false");
+    };
+    // errors are written on the select; the button mirrors them
+    new MutationObserver(sync).observe(select, { attributes: true, attributeFilter: ["aria-invalid"] });
+    select.addEventListener("change", sync);
+    select.form?.addEventListener("reset", () => setTimeout(sync, 0));
+    select.addEventListener("focus", () => btn.focus());
+    btn.addEventListener("click", () => {
+      const s = getSheet();
+      $(".sheet-title", s).textContent = label;
+      const list = $(".sheet-list", s);
+      list.setAttribute("aria-label", label);
+      list.classList.toggle("is-grid", select.options.length > 14);
+      list.replaceChildren(...[...select.options].filter((o) => o.value).map((o) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.setAttribute("role", "option");
+        b.textContent = o.textContent;
+        b.disabled = o.disabled;
+        b.setAttribute("aria-selected", String(o.selected && !!select.value));
+        b.addEventListener("click", () => {
+          select.value = o.value;
+          select.dispatchEvent(new Event("change", { bubbles: true }));
+          s.close();
+          btn.focus({ preventScroll: true });
+        });
+        return b;
+      }));
+      // closed with Escape or the backdrop: focus goes back to the button, unless the visitor has
+      // already moved on to another field (the close event arrives a moment later)
+      s.addEventListener("close", () => {
+        const a = document.activeElement;
+        if (!a || a === document.body || s.contains(a)) btn.focus({ preventScroll: true });
+      }, { once: true });
+      s.showModal();
+      const current = $('[aria-selected="true"]', list) || $("button:not(:disabled)", list);
+      current?.focus({ preventScroll: true });
+      current?.scrollIntoView({ block: "center" });
+    });
+    sync();
+  }
 }

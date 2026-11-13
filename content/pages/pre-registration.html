@@ -47,8 +47,9 @@
       <div class="conditions">
         <h2 class="h3">شرایط ثبت‌نام اولیه</h2>
         <ol>
-          <li><b>پایه‌ی هفتم:</b> رتبه‌ی «خیلی خوب» در انضباط و همه‌ی دروس در کارنامه‌ی پایه‌های پنجم و ششم</li>
-          <li><b>پایه‌های هشتم و نهم:</b> رتبه‌ی «عالی» در انضباط و معدل دست‌کم ۱۸ در کارنامه‌ی نهایی پایه‌های هفتم و هشتم</li>
+          <li><b>ورود به پایه‌ی هفتم (از ششم):</b> نمره‌ی توصیفی «خیلی خوب» در انضباط و همه‌ی دروس کارنامه‌ی پایه‌ی ششم</li>
+          <li><b>ورود به پایه‌ی هشتم:</b> انضباط «عالی» و معدل دست‌کم ۱۸ در کارنامه‌ی پایه‌ی هفتم</li>
+          <li><b>ورود به پایه‌ی نهم:</b> انضباط «عالی» و معدل دست‌کم ۱۸ در کارنامه‌ی پایه‌ی هشتم</li>
           <li>کسب امتیاز لازم در مصاحبه‌ی حضوری</li>
         </ol>
       </div>
@@ -63,7 +64,7 @@
           <p class="step-count" data-step-label></p>
           <div class="step-progress" aria-hidden="true"><span data-step-progress></span></div>
         </div>
-        <p class="required-note">موارد ستاره‌دار <span aria-hidden="true">*</span> لازم‌اند. نام‌ها و نشانی را به فارسی بنویسید.</p>
+        <p class="required-note">موارد ستاره‌دار <span aria-hidden="true">*</span> لازم‌اند. نام‌ها، شغل‌ها و نشانی را به فارسی بنویسید.</p>
 
         <div class="step" data-step>
           <div class="field">
@@ -117,7 +118,7 @@
           <div class="field">
             <label for="p-address">نشانی محل سکونت <span class="req" aria-hidden="true">*</span></label>
             <textarea id="p-address" name="address" rows="3" autocomplete="street-address" required maxlength="250" lang="fa"></textarea>
-            <p class="example">مثال: شیراز، چنچنه، خیابان نارون، کوچه‌ی ۵، پلاک ۱۲، واحد ۳</p>
+            <p class="example">به این ترتیب بنویسید: شهر، خیابان، کوچه، پلاک، واحد. مثلاً: شیراز، خیابان زند، کوچه‌ی ۸، پلاک ۲۴، واحد ۲</p>
             <p class="hint" data-error></p>
           </div>
         </div>
@@ -125,12 +126,12 @@
         <fieldset class="step group" data-step>
           <legend>اطلاعات مادر</legend>
           <div class="field">
-            <label for="p-motherName">نام مادر</label>
-            <input id="p-motherName" name="motherName" autocomplete="off" maxlength="80" lang="fa">
+            <label for="p-motherName">نام و نام خانوادگی مادر <span class="req" aria-hidden="true">*</span></label>
+            <input id="p-motherName" name="motherName" autocomplete="off" required maxlength="60" lang="fa" placeholder="مثلاً: مریم احمدی">
             <p class="hint" data-error></p>
           </div>
           <div class="field">
-            <label for="p-motherEducation">میزان تحصیلات مادر</label>
+            <label for="p-motherEducation">میزان تحصیلات مادر <span class="optional">(اختیاری)</span></label>
             <select id="p-motherEducation" name="motherEducation">
               <option value="">انتخاب کنید</option>
               <option>سیکل</option><option>دیپلم</option><option>فوق دیپلم</option><option>لیسانس</option><option>فوق لیسانس</option><option>دکتری</option><option>فوق دکتری</option>
@@ -138,7 +139,7 @@
             <p class="hint" data-error></p>
           </div>
           <div class="field">
-            <label for="p-motherJob">شغل مادر</label>
+            <label for="p-motherJob">شغل مادر <span class="optional">(اختیاری)</span></label>
             <input id="p-motherJob" name="motherJob" autocomplete="off" maxlength="80" lang="fa">
             <p class="hint" data-error></p>
           </div>
@@ -152,12 +153,12 @@
         <fieldset class="step group" data-step>
           <legend>اطلاعات پدر</legend>
           <div class="field">
-            <label for="p-fatherName">نام پدر</label>
-            <input id="p-fatherName" name="fatherName" autocomplete="off" maxlength="80" lang="fa">
+            <label for="p-fatherName">نام و نام خانوادگی پدر <span class="req" aria-hidden="true">*</span></label>
+            <input id="p-fatherName" name="fatherName" autocomplete="off" required maxlength="60" lang="fa" placeholder="مثلاً: علی رضایی">
             <p class="hint" data-error></p>
           </div>
           <div class="field">
-            <label for="p-fatherEducation">میزان تحصیلات پدر</label>
+            <label for="p-fatherEducation">میزان تحصیلات پدر <span class="optional">(اختیاری)</span></label>
             <select id="p-fatherEducation" name="fatherEducation">
               <option value="">انتخاب کنید</option>
               <option>سیکل</option><option>دیپلم</option><option>فوق دیپلم</option><option>لیسانس</option><option>فوق لیسانس</option><option>دکتری</option><option>فوق دکتری</option>
@@ -165,7 +166,7 @@
             <p class="hint" data-error></p>
           </div>
           <div class="field">
-            <label for="p-fatherJob">شغل پدر</label>
+            <label for="p-fatherJob">شغل پدر <span class="optional">(اختیاری)</span></label>
             <input id="p-fatherJob" name="fatherJob" autocomplete="off" maxlength="80" lang="fa">
             <p class="hint" data-error></p>
           </div>
@@ -177,19 +178,30 @@
         </fieldset>
 
         <fieldset class="step group" data-step>
-          <legend>مدرسه و معدل</legend>
+          <legend>پایه و کارنامه</legend>
+          <fieldset class="field">
+            <legend>متقاضی ثبت‌نام در پایه <span class="req" aria-hidden="true">*</span></legend>
+            <div class="segmented">
+              <label><input type="radio" name="grade" value="7" required><span>هفتم</span></label>
+              <label><input type="radio" name="grade" value="8"><span>هشتم</span></label>
+              <label><input type="radio" name="grade" value="9"><span>نهم</span></label>
+            </div>
+            <p class="example">پایه‌ای که فرزندتان سال تحصیلی ۱۴۰۶-۱۴۰۷ در آن درس می‌خواند.</p>
+            <p class="hint" data-error></p>
+          </fieldset>
           <div class="field">
             <label for="p-currentSchool">نام مدرسه‌ی فعلی <span class="req" aria-hidden="true">*</span></label>
-            <input id="p-currentSchool" name="currentSchool" autocomplete="off" required maxlength="80" lang="fa">
+            <input id="p-currentSchool" name="currentSchool" autocomplete="off" required maxlength="80" lang="fa" placeholder="مثلاً: دبستان شهید دستغیب">
             <p class="hint" data-error></p>
           </div>
-          <div class="field">
-            <label for="p-gpa">معدل <span class="req" aria-hidden="true">*</span></label>
-            <input id="p-gpa" name="gpa" inputmode="decimal" dir="ltr" autocomplete="off" required maxlength="5" placeholder="۱۹٫۵۰">
+          <div class="field" data-gpa-field>
+            <label for="p-gpa"><span data-gpa-label>معدل</span> <span class="req" aria-hidden="true">*</span></label>
+            <input id="p-gpa" name="gpa" inputmode="decimal" dir="ltr" autocomplete="off" maxlength="5" placeholder="۱۹٫۵۰">
+            <p class="example">معدل کل کارنامه‌ی پایان سال، بین ۱۰ تا ۲۰.</p>
             <p class="hint" data-error></p>
           </div>
-          <div class="field">
-            <label for="p-gpaDescriptive">نمره‌ی توصیفی معدل</label>
+          <div class="field" data-gpa-desc-field hidden>
+            <label for="p-gpaDescriptive">نمره‌ی توصیفی کارنامه‌ی پایه‌ی ششم <span class="req" aria-hidden="true">*</span></label>
             <select id="p-gpaDescriptive" name="gpaDescriptive">
               <option value="">انتخاب کنید</option>
               <option>خیلی خوب</option><option>خوب</option><option>قابل قبول</option><option>نیاز به تلاش بیشتر</option>
@@ -199,9 +211,9 @@
         </fieldset>
 
         <fieldset class="step group" data-step>
-          <legend>انضباط و پایه</legend>
+          <legend>انضباط و آشنایی با مدرسه</legend>
           <fieldset class="field">
-            <legend>نمره‌ی انضباط <span class="req" aria-hidden="true">*</span></legend>
+            <legend>نمره‌ی انضباط در آخرین کارنامه <span class="req" aria-hidden="true">*</span></legend>
             <div class="segmented seg-4">
               <label><input type="radio" name="discipline" value="عالی" required><span>عالی</span></label>
               <label><input type="radio" name="discipline" value="خیلی خوب"><span>خیلی خوب</span></label>
@@ -210,17 +222,8 @@
             </div>
             <p class="hint" data-error></p>
           </fieldset>
-          <fieldset class="field">
-            <legend>متقاضی ثبت‌نام در پایه <span class="req" aria-hidden="true">*</span></legend>
-            <div class="segmented">
-              <label><input type="radio" name="grade" value="7" required><span>هفتم</span></label>
-              <label><input type="radio" name="grade" value="8"><span>هشتم</span></label>
-              <label><input type="radio" name="grade" value="9"><span>نهم</span></label>
-            </div>
-            <p class="hint" data-error></p>
-          </fieldset>
           <div class="field">
-            <label for="p-referral">نحوه‌ی آشنایی با مدرسه</label>
+            <label for="p-referral">نحوه‌ی آشنایی با مدرسه <span class="optional">(اختیاری)</span></label>
             <select id="p-referral" name="referral">
               <option value="">انتخاب کنید</option>
               <option>جستجو در اینترنت</option><option>دبیران</option><option>مسئولین مدارس</option><option>دوستان و آشنایان</option>

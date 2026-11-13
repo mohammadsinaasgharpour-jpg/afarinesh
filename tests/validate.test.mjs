@@ -60,7 +60,7 @@ test("phone numbers: mobile or landline with area code", () => {
 
 const goodPre = {
   fullName: "آرین رضایی", nationalId: "0499370899", birthDate: "1393/04/23", studentMobile: "09171234567",
-  address: "شیراز، بلوار ارم، کوچه ۵", motherMobile: "09171111111", fatherMobile: "09172222222",
+  address: "شیراز، بلوار ارم، کوچه ۵، پلاک ۱۲", motherName: "مریم احمدی", fatherName: "علی رضایی", motherMobile: "09171111112", fatherMobile: "09172222223",
   currentSchool: "دبستان نمونه", gpa: "19.5", discipline: "عالی", grade: "8", consent: true,
 };
 
@@ -73,7 +73,7 @@ test("pre-registration: a complete form passes and optional fields stay optional
 test("pre-registration: every required field is checked", () => {
   const r = validatePreRegistration({});
   assert.equal(r.ok, false);
-  for (const k of ["fullName", "nationalId", "birthDate", "studentMobile", "address", "motherMobile", "fatherMobile", "currentSchool", "gpa", "discipline", "grade", "consent"]) assert.ok(r.errors[k], k);
+  for (const k of ["fullName", "nationalId", "birthDate", "studentMobile", "address", "motherName", "fatherName", "motherMobile", "fatherMobile", "currentSchool", "discipline", "grade", "consent"]) assert.ok(r.errors[k], k);
 });
 
 test("pre-registration: out-of-list choices and impossible GPAs are rejected", () => {
@@ -81,6 +81,49 @@ test("pre-registration: out-of-list choices and impossible GPAs are rejected", (
   assert.equal(r.ok, false);
   assert.ok(r.errors.gpa && r.errors.discipline);
   assert.equal(validatePreRegistration({ ...goodPre, motherEducation: "<script>" }).value.motherEducation, "");
+});
+
+test("pre-registration: the report card asked for follows the grade", () => {
+  const seventh = { ...goodPre, grade: "7", birthDate: "1394/02/10", gpa: "" };
+  assert.ok(validatePreRegistration(seventh).errors.gpaDescriptive, "grade 7 needs the descriptive grade");
+  const ok7 = validatePreRegistration({ ...seventh, gpaDescriptive: "خیلی خوب" });
+  assert.equal(ok7.ok, true);
+  assert.equal(ok7.value.gpa, "خیلی خوب");
+  assert.match(validatePreRegistration({ ...goodPre, gpa: "" }).errors.gpa, /هفتم/);
+  assert.match(validatePreRegistration({ ...goodPre, grade: "9", birthDate: "1392/01/01", gpa: "" }).errors.gpa, /هشتم/);
+  assert.match(validatePreRegistration({ ...goodPre, gpa: "25" }).errors.gpa, /۲۰/);
+});
+
+test("pre-registration: impossible dates and ages are named", () => {
+  assert.match(validatePreRegistration({ ...goodPre, birthDate: "1393/07/31" }).errors.birthDate, /مهر ۳۰ روز/);
+  assert.match(validatePreRegistration({ ...goodPre, birthDate: "1394/12/30" }).errors.birthDate, /اسفند ۲۹ روز/);
+  assert.equal(validatePreRegistration({ ...goodPre, birthDate: "1395/12/30", grade: "7", gpaDescriptive: "خوب" }).errors?.birthDate, undefined, "1395 is a leap year");
+  assert.ok(validatePreRegistration({ ...goodPre, birthDate: "1398/01/01" }).errors.grade, "too young for grade 8");
+});
+
+test("pre-registration: address must be a real one, in order", () => {
+  const err = (address) => validatePreRegistration({ ...goodPre, address }).errors?.address;
+  assert.equal(err("شیراز، خیابان زند، کوچه‌ی ۸، پلاک ۲۴، واحد ۲"), undefined);
+  assert.match(err("خیابان زند کوچه ۸ پلاک ۲۴"), /شهر/);
+  assert.match(err("شیراز، کوچه ۸، پلاک ۲۴"), /خیابان/);
+  assert.match(err("شیراز، خیابان زند، پلاک ۲۴"), /کوچه/);
+  assert.match(err("شیراز، خیابان زند، کوچه ۸"), /پلاک/);
+  assert.match(err("شیراز، چنچنه، خیابان نارون، کوچه‌ی ۵، پلاک ۱۲، واحد ۳"), /مثال/);
+  assert.match(err("شیراز، چنچنه، خیابان نارون، نبش کوچه ۱۴"), /مدرسه/);
+  assert.match(err("شیراز سشیب لاتن"), /درست/);
+});
+
+test("pre-registration: parents' names, jobs and numbers are checked against filler and repeats", () => {
+  const e = (o) => validatePreRegistration({ ...goodPre, ...o }).errors ?? {};
+  assert.match(e({ motherName: "مریم" }).motherName, /نام خانوادگی/);
+  assert.match(e({ fatherName: "سشیب لاتن" }).fatherName, /درست/);
+  assert.match(e({ fatherName: "Ali Rezaei" }).fatherName, /فارسی/);
+  assert.match(e({ motherJob: "سیبسیب" }).motherJob, /درست/);
+  assert.equal(e({ motherJob: "معلم", fatherJob: "مهندس عمران" }).motherJob, undefined);
+  assert.match(e({ motherMobile: goodPre.studentMobile }).motherMobile, /دانش‌آموز/);
+  assert.match(e({ fatherMobile: goodPre.motherMobile }).fatherMobile, /مادر/);
+  assert.match(e({ fatherMobile: "0917123" }).fatherMobile, /۱۱ رقم/);
+  assert.match(e({ currentSchool: "دبیرستان آفرینش" }).currentSchool, /آفرینش/);
 });
 
 test("job application", () => {
