@@ -92,10 +92,31 @@ export function initChrome() {
     goTop();
   });
 
+  // the share links carry the address this page is served from
+  const shareText = $("[data-share-text]")?.textContent.trim() ?? "";
+  const site = `${location.origin}/`;
+  const tg = $('[data-share="tg"]'), wa = $('[data-share="wa"]');
+  if (tg) tg.href = `https://t.me/share/url?url=${encodeURIComponent(site)}&text=${encodeURIComponent(shareText)}`;
+  if (wa) wa.href = `https://wa.me/?text=${encodeURIComponent(`${shareText} ${site}`)}`;
   $("[data-copy-link]")?.addEventListener("click", async () => {
-    try { await navigator.clipboard.writeText(`${location.origin}/`); toast("نشانی سایت رونوشت شد."); }
-    catch { toast(`نشانی سایت: ${location.origin}/`); }
+    try { await navigator.clipboard.writeText(`${shareText}\n${site}`); toast("متن معرفی و نشانی سایت رونوشت شد."); }
+    catch { toast(`نشانی سایت: ${site}`); }
   });
+
+  // links to the school's numbers land on the contact card and highlight it briefly
+  const contacts = $("#school-contacts");
+  if (contacts) {
+    const flash = () => {
+      if (location.hash !== "#school-contacts") return;
+      // scrolled here rather than left to the browser: sections above change height once the page script runs
+      contacts.scrollIntoView({ block: "start", behavior: "instant" });
+      contacts.focus({ preventScroll: true });
+      contacts.classList.add("is-flash");
+      setTimeout(() => contacts.classList.remove("is-flash"), 1600);
+    };
+    addEventListener("hashchange", flash);
+    setTimeout(flash, 0);
+  }
 
   /* Instagram button fades and drops behind the content while it covers text */
   const fab = $(".insta-fab");

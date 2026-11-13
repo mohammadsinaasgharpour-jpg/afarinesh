@@ -40,7 +40,7 @@ test("teachers come one at a time while the section is pinned, in the school's o
   await expect(page.locator("[data-team]")).not.toContainText("قزلباش");
   await expect(page.locator(".teacher h3")).toHaveCount(0);
   const current = page.locator(".teacher.is-current .teacher-name");
-  const toStep = (i) => page.evaluate((n) => { const t = document.querySelector("[data-team-track]"); scrollTo(0, t.offsetTop + innerHeight * 0.3 * (n + 0.5)); }, i);
+  const toStep = (i) => page.evaluate((n) => { const t = document.querySelector("[data-team-track]"); scrollTo(0, t.offsetTop + innerHeight * 0.14 * (n + 0.5)); }, i);
   await toStep(0);
   await expect(current).toHaveText("فرشید فلاحی");
   await expect(page.locator(".teacher.is-current")).toHaveCount(1);
@@ -52,9 +52,32 @@ test("teachers come one at a time while the section is pinned, in the school's o
   await expect(page.locator(".teacher.is-current")).toBeInViewport();
   await page.locator("[data-team-next]").click();
   await expect(current).toHaveText("کریم کشاورز");
+  // one arrow key is one teacher while the section is pinned
+  await page.keyboard.press("ArrowDown");
+  await expect(current).toHaveText("شهرام صدری");
+  await page.keyboard.press("ArrowUp");
+  await expect(current).toHaveText("کریم کشاورز");
+  // the faces strip jumps straight to a teacher
+  await page.locator(".team-strip button").nth(10).click();
+  await expect(current).toHaveText("فرهاد نادری");
   await page.locator("[data-team-all]").click();
   await expect(page.locator("[data-team-track]")).not.toHaveClass(/is-deck/);
   await expect(page.locator(".teacher")).toHaveCount(29);
+});
+
+test("after the last teacher the list stops pinning, without moving the page", async ({ page }) => {
+  await page.goto("/");
+  const track = page.locator("[data-team-track]");
+  await page.evaluate(() => { const t = document.querySelector("[data-team-track]"); scrollTo({ top: t.offsetTop + t.offsetHeight - 200, behavior: "instant" }); });
+  await expect(track).toHaveClass(/is-done/);
+  const faqTop = await page.locator("#faq").evaluate((el) => el.getBoundingClientRect().top);
+  expect(Math.abs(faqTop - 200)).toBeLessThanOrEqual(2);
+  // going back up passes the section in one screen, and it stays that way after a reload
+  expect(await track.evaluate((el) => el.offsetHeight)).toBeLessThan(page.viewportSize().height * 2);
+  await page.reload();
+  await expect(track).toHaveClass(/is-done/);
+  await page.locator("[data-team-next]").click();
+  await expect(page.locator(".teacher.is-current .teacher-name")).toHaveText("عبدالرحمان یدالهی");
 });
 
 test("teacher search really hides non-matching teachers", async ({ page }) => {
@@ -209,21 +232,18 @@ test("the school name in the header goes back to the top of the home page", asyn
   await expect(page.locator(".site-footer")).not.toContainText("سامانه");
 });
 
-test("Instagram button drops behind text and comes back on empty space", async ({ page }) => {
+test("Instagram button fades while over text and stays on top", async ({ page }) => {
   await page.goto("/");
   const fab = page.locator(".insta-fab");
   const box = await fab.boundingBox();
   expect(box.width).toBeGreaterThanOrEqual(page.viewportSize().width < 520 ? 64 : 58);
-  // wherever it is, the button is behind the content exactly while it covers text or a picture
   for (const y of [0, 600, 1400, 2600]) {
     await page.evaluate((top) => scrollTo(0, top), y);
     await page.waitForTimeout(120);
-    const { over, z, opacity } = await fab.evaluate((el) => ({ over: el.classList.contains("is-over-text"), z: getComputedStyle(el).zIndex, opacity: Number(getComputedStyle(el).opacity) }));
-    expect(z).toBe(over ? "0" : "30");
-    if (over) expect(opacity).toBeLessThan(1);
+    const over = await fab.evaluate((el) => el.classList.contains("is-over-text"));
+    expect(await fab.evaluate((el) => getComputedStyle(el).zIndex)).toBe("30");
+    await expect.poll(() => fab.evaluate((el) => Number(getComputedStyle(el).opacity))).toBeCloseTo(over ? 0.62 : 1, 1);
   }
-  const main = await page.locator("main").evaluate((el) => getComputedStyle(el).zIndex);
-  expect(main).toBe("1");
 });
 
 test("right-click on images is blocked", async ({ page }) => {
@@ -352,7 +372,8 @@ test("the contact section puts the form first on wide screens and links the map 
   const wide = page.viewportSize().width > 860;
   if (wide) expect(await top("#inquiry")).toBeLessThan(await top(".contact-info"));
   else expect(await top(".contact-info")).toBeLessThan(await top("#inquiry"));
-  await expect(page.locator(".map-card a")).toHaveAttribute("href", /neshan\.org/);
+  await expect(page.locator(".map-card a")).toHaveAttribute("href", "https://nshn.ir/de_bguoSPFQe8V");
+  await expect(page.locator(".contact-list")).toContainText("چنچنه");
   await expect(page.locator('a[href*="google.com/maps"], a[href*="maps.google"]')).toHaveCount(0);
 });
 
@@ -376,4 +397,20 @@ test("subpages share the home page's header, theme and footer", async ({ page })
   page.on("pageerror", (e) => errors.push(e.message));
   await page.reload();
   expect(errors).toEqual([]);
+});
+
+test("links to the school's numbers open the contact card", async ({ page }) => {
+  await page.goto("/pre-registration");
+  await page.locator('a[href="/#school-contacts"]').click();
+  await expect(page).toHaveURL(/#school-contacts$/);
+  await expect(page.locator("#school-contacts")).toBeInViewport();
+  await expect(page.locator("#school-contacts")).toContainText("071 3229 3194");
+});
+
+test("the share block carries a description, not just the address", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator("[data-share-text]")).toContainText("پیش‌ثبت‌نام");
+  const tg = await page.locator('[data-share="tg"]').getAttribute("href");
+  expect(decodeURIComponent(tg)).toContain("کلاس‌های ۱۵ تا ۱۷ نفره");
+  await expect(page.locator(".credit a")).toHaveCount(0);
 });

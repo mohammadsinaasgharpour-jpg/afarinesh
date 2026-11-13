@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>دبیرستان غیردولتی آفرینش شیراز | مدرسه پسرانه دوره اول</title>
-<meta name="description" content="دبیرستان غیردولتی پسرانه آفرینش شیراز، دوره اول متوسطه در بلوار ارم. کلاس‌های ۱۵ تا ۱۷ نفره، کلاس‌های پژوهشی و هنری. پیش‌ثبت‌نام ۱۴۰۶-۱۴۰۷.">
+<meta name="description" content="دبیرستان غیردولتی پسرانه آفرینش شیراز، دوره اول متوسطه در خیابان نارون. کلاس‌های ۱۵ تا ۱۷ نفره، کلاس‌های پژوهشی و هنری. پیش‌ثبت‌نام ۱۴۰۶-۱۴۰۷.">
 <meta name="keywords" content="دبیرستان آفرینش, دبیرستان غیردولتی آفرینش, مدرسه آفرینش شیراز, دبیرستان غیردولتی شیراز, مدرسه غیردولتی پسرانه شیراز, دبیرستان پسرانه دوره اول شیراز, مدرسه پژوهش‌محور, پیش‌ثبت‌نام پایه هفتم شیراز">
 <link rel="canonical" href="https://afarineshshiraz.ir/">
 <meta name="theme-color" content="#e8edf2">
@@ -12,7 +12,7 @@
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta name="geo.region" content="IR-07">
 <meta name="geo.placename" content="شیراز">
-<meta name="geo.position" content="29.6295935;52.5355264">
+<meta name="geo.position" content="29.6368;52.5353">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="fa_IR">
 <meta property="og:site_name" content="دبیرستان آفرینش">
@@ -397,20 +397,32 @@ background: var(--line); opacity: 0; transition: opacity .35s;
 .team-progress { flex: 1 1 140px; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
 .team-progress span { display: block; height: 100%; background: var(--sky); transform-origin: right; transform: scaleX(var(--p, 0)); transition: transform .3s var(--ease); }
 .team-nav { display: flex; gap: var(--s2); }
-.team-section.is-deck { height: calc(100svh + var(--steps, 1) * var(--step-len, 30svh)); padding-block: 0 !important; }
-.is-deck .team-pin { position: sticky; top: 72px; height: calc(100svh - 72px); display: flex; flex-direction: column; justify-content: center; padding-block: var(--s4); overflow: hidden; }
+.team-section.is-deck { height: calc(var(--deck-h, 100svh) + var(--steps, 1) * var(--step-len, 14svh)); padding-block: 0 !important; }
+.team-section { transition-property: none !important; }
+.team-section.is-deck.is-done { height: auto; padding-block: var(--s7) !important; }
+.is-done .team-pin { position: static; height: auto; }
+.team-strip { display: none; }
+.is-deck .team-strip { display: flex; gap: 6px; margin-top: var(--s4); overflow-x: auto; scrollbar-width: none; padding: 4px 2px; }
+.team-strip::-webkit-scrollbar { display: none; }
+.team-strip button { flex: none; width: 44px; height: 44px; padding: 0; border: 2px solid transparent; border-radius: 50%; background: var(--line); overflow: hidden; cursor: pointer; opacity: .55; transition: opacity var(--dur-quick), border-color var(--dur-quick), transform var(--dur-fast) var(--ease); }
+.team-strip button:hover { opacity: 1; }
+.team-strip button[aria-current="true"] { opacity: 1; border-color: var(--sky); transform: scale(1.12); }
+.team-strip img { width: 100%; height: 100%; object-fit: cover; }
+.is-deck .team-pin { position: sticky; top: 72px; height: calc(100svh - 72px); display: flex; flex-direction: column; justify-content: flex-start; padding-block: var(--s5) var(--s4); overflow: hidden; }
+.is-deck .team { flex: 1 1 auto; min-height: 0; align-content: stretch; }
 .is-deck .section-head { margin-bottom: var(--s4); }
 .is-deck .team-status { margin-bottom: var(--s2); min-height: 0; }
 .is-deck .team { grid-template-columns: 1fr; max-width: none; }
 .is-deck .teacher {
-grid-area: 1 / 1; display: none; grid-template-columns: minmax(180px, 280px) 1fr; gap: var(--s6); padding: var(--s6);
+grid-area: 1 / 1; display: none; grid-template-columns: auto 1fr; gap: var(--s7); padding: var(--s6) var(--s7); align-items: center;
 opacity: 0; transform: translateY(46px) scale(.96); pointer-events: none;
 transition: opacity .45s var(--ease), transform .55s var(--ease);
 }
 .is-deck .teacher.is-near { display: grid; }
 .is-deck .teacher.is-before { transform: translateY(-46px) scale(.96); }
 .is-deck .teacher.is-current { opacity: 1; transform: none; pointer-events: auto; }
-.is-deck .teacher-role { font-size: 1.1rem; }
+.is-deck .teacher-photo { width: min(38svh, 340px); }
+.is-deck .teacher-role { font-size: 1.15rem; }
 .is-deck .teacher-name { font-family: var(--display); font-weight: 400; font-size: clamp(1.7rem, 1.2rem + 2vw, 2.6rem); }
 .is-deck .teacher-edu { font-size: 1.05rem; }
 .is-deck .teacher-note { font-size: .95rem; }
@@ -467,6 +479,8 @@ background: var(--surface); color: var(--ink); font-size: 1.08rem; line-height: 
 }
 .contact { display: grid; grid-template-columns: 1fr 1fr; grid-template-areas: "form form" "info map"; gap: var(--s6); align-items: start; }
 .contact > .form { grid-area: form; }
+.contact-info:focus { outline: none; }
+.contact-info:target, .contact-info.is-flash { box-shadow: 0 0 0 3px var(--sun); transition: box-shadow var(--dur-slow); }
 .contact-info { grid-area: info; padding: var(--s5) var(--s6); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
 .contact-list { display: grid; gap: 0; }
 .map-card { grid-area: map; }
@@ -575,10 +589,10 @@ background: var(--paper); color: var(--ink); font: inherit; cursor: pointer;
 .site-footer ul { display: grid; gap: 0; }
 .site-footer a { color: #cfdbe4; text-decoration: none; display: inline-flex; gap: var(--s2); align-items: center; min-height: 44px; }
 .site-footer a:hover { color: #fff; text-decoration: underline; }
+.share-text { max-width: 34ch; margin-bottom: var(--s2); font-size: var(--t-sm); line-height: 1.9; color: #b4c4d0; }
 .copy { margin-top: var(--s7); padding-bottom: var(--s4); border-bottom: 1px solid rgba(255, 255, 255, .22); font-size: var(--t-sm); color: #b4c4d0; display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--s2) var(--s5); }
 .copy p { margin: 0; }
 .credit { color: #c6d3dd; }
-.credit a { text-decoration: underline; }
 .link-btn { min-height: 44px; padding: 0; border: 0; background: none; color: #cfdbe4; cursor: pointer; }
 .link-btn:hover { color: #fff; text-decoration: underline; }
 .site-footer { padding-bottom: calc(var(--s5) + 86px); }
@@ -592,8 +606,7 @@ box-shadow: 0 6px 18px rgba(214, 36, 159, .3);
 transition: opacity .25s, transform .18s var(--ease), box-shadow .18s;
 }
 .insta-fab .ic { width: 32px; height: 32px; stroke-width: 1.9; }
-.insta-fab.is-over-text { opacity: .4; box-shadow: none; z-index: 0; }
-main, .site-footer { position: relative; z-index: 1; }
+.insta-fab.is-over-text { opacity: .62; box-shadow: none; }
 .insta-fab:hover, .insta-fab:focus-visible { opacity: 1; transform: translateY(-2px) scale(1.05); box-shadow: 0 10px 24px rgba(214, 36, 159, .4); }
 .insta-fab:focus-visible { outline-offset: 4px; }
 @media (max-width: 520px) { .insta-fab { width: 66px; height: 66px; bottom: 16px; right: 16px; border-radius: 20px; } .insta-fab .ic { width: 36px; height: 36px; } }
@@ -657,10 +670,10 @@ html { scroll-behavior: auto; }
   "foundingDate": "2008",
   "email": "afarineshsch@afarineshshiraz.ir",
   "telephone": ["+98-71-32293194", "+98-71-32295122", "+98-917-302-3856", "+98-917-787-3940"],
-  "address": {"@type": "PostalAddress", "streetAddress": "بلوار ارم، خیابان نارون، نبش کوچه ۱۴", "addressLocality": "شیراز", "addressRegion": "فارس", "addressCountry": "IR"},
+  "address": {"@type": "PostalAddress", "streetAddress": "چنچنه، خیابان نارون، نبش کوچه ۱۴", "addressLocality": "شیراز", "addressRegion": "فارس", "addressCountry": "IR"},
   "openingHoursSpecification": {"@type": "OpeningHoursSpecification", "dayOfWeek": ["Saturday","Sunday","Monday","Tuesday","Wednesday"], "opens": "07:00", "closes": "14:00"},
-  "geo": {"@type": "GeoCoordinates", "latitude": 29.6295935, "longitude": 52.5355264},
-  "hasMap": "https://neshan.org/maps/share/29.6295935,52.5355264",
+  "geo": {"@type": "GeoCoordinates", "latitude": 29.6368, "longitude": 52.5353},
+  "hasMap": "https://nshn.ir/de_bguoSPFQe8V",
   "areaServed": "شیراز",
   "numberOfStudents": "100",
   "sameAs": ["https://instagram.com/afarinesh_sch"]
@@ -783,14 +796,14 @@ html { scroll-behavior: auto; }
     <div class="wrap split split-solo">
       <div class="split-text">
         <h2 id="approach-title" class="h2">از مدرسه‌ی زندگی تا پژوهش‌محوری</h2>
-        <p>دبیرستان غیردولتی آفرینش مدرسه‌ای پسرانه برای دوره اول متوسطه در بلوار ارم شیراز است؛ جایی برای ذهن‌های کنجکاو که ایده‌های بزرگ دانش‌آموزان در آن جدی گرفته می‌شود. برنامه‌ی آفرینش بر تنوع، انتخاب آگاهانه و توجه به تفاوت‌های فردی بنا شده است. دانش‌آموزی که با علاقه در فعالیتی شرکت کند، استعدادش واقعی و پایدار شکوفا می‌شود؛ برای همین کلاس‌های انتخابی پژوهشی، هنری، زبان، فرهنگی و ورزشی تا پایان سال ادامه دارند.</p>
+        <p>دبیرستان غیردولتی آفرینش مدرسه‌ای پسرانه برای دوره اول متوسطه در خیابان نارون شیراز است؛ جایی برای ذهن‌های کنجکاو که ایده‌های بزرگ دانش‌آموزان در آن جدی گرفته می‌شود. برنامه‌ی آفرینش بر تنوع، انتخاب آگاهانه و توجه به تفاوت‌های فردی بنا شده است. دانش‌آموزی که با علاقه در فعالیتی شرکت کند، استعدادش واقعی و پایدار شکوفا می‌شود؛ برای همین کلاس‌های انتخابی پژوهشی، هنری، زبان، فرهنگی و ورزشی تا پایان سال ادامه دارند.</p>
         <p>کنار آموزش، سه مشاور تخصصی (تحصیلی، بالینی و تغذیه) در خود مدرسه با دانش‌آموزان کار می‌کنند.</p>
       </div>
     </div>
 
     <ul class="wrap features" role="list">
       <li><svg class="ic"><use href="#i-interview"/></svg><h3>سنجش و پذیرش</h3><p>همه‌ی دانش‌آموزان ورودی، همراه با والدین، مصاحبه‌ی تخصصی دارند.</p></li>
-      <li><svg class="ic"><use href="#i-teachers"/></svg><h3>دبیران هر درس</h3><p>نام، سمت و مدرک تحصیلی همه‌ی دبیران در بخش <a href="#team">دبیران و کادر مدرسه</a> آمده است.</p></li>
+      <li><svg class="ic"><use href="#i-teachers"/></svg><h3>دبیر متخصص هر درس</h3><p>هر درس را دبیری با تحصیلات همان رشته درس می‌دهد؛ بسیاری از آن‌ها کارشناسی ارشد یا دکتری دارند و چند نفرشان بیش از ۳۰ سال سابقه‌ی تدریس.</p></li>
       <li><svg class="ic"><use href="#i-desks"/></svg><h3>کلاس‌های کم‌جمعیت</h3><p>هر کلاس ۱۵ تا ۱۷ نفر؛ دبیر همه‌ی دانش‌آموزان را می‌شناسد.</p></li>
       <li><svg class="ic"><use href="#i-split"/></svg><h3>تدریس تفکیک‌شده</h3><p>ریاضی در دو درس حساب و هندسه؛ علوم در دو درس فیزیک‌-شیمی و زیست‌-زمین.</p></li>
       <li><svg class="ic"><use href="#i-counsel"/></svg><h3>سه مشاور تخصصی</h3><p>مشاوره‌ی تحصیلی، بالینی و تغذیه در خود مدرسه.</p></li>
@@ -1129,7 +1142,7 @@ html { scroll-behavior: auto; }
         </details>
         <details>
           <summary>ساعت کاری دفتر مدرسه چیست؟<svg class="ic"><use href="#i-plus"/></svg></summary>
-          <p>شنبه تا چهارشنبه، ساعت ۷ تا ۱۴. شماره‌ها: <a href="tel:+987132293194" dir="ltr">۰۷۱-۳۲۲۹۳۱۹۴</a> و <a href="tel:+987132295122" dir="ltr">۰۷۱-۳۲۲۹۵۱۲۲</a>.</p>
+          <p>شنبه تا چهارشنبه، ساعت ۷ تا ۱۴. شماره‌ها: <a href="tel:+987132293194" dir="ltr">۰۷۱-۳۲۲۹۳۱۹۴</a> و <a href="tel:+987132295122" dir="ltr">۰۷۱-۳۲۲۹۵۱۲۲</a>. <a href="#school-contacts">همه‌ی راه‌های تماس</a></p>
         </details>
       </div>
     </div>
@@ -1199,10 +1212,10 @@ html { scroll-behavior: auto; }
           <p class="privacy-note">این اطلاعات فقط برای تماس مشاور استفاده می‌شود. <a href="/privacy">حریم خصوصی</a></p>
         </form>
 
-        <div class="contact-info">
+        <div class="contact-info" id="school-contacts" tabindex="-1">
           <h3 class="h3">راه‌های تماس با مدرسه</h3>
           <ul class="contact-list" role="list">
-            <li><svg class="ic"><use href="#i-pin"/></svg><a href="https://neshan.org/maps/share/29.6295935,52.5355264" target="_blank" rel="noopener">شیراز، بلوار ارم، خیابان نارون، نبش کوچه‌ی ۱۴</a></li>
+            <li><svg class="ic"><use href="#i-pin"/></svg><a href="https://nshn.ir/de_bguoSPFQe8V" target="_blank" rel="noopener">شیراز، چنچنه، خیابان نارون، نبش کوچه‌ی ۱۴</a></li>
             <li><svg class="ic"><use href="#i-phone"/></svg><span><a href="tel:+987132293194" dir="ltr">071 3229 3194</a> · <a href="tel:+987132295122" dir="ltr">071 3229 5122</a></span></li>
             <li><svg class="ic"><use href="#i-phone"/></svg><span><a href="tel:+989173023856" dir="ltr">0917 302 3856</a> · <a href="tel:+989177873940" dir="ltr">0917 787 3940</a></span></li>
             <li><svg class="ic"><use href="#i-mail"/></svg><a href="mailto:afarineshsch@afarineshshiraz.ir" dir="ltr">afarineshsch@afarineshshiraz.ir</a></li>
@@ -1211,8 +1224,8 @@ html { scroll-behavior: auto; }
         </div>
 
         <div class="map-card">
-          <a href="https://neshan.org/maps/share/29.6295935,52.5355264" target="_blank" rel="noopener">
-            <img src="/assets/img/map-afarinesh.webp" width="720" height="400" loading="lazy" decoding="async" alt="نقشه‌ی محل دبیرستان آفرینش در بلوار ارم شیراز">
+          <a href="https://nshn.ir/de_bguoSPFQe8V" target="_blank" rel="noopener">
+            <img src="/assets/img/map-afarinesh.webp" width="720" height="400" loading="lazy" decoding="async" alt="نقشه‌ی محل دبیرستان آفرینش در خیابان نارون شیراز">
             <span class="map-cta"><svg class="ic" aria-hidden="true"><use href="#i-pin"/></svg>مسیریابی در نقشه‌ی نشان<span class="visually-hidden"> (در برگه‌ی تازه)</span></span>
           </a>
           <p class="map-credit">نقشه: © مشارکت‌کنندگان OpenStreetMap</p>
@@ -1240,14 +1253,15 @@ html { scroll-behavior: auto; }
     </nav>
     <div class="share">
       <h2 class="footer-h">معرفی مدرسه به دیگران</h2>
+      <p class="share-text" data-share-text>دبیرستان غیردولتی آفرینش شیراز، دوره اول متوسطه‌ی پسرانه: کلاس‌های ۱۵ تا ۱۷ نفره، کلاس‌های انتخابی پژوهشی، هنری، زبان و ورزشی و سه مشاور تخصصی در مدرسه. پیش‌ثبت‌نام سال تحصیلی ۱۴۰۶-۱۴۰۷ آغاز شده است.</p>
       <ul role="list">
-        <li><a href="https://t.me/share/url?url=https%3A%2F%2Fafarineshshiraz.ir%2F" target="_blank" rel="noopener">فرستادن در تلگرام</a></li>
-        <li><a href="https://wa.me/?text=https%3A%2F%2Fafarineshshiraz.ir%2F" target="_blank" rel="noopener">فرستادن در واتس‌اپ</a></li>
-        <li><button type="button" class="link-btn" data-copy-link>رونوشت نشانی سایت</button></li>
+        <li><a href="https://t.me/share/url?url=https%3A%2F%2Fafarinesh-site.vercel.app%2F&amp;text=%D8%AF%D8%A8%DB%8C%D8%B1%D8%B3%D8%AA%D8%A7%D9%86%20%D8%BA%DB%8C%D8%B1%D8%AF%D9%88%D9%84%D8%AA%DB%8C%20%D8%A2%D9%81%D8%B1%DB%8C%D9%86%D8%B4%20%D8%B4%DB%8C%D8%B1%D8%A7%D8%B2%D8%8C%20%D8%AF%D9%88%D8%B1%D9%87%20%D8%A7%D9%88%D9%84%20%D9%85%D8%AA%D9%88%D8%B3%D8%B7%D9%87%E2%80%8C%DB%8C%20%D9%BE%D8%B3%D8%B1%D8%A7%D9%86%D9%87%3A%20%DA%A9%D9%84%D8%A7%D8%B3%E2%80%8C%D9%87%D8%A7%DB%8C%20%DB%B1%DB%B5%20%D8%AA%D8%A7%20%DB%B1%DB%B7%20%D9%86%D9%81%D8%B1%D9%87%D8%8C%20%DA%A9%D9%84%D8%A7%D8%B3%E2%80%8C%D9%87%D8%A7%DB%8C%20%D8%A7%D9%86%D8%AA%D8%AE%D8%A7%D8%A8%DB%8C%20%D9%BE%DA%98%D9%88%D9%87%D8%B4%DB%8C%D8%8C%20%D9%87%D9%86%D8%B1%DB%8C%D8%8C%20%D8%B2%D8%A8%D8%A7%D9%86%20%D9%88%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C%20%D9%88%20%D8%B3%D9%87%20%D9%85%D8%B4%D8%A7%D9%88%D8%B1%20%D8%AA%D8%AE%D8%B5%D8%B5%DB%8C%20%D8%AF%D8%B1%20%D9%85%D8%AF%D8%B1%D8%B3%D9%87.%20%D9%BE%DB%8C%D8%B4%E2%80%8C%D8%AB%D8%A8%D8%AA%E2%80%8C%D9%86%D8%A7%D9%85%20%D8%B3%D8%A7%D9%84%20%D8%AA%D8%AD%D8%B5%DB%8C%D9%84%DB%8C%20%DB%B1%DB%B4%DB%B0%DB%B6-%DB%B1%DB%B4%DB%B0%DB%B7%20%D8%A2%D8%BA%D8%A7%D8%B2%20%D8%B4%D8%AF%D9%87%20%D8%A7%D8%B3%D8%AA." target="_blank" rel="noopener" data-share="tg">فرستادن در تلگرام</a></li>
+        <li><a href="https://wa.me/?text=%D8%AF%D8%A8%DB%8C%D8%B1%D8%B3%D8%AA%D8%A7%D9%86%20%D8%BA%DB%8C%D8%B1%D8%AF%D9%88%D9%84%D8%AA%DB%8C%20%D8%A2%D9%81%D8%B1%DB%8C%D9%86%D8%B4%20%D8%B4%DB%8C%D8%B1%D8%A7%D8%B2%D8%8C%20%D8%AF%D9%88%D8%B1%D9%87%20%D8%A7%D9%88%D9%84%20%D9%85%D8%AA%D9%88%D8%B3%D8%B7%D9%87%E2%80%8C%DB%8C%20%D9%BE%D8%B3%D8%B1%D8%A7%D9%86%D9%87%3A%20%DA%A9%D9%84%D8%A7%D8%B3%E2%80%8C%D9%87%D8%A7%DB%8C%20%DB%B1%DB%B5%20%D8%AA%D8%A7%20%DB%B1%DB%B7%20%D9%86%D9%81%D8%B1%D9%87%D8%8C%20%DA%A9%D9%84%D8%A7%D8%B3%E2%80%8C%D9%87%D8%A7%DB%8C%20%D8%A7%D9%86%D8%AA%D8%AE%D8%A7%D8%A8%DB%8C%20%D9%BE%DA%98%D9%88%D9%87%D8%B4%DB%8C%D8%8C%20%D9%87%D9%86%D8%B1%DB%8C%D8%8C%20%D8%B2%D8%A8%D8%A7%D9%86%20%D9%88%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C%20%D9%88%20%D8%B3%D9%87%20%D9%85%D8%B4%D8%A7%D9%88%D8%B1%20%D8%AA%D8%AE%D8%B5%D8%B5%DB%8C%20%D8%AF%D8%B1%20%D9%85%D8%AF%D8%B1%D8%B3%D9%87.%20%D9%BE%DB%8C%D8%B4%E2%80%8C%D8%AB%D8%A8%D8%AA%E2%80%8C%D9%86%D8%A7%D9%85%20%D8%B3%D8%A7%D9%84%20%D8%AA%D8%AD%D8%B5%DB%8C%D9%84%DB%8C%20%DB%B1%DB%B4%DB%B0%DB%B6-%DB%B1%DB%B4%DB%B0%DB%B7%20%D8%A2%D8%BA%D8%A7%D8%B2%20%D8%B4%D8%AF%D9%87%20%D8%A7%D8%B3%D8%AA.%20https%3A%2F%2Fafarinesh-site.vercel.app%2F" target="_blank" rel="noopener" data-share="wa">فرستادن در واتس‌اپ</a></li>
+        <li><button type="button" class="link-btn" data-copy-link>رونوشت متن معرفی و نشانی سایت</button></li>
       </ul>
     </div>
   </div>
-  <div class="wrap copy"><p>© ۱۴۰۵ دبیرستان آفرینش شیراز</p><p class="credit">طراحی و ساخت: <a href="mailto:mohammadsina.asgharpour@gmail.com">محمدسینا اصغرپور</a></p></div>
+  <div class="wrap copy"><p>© ۱۴۰۵ دبیرستان آفرینش شیراز</p><p class="credit">طراحی و ساخت: محمدسینا اصغرپور</p></div>
 </footer>
 
 <a class="insta-fab" href="https://instagram.com/afarinesh_sch" target="_blank" rel="noopener" aria-label="اینستاگرام مدرسه (afarinesh_sch)"><svg class="ic" aria-hidden="true"><use href="#i-insta"/></svg></a>

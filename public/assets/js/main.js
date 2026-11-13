@@ -44,12 +44,32 @@ const reveal = new IntersectionObserver((entries) => {
 }, { rootMargin: "0px 0px -12% 0px" });
 cards.forEach((c) => reveal.observe(c));
 
-// One by one: the section pins and each stretch of scrolling brings the next teacher. Pressing
-// «نمایش همه» or searching gives the plain list instead. Under reduced motion the cards swap without moving.
+// One by one: the section pins and each short stretch of scrolling (or one arrow key) brings the next
+// teacher. Once the visitor has scrolled past the last one the section stops pinning for the rest of the
+// visit, so scrolling back up does not replay the list; the buttons and the faces still change teacher.
+// Pressing «نمایش همه» or searching gives the plain list instead.
 let wantsDeck = true;
 let index = -1;
+let done = false;
+try { done = sessionStorage.getItem("team-seen") === "1"; } catch {}
 const inDeck = () => track.classList.contains("is-deck");
-const stepLen = () => innerHeight * 0.3;
+const stepLen = () => innerHeight * 0.14;
+const strip = document.createElement("div");
+strip.className = "team-strip";
+strip.setAttribute("aria-label", "رفتن به دبیر");
+strip.append(...cards.map((c, i) => {
+  const b = document.createElement("button");
+  b.type = "button";
+  b.setAttribute("aria-label", $(".teacher-name", c).textContent);
+  const img = document.createElement("img");
+  Object.assign(img, { src: $("img", c).getAttribute("src"), alt: "", loading: "lazy", decoding: "async", width: 44, height: 44 });
+  b.append(img);
+  b.addEventListener("click", () => goTo(i));
+  return b;
+}));
+team.after(strip);
+const stripButtons = [...strip.children];
+
 const setIndex = (i) => {
   if (i === index) return;
   index = i;
@@ -58,34 +78,76 @@ const setIndex = (i) => {
     c.classList.toggle("is-near", Math.abs(n - i) <= 1);
     c.classList.toggle("is-before", n < i);
   });
+  stripButtons.forEach((b, n) => b.setAttribute("aria-current", String(n === i)));
+  stripButtons[i]?.scrollIntoView({ block: "nearest", inline: "center", behavior: "instant" });
   $("[data-team-now]").textContent = toPersianDigits(i + 1);
   $("[data-team-progress]").style.setProperty("--p", String((i + 1) / cards.length));
 };
+const pinned = () => {
+  const r = track.getBoundingClientRect();
+  return inDeck() && !done && r.top <= 80 && r.bottom >= innerHeight - 4;
+};
+const finish = () => {
+  // the track shrinks to one screen; move the page by the same amount so nothing jumps
+  // (measured on the next section, which also covers the browser clamping scrollY on the shorter page)
+  // Browser scroll anchoring is paused meanwhile, or it would correct the same shift a second time.
+  const anchor = track.nextElementSibling;
+  const was = anchor.getBoundingClientRect().top;
+  const html = document.documentElement;
+  html.style.overflowAnchor = "none";
+  done = true;
+  track.classList.add("is-done");
+  scrollBy({ top: anchor.getBoundingClientRect().top - was, behavior: "instant" });
+  requestAnimationFrame(() => { html.style.overflowAnchor = ""; });
+  try { sessionStorage.setItem("team-seen", "1"); } catch {}
+};
 const syncDeck = () => {
-  if (!inDeck()) return;
-  const passed = -track.getBoundingClientRect().top;
-  setIndex(Math.max(0, Math.min(cards.length - 1, Math.floor(passed / stepLen()))));
+  if (!inDeck() || done) return;
+  const r = track.getBoundingClientRect();
+  if (r.bottom < innerHeight * 0.6) { setIndex(cards.length - 1); finish(); return; }
+  setIndex(Math.max(0, Math.min(cards.length - 1, Math.floor(-r.top / stepLen()))));
 };
 const setDeck = (on) => {
   if (on === inDeck()) return;
   track.classList.toggle("is-deck", on);
+  track.classList.toggle("is-done", on && done);
   bar.hidden = false;
   $("[data-team-prev]").hidden = $("[data-team-next]").hidden = !on;
   bar.querySelector(".team-count").hidden = bar.querySelector(".team-progress").hidden = !on;
   allBtn.textContent = on ? "نمایش همه" : "نمایش یکی‌یکی";
   index = -1;
-  if (on) syncDeck();
+  if (on && done) setIndex(0);
+  else if (on) syncDeck();
   else cards.forEach((c) => c.classList.remove("is-current", "is-near", "is-before"));
 };
-const goTo = (i) => scrollTo({ top: scrollY + track.getBoundingClientRect().top + (i + 0.5) * stepLen(), behavior: reduceMotion.matches ? "auto" : "smooth" });
+const goTo = (i) => {
+  i = Math.max(0, Math.min(cards.length - 1, i));
+  if (done) return setIndex(i);
+  scrollTo({ top: scrollY + track.getBoundingClientRect().top + (i + 0.5) * stepLen(), behavior: "instant" });
+  setIndex(i);
+};
 track.style.setProperty("--steps", String(cards.length));
+// the scroll length is set in pixels from the same numbers the script counts with
+const sizeDeck = () => { track.style.setProperty("--deck-h", `${innerHeight}px`); track.style.setProperty("--step-len", `${stepLen()}px`); };
+sizeDeck();
+addEventListener("resize", sizeDeck);
 $("[data-team-total]").textContent = toPersianDigits(cards.length);
-$("[data-team-prev]").addEventListener("click", () => goTo(Math.max(0, index - 1)));
-$("[data-team-next]").addEventListener("click", () => (index >= cards.length - 1 ? $("#faq").scrollIntoView() : goTo(index + 1)));
+$("[data-team-prev]").addEventListener("click", () => goTo(index - 1));
+$("[data-team-next]").addEventListener("click", () => (index >= cards.length - 1 && !done ? $("#faq").scrollIntoView() : goTo(index + 1)));
 allBtn.addEventListener("click", () => {
   wantsDeck = !inDeck();
   setDeck(wantsDeck);
   track.scrollIntoView();
+});
+// while pinned, one arrow key (or Page Up/Down) is one teacher
+addEventListener("keydown", (e) => {
+  if (!pinned() || e.altKey || e.ctrlKey || e.metaKey || e.target.closest?.("input, textarea, select")) return;
+  const dir = { ArrowDown: 1, PageDown: 1, ArrowUp: -1, PageUp: -1 }[e.key];
+  if (!dir) return;
+  const next = index + dir;
+  if (next < 0 || next >= cards.length) return; // at either end the key scrolls the page as usual
+  e.preventDefault();
+  goTo(next);
 });
 let deckTick = false;
 addEventListener("scroll", () => {
