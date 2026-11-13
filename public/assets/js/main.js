@@ -9,9 +9,9 @@ initChrome();
 const whenIdle = (fn) => {
   let started = false;
   const start = () => { if (started) return; started = true; fn(); };
-  // wide screens have time to spare, and a link to a section further down needs the final layout at once
-  if (location.hash || !matchMedia("(max-width: 700px)").matches) return start();
-  // phones: when the browser is idle after loading, or at once when the visitor starts to scroll or tap
+  // a link to a section further down needs the final layout at once
+  if (location.hash) return start();
+  // otherwise when the browser is idle after loading, or at once when the visitor starts to scroll, tap or type
   for (const type of ["scroll", "pointerdown", "keydown", "focusin"]) addEventListener(type, start, { once: true, passive: true });
   const run = () => (window.requestIdleCallback ? requestIdleCallback(start, { timeout: 1500 }) : setTimeout(start, 1));
   if (document.readyState === "complete") run();
