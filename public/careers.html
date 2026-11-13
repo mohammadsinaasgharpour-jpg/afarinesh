@@ -446,6 +446,7 @@ display: grid; grid-auto-flow: column; grid-auto-columns: 100%; grid-template-co
 overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; padding-bottom: 2px;
 }
 .is-swipe .team::-webkit-scrollbar { display: none; }
+.is-swipe .team { align-items: start; overflow-y: hidden; transition: height var(--dur-fast) var(--ease); }
 .is-swipe .teacher {
 scroll-snap-align: center; scroll-snap-stop: always;
 grid-template-columns: 1fr; justify-items: center; align-content: start; gap: var(--s4); padding: var(--s5) var(--s4); text-align: center;

@@ -114,6 +114,9 @@ test("phones: teachers are swiped one at a time, starting with the founder, each
   await expect(current).toHaveText("فرشید فلاحی");
   await expect(page.locator("[data-team-now]")).toHaveText("۱");
   await expect(page.locator(".swipe-hint")).toBeVisible();
+  // no empty space under a short card: the row is as tall as the card on screen
+  const gap = () => page.evaluate(() => document.querySelector("[data-team]").getBoundingClientRect().bottom - document.querySelector(".teacher.is-current").getBoundingClientRect().bottom);
+  await expect.poll(gap).toBeLessThan(6);
   // the contact cards and the map sit inside the screen (a long e-mail address once pushed them off)
   const sticks = await page.evaluate(() => [...document.querySelectorAll(".contact > *")].map((el) => { const r = el.getBoundingClientRect(); return r.left >= 0 && r.right <= innerWidth; }));
   expect(sticks.every(Boolean)).toBe(true);

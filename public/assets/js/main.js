@@ -73,6 +73,13 @@ whenIdle(() => {
   const phone = matchMedia("(max-width: 700px)");
   const inSwipe = () => track.classList.contains("is-swipe");
 
+  // phones: the row is as tall as the teacher on screen, so a short card leaves no empty space under it
+  const fitRow = () => {
+    if (!inSwipe() || index < 0) { team.style.height = ""; return; }
+    team.style.height = `${cards[index].offsetHeight}px`;
+  };
+  // and follows it when its photo loads, its text wraps differently or the screen turns
+  const cardSize = new ResizeObserver((entries) => { if (entries.some((e) => e.target === cards[index])) fitRow(); });
   const setIndex = (i) => {
     if (i === index) return;
     index = i;
@@ -83,6 +90,9 @@ whenIdle(() => {
     });
     $("[data-team-now]").textContent = toPersianDigits(i + 1);
     $("[data-team-progress]").style.setProperty("--p", String((i + 1) / cards.length));
+    fitRow();
+    cardSize.disconnect();
+    if (cards[i]) cardSize.observe(cards[i]);
   };
   /* phones: swipe mode, no pinning */
   // the horizontal distance that centres card i in the row (from the rectangles, so it works right to left)
@@ -152,6 +162,7 @@ whenIdle(() => {
     else if (mode === "deck" && done) setIndex(0);
     else if (mode === "deck") syncDeck();
     else cards.forEach((c) => c.classList.remove("is-current", "is-near", "is-before"));
+    if (mode !== "swipe") team.style.height = "";
   };
   const goTo = (i) => {
     i = Math.max(0, Math.min(cards.length - 1, i));
