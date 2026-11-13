@@ -294,7 +294,9 @@ margin-top: var(--s8); background: var(--rule); border-radius: 4px;
 .features .more::after { content: "←"; transition: transform var(--dur-fast) var(--ease); }
 .features .more:hover::after { transform: translateX(-4px); }
 .trail { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: auto; padding-top: var(--s3); list-style: none; font-size: .85rem; font-weight: 700; color: var(--fg); }
-.trail li { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; background: color-mix(in srgb, var(--fg) 14%, transparent); }
+.trail li { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; background: var(--trail-bg, rgba(255, 255, 255, .55)); color: var(--trail-fg, var(--fg)); }
+.features > li:nth-child(4) { --trail-bg: #7e1f17; --trail-fg: #fff; }
+.features > li:nth-child(5) { --trail-bg: #24405a; --trail-fg: #ffd166; }
 .trail.steps-line li { background: none; padding: 0; }
 .trail.steps-line li:not(:last-child)::after { content: "←"; margin-inline-start: 8px; opacity: .7; }
 .seats { display: grid; grid-template-columns: repeat(9, 12px); gap: 6px; margin-top: auto; padding-top: var(--s3); }
@@ -326,7 +328,12 @@ gap: 8px; padding: 8px; background: var(--rule); border-radius: 4px;
 .cell h3 { font-family: var(--display); font-weight: 400; font-size: 1.85rem; line-height: 1.2; margin: 0; color: var(--fg); }
 .cell p { margin: 0; font-size: 1.02rem; font-weight: 500; line-height: 1.85; max-width: 46ch; color: var(--muted); }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; padding-top: var(--s2); list-style: none; }
-.chips li { padding: 4px 12px; border-radius: 999px; font-size: .9rem; font-weight: 700; line-height: 1.6; color: var(--fg); background: color-mix(in srgb, var(--fg) 15%, transparent); }
+.chips li { padding: 4px 12px; border-radius: 999px; font-size: .9rem; font-weight: 700; line-height: 1.6; color: var(--chip-fg, #0e2a3f); background: var(--chip-bg, rgba(255, 255, 255, .6)); }
+.c-research { --chip-bg: #0e2a3f; --chip-fg: #ffd166; }
+.c-lang { --chip-bg: #24405a; --chip-fg: #ffd166; }
+.c-sport { --chip-bg: #8f241b; --chip-fg: #fff; }
+.c-special { --chip-bg: #fff; --chip-fg: #8f1d16; }
+.c-culture { --chip-bg: #e1edf5; --chip-fg: #0f4f73; }
 .cell-tag { position: absolute; top: var(--s4); inset-inline-end: var(--s4); padding: 2px 10px; border-radius: 999px; font-size: .78rem; font-weight: 800; color: var(--fg); border: 1.5px solid currentColor; }
 .c-art p { font-size: 1.08rem; }
 .c-research { grid-column: 1 / 6; grid-row: 1 / 3; background: #16789c; --fg: #ffd166; --muted: #fff; }
@@ -715,7 +722,9 @@ html { scroll-behavior: auto; }
 .btn-cta::after { animation: ring 2.4s var(--ease) 1s infinite; }
 @keyframes ring { 0% { opacity: .75; transform: scale(1); } 70%, 100% { opacity: 0; transform: scale(1.14, 1.42); } }
 ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .45s; animation-timing-function: var(--ease); }
-}</style><!-- css:end -->
+}
+#faq, #contact, .enrol, .site-footer { content-visibility: auto; contain-intrinsic-size: auto 900px; }
+.is-swipe .teacher { content-visibility: auto; contain-intrinsic-size: auto 560px; }</style><!-- css:end -->
 <link rel="modulepreload" href="/assets/js/common.js">
 <script type="module" src="/assets/js/page.js"></script>
 <script type="application/ld+json">
