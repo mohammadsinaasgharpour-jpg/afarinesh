@@ -240,7 +240,7 @@ button, input, textarea { font: inherit; color: inherit; }
   .hero-body > * { animation: reveal var(--dur-very-slow) ease-in-out both; }
   .hero-body > :nth-child(2) { animation-delay: .08s; }
   .hero-body > :nth-child(3) { animation-delay: .16s; }
-  .hero-media img { animation: settle 1.6s var(--ease) both; }
+  @media (min-width: 641px) { .hero-media img { animation: settle 1.6s var(--ease) both; } }
 }
 @keyframes rise { from { opacity: 0; transform: translateY(14px); } }
 @keyframes reveal { from { opacity: 0; transform: translateY(12px); } }
@@ -480,6 +480,13 @@ button, input, textarea { font: inherit; color: inherit; }
 .is-swipe .teacher-role { font-size: 1.05rem; }
 .is-swipe .teacher-edu { justify-items: center; }
 .is-swipe .team-status:empty { display: none; }
+.swipe-hint { display: none; }
+.is-swipe .swipe-hint { display: flex; align-items: center; justify-content: center; gap: var(--s2); margin: var(--s3) 0 0; font-size: .95rem; font-weight: 700; color: var(--ink-2); }
+.swipe-hint .ic { width: 22px; height: 22px; color: var(--sky-text); }
+@media (prefers-reduced-motion: no-preference) {
+  .is-swipe .swipe-hint .ic { animation: nudge 1.6s ease-in-out infinite; }
+  @keyframes nudge { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-6px); } }
+}
 .is-swipe .section-head { margin-bottom: var(--s4); }
 /* short screens: the card goes back to photo beside text so it always fits under the search box */
 @media (max-height: 700px) {
@@ -533,7 +540,7 @@ button, input, textarea { font: inherit; color: inherit; }
 
 /* contact */
 /* wide screens: the callback form first, across the page; the ways to reach the school and the map below it */
-.contact { display: grid; grid-template-columns: 1fr 1fr; grid-template-areas: "form form" "info map"; gap: var(--s6); align-items: start; }
+.contact { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "form form" "info map"; gap: var(--s6); align-items: start; }
 .contact > .form { grid-area: form; }
 .contact-info:focus { outline: none; }
 .contact-info:target, .contact-info.is-flash { box-shadow: 0 0 0 3px var(--sun); transition: box-shadow var(--dur-slow); }
@@ -546,10 +553,12 @@ button, input, textarea { font: inherit; color: inherit; }
 .map-cta { position: absolute; inset: auto 0 0; display: flex; align-items: center; justify-content: center; gap: var(--s2); min-height: 52px; background: var(--rule); color: #fff; font-weight: 700; }
 .map-card a:hover .map-cta { background: var(--cta); }
 .map-credit { margin: var(--s1) 0 0; font-size: .78rem; color: var(--ink-2); }
-.contact-list li { display: flex; gap: var(--s3); align-items: center; min-height: 44px; }
+.contact-list li { display: flex; gap: var(--s3); align-items: center; min-height: 44px; min-width: 0; }
+.contact-list li > :last-child { min-width: 0; overflow-wrap: anywhere; }
 .contact-list .ic { color: var(--sky-text); }
-.contact-list a { color: var(--ink); display: inline-flex; align-items: center; min-height: 44px; }
-@media (max-width: 860px) { .contact { grid-template-columns: 1fr; grid-template-areas: "info" "form" "map"; gap: var(--s5); } .contact-info { padding: var(--s4); } }
+.contact-list a { color: var(--ink); display: inline-flex; align-items: center; min-height: 44px; min-width: 0; overflow-wrap: anywhere; }
+.contact > * { min-width: 0; }
+@media (max-width: 860px) { .contact { grid-template-columns: minmax(0, 1fr); grid-template-areas: "info" "form" "map"; gap: var(--s5); } .contact-info { padding: var(--s4); } }
 
 .form { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: var(--s6); display: grid; gap: var(--s4); }
 .form h3 { font-size: var(--t-lg); font-weight: 800; }
@@ -781,5 +790,7 @@ button, input, textarea { font: inherit; color: inherit; }
 }
 
 /* below-the-fold blocks are laid out only when they come near the screen (faster first load on phones) */
-#faq, #contact, .enrol, .site-footer { content-visibility: auto; contain-intrinsic-size: auto 900px; }
-.is-swipe .teacher { content-visibility: auto; contain-intrinsic-size: auto 560px; }
+#programs, #faq, #contact, .enrol, .site-footer { content-visibility: auto; contain-intrinsic-size: auto 900px; }
+.teacher { content-visibility: auto; contain-intrinsic-size: auto 190px; }
+.is-swipe .teacher { contain-intrinsic-size: auto 560px; }
+.is-deck .teacher { content-visibility: visible; }

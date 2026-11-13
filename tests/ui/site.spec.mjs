@@ -113,6 +113,10 @@ test("phones: teachers are swiped one at a time, starting with the founder, each
   const current = page.locator(".teacher.is-current .teacher-name");
   await expect(current).toHaveText("فرشید فلاحی");
   await expect(page.locator("[data-team-now]")).toHaveText("۱");
+  await expect(page.locator(".swipe-hint")).toBeVisible();
+  // the contact cards and the map sit inside the screen (a long e-mail address once pushed them off)
+  const sticks = await page.evaluate(() => [...document.querySelectorAll(".contact > *")].map((el) => { const r = el.getBoundingClientRect(); return r.left >= 0 && r.right <= innerWidth; }));
+  expect(sticks.every(Boolean)).toBe(true);
   await page.locator("[data-team-next]").click();
   await expect(current).toHaveText("عبدالرحمان یدالهی");
   await page.locator("[data-team-next]").click();

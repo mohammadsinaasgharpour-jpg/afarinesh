@@ -104,7 +104,8 @@ def main(src_dir: str, out_dir: str):
     gate = Image.open(src / HERO["wall"][0]).convert("RGB").crop((1740, 400, 2460, 1330))
     gate = gate.filter(ImageFilter.MedianFilter(3)).resize((1440, 1860), Image.LANCZOS)
     gate = gate.filter(ImageFilter.UnsharpMask(radius=1.4, percent=70, threshold=2))
-    save_widths(gate, out, "wall-gate", [720, 860, 1080, 1440], quality=74)
+    save_widths(gate, out, "wall-gate", [720, 860], quality=60)
+    save_widths(gate, out, "wall-gate", [1080, 1440], quality=74)
     for name, (f, widths) in PHOTOS.items():
         save_widths(Image.open(src / f).convert("RGB"), out, name, widths)
     Image.open(src / HERO["wall"][0]).convert("RGB").resize((1200, 640), Image.LANCZOS).save(

@@ -21,7 +21,7 @@
 <link rel="apple-touch-icon" href="/assets/img/icon-180.png">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="preload" href="/assets/fonts/estedad-arabic.woff2" as="font" type="font/woff2" crossorigin>
-<script>(function(){var t;try{t=sessionStorage.getItem('theme')}catch(e){}if(!t){var h=new Date().getHours();t=h>=18||h<6?'dark':'light'}document.documentElement.dataset.theme=t;var m=document.querySelector('meta[name=theme-color]');if(m)m.content=t==='dark'?'#0d2131':'#e8edf2'})();</script>
+<script>(function(){var t;try{t=sessionStorage.getItem('theme')}catch(e){}if(!t){var h=new Date().getHours();t=h>=18||h<6?'dark':'light'}document.documentElement.dataset.theme=t;document.documentElement.classList.add('js');var m=document.querySelector('meta[name=theme-color]');if(m)m.content=t==='dark'?'#0d2131':'#e8edf2'})();</script>
 <!-- css:start --><style>@font-face {
 font-family: "Estedad";
 src: url("/assets/fonts/estedad-arabic.woff2") format("woff2");
@@ -237,7 +237,7 @@ linear-gradient(to top, var(--hero-shade) 0%, rgba(9, 25, 38, .45) 45%, rgba(9, 
 .hero-body > * { animation: reveal var(--dur-very-slow) ease-in-out both; }
 .hero-body > :nth-child(2) { animation-delay: .08s; }
 .hero-body > :nth-child(3) { animation-delay: .16s; }
-.hero-media img { animation: settle 1.6s var(--ease) both; }
+@media (min-width: 641px) { .hero-media img { animation: settle 1.6s var(--ease) both; } }
 }
 @keyframes rise { from { opacity: 0; transform: translateY(14px); } }
 @keyframes reveal { from { opacity: 0; transform: translateY(12px); } }
@@ -454,6 +454,13 @@ grid-template-columns: 1fr; justify-items: center; align-content: start; gap: va
 .is-swipe .teacher-role { font-size: 1.05rem; }
 .is-swipe .teacher-edu { justify-items: center; }
 .is-swipe .team-status:empty { display: none; }
+.swipe-hint { display: none; }
+.is-swipe .swipe-hint { display: flex; align-items: center; justify-content: center; gap: var(--s2); margin: var(--s3) 0 0; font-size: .95rem; font-weight: 700; color: var(--ink-2); }
+.swipe-hint .ic { width: 22px; height: 22px; color: var(--sky-text); }
+@media (prefers-reduced-motion: no-preference) {
+.is-swipe .swipe-hint .ic { animation: nudge 1.6s ease-in-out infinite; }
+@keyframes nudge { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-6px); } }
+}
 .is-swipe .section-head { margin-bottom: var(--s4); }
 @media (max-height: 700px) {
 .is-deck .team-pin { justify-content: flex-start; }
@@ -498,7 +505,7 @@ background: var(--surface); color: var(--ink); font-size: 1.08rem; line-height: 
 .enrol-row { padding-inline-end: 0; }
 .enrol .btn { width: 100%; }
 }
-.contact { display: grid; grid-template-columns: 1fr 1fr; grid-template-areas: "form form" "info map"; gap: var(--s6); align-items: start; }
+.contact { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "form form" "info map"; gap: var(--s6); align-items: start; }
 .contact > .form { grid-area: form; }
 .contact-info:focus { outline: none; }
 .contact-info:target, .contact-info.is-flash { box-shadow: 0 0 0 3px var(--sun); transition: box-shadow var(--dur-slow); }
@@ -511,10 +518,12 @@ background: var(--surface); color: var(--ink); font-size: 1.08rem; line-height: 
 .map-cta { position: absolute; inset: auto 0 0; display: flex; align-items: center; justify-content: center; gap: var(--s2); min-height: 52px; background: var(--rule); color: #fff; font-weight: 700; }
 .map-card a:hover .map-cta { background: var(--cta); }
 .map-credit { margin: var(--s1) 0 0; font-size: .78rem; color: var(--ink-2); }
-.contact-list li { display: flex; gap: var(--s3); align-items: center; min-height: 44px; }
+.contact-list li { display: flex; gap: var(--s3); align-items: center; min-height: 44px; min-width: 0; }
+.contact-list li > :last-child { min-width: 0; overflow-wrap: anywhere; }
 .contact-list .ic { color: var(--sky-text); }
-.contact-list a { color: var(--ink); display: inline-flex; align-items: center; min-height: 44px; }
-@media (max-width: 860px) { .contact { grid-template-columns: 1fr; grid-template-areas: "info" "form" "map"; gap: var(--s5); } .contact-info { padding: var(--s4); } }
+.contact-list a { color: var(--ink); display: inline-flex; align-items: center; min-height: 44px; min-width: 0; overflow-wrap: anywhere; }
+.contact > * { min-width: 0; }
+@media (max-width: 860px) { .contact { grid-template-columns: minmax(0, 1fr); grid-template-areas: "info" "form" "map"; gap: var(--s5); } .contact-info { padding: var(--s4); } }
 .form { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: var(--s6); display: grid; gap: var(--s4); }
 .form h3 { font-size: var(--t-lg); font-weight: 800; }
 .field { display: grid; gap: var(--s1); border: 0; padding: 0; margin: 0; min-width: 0; }
@@ -723,8 +732,10 @@ html { scroll-behavior: auto; }
 @keyframes ring { 0% { opacity: .75; transform: scale(1); } 70%, 100% { opacity: 0; transform: scale(1.14, 1.42); } }
 ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .45s; animation-timing-function: var(--ease); }
 }
-#faq, #contact, .enrol, .site-footer { content-visibility: auto; contain-intrinsic-size: auto 900px; }
-.is-swipe .teacher { content-visibility: auto; contain-intrinsic-size: auto 560px; }</style><!-- css:end -->
+#programs, #faq, #contact, .enrol, .site-footer { content-visibility: auto; contain-intrinsic-size: auto 900px; }
+.teacher { content-visibility: auto; contain-intrinsic-size: auto 190px; }
+.is-swipe .teacher { contain-intrinsic-size: auto 560px; }
+.is-deck .teacher { content-visibility: visible; }</style><!-- css:end -->
 <link rel="modulepreload" href="/assets/js/validate.js">
 <link rel="modulepreload" href="/assets/js/common.js">
 <script type="module" src="/assets/js/form-page.js"></script>
@@ -761,6 +772,7 @@ html { scroll-behavior: auto; }
     <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></symbol>
     <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
     <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-swipe" viewBox="0 0 24 24"><path d="M20 12H4M9 7l-5 5 5 5M15 7l5 5-5 5"/></symbol>
     <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></symbol>
     <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
     <symbol id="i-external" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/></symbol>
