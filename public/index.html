@@ -53,7 +53,7 @@ unicode-range: U+0000-00FF, U+2000-206F, U+20AC, U+2122, U+2212;
 @font-face {
 font-family: "Lalezar";
 src: url("/assets/fonts/lalezar-arabic.woff2") format("woff2");
-font-display: swap;
+font-display: optional;
 unicode-range: U+0600-06FF, U+0750-077F, U+200C-200E, U+2010-2011, U+FB50-FDFF, U+FE70-FEFC;
 }
 @font-face {
@@ -566,7 +566,8 @@ transition: background-color .15s, border-color .15s;
 .segmented input:focus-visible + span { outline: 3px solid var(--focus); outline-offset: 2px; }
 .stepper { display: grid; gap: var(--s2); }
 .stepper[hidden] { display: none; }
-.step-count { margin: 0; font-size: var(--t-sm); font-weight: 700; color: var(--ink-2); }
+html:not(.js) .stepper { display: none; }
+.step-count { margin: 0; min-height: 1.85em; font-size: var(--t-sm); font-weight: 700; color: var(--ink-2); }
 .step-progress { height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; }
 .step-progress span { display: block; height: 100%; background: var(--cta); transform-origin: right; transform: scaleX(var(--p, 0)); transition: transform .35s var(--ease); }
 .step { display: grid; gap: var(--s4); min-width: 0; }
@@ -1317,11 +1318,11 @@ html { scroll-behavior: auto; }
       <div class="contact">
         <form class="form" id="inquiry" novalidate data-inquiry data-steps action="/api/inquiries" method="post">
           <h3>درخواست تماس مشاور</h3>
-          <div class="stepper" data-stepper hidden>
+          <div class="stepper" data-stepper>
             <p class="step-count" data-step-label></p>
             <div class="step-progress" aria-hidden="true"><span data-step-progress></span></div>
           </div>
-          <div class="step" data-step>
+          <div class="step is-active" data-step>
             <div class="field">
               <label for="f-name">نام و نام خانوادگی ولی</label>
               <input id="f-name" name="parentName" autocomplete="name" required minlength="3" maxlength="60" lang="fa" placeholder="مثلاً: مریم احمدی">

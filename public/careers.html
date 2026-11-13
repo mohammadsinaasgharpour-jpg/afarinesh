@@ -21,6 +21,7 @@
 <link rel="apple-touch-icon" href="/assets/img/icon-180.png">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="preload" href="/assets/fonts/estedad-arabic.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/lalezar-arabic.woff2" as="font" type="font/woff2" crossorigin>
 <script>(function(){var t;try{t=sessionStorage.getItem('theme')}catch(e){}if(!t){var h=new Date().getHours();t=h>=18||h<6?'dark':'light'}document.documentElement.dataset.theme=t;document.documentElement.classList.add('js');var m=document.querySelector('meta[name=theme-color]');if(m)m.content=t==='dark'?'#0d2131':'#e8edf2'})();</script>
 <!-- css:start --><style>@font-face {
 font-family: "Estedad";
@@ -39,7 +40,7 @@ unicode-range: U+0000-00FF, U+2000-206F, U+20AC, U+2122, U+2212;
 @font-face {
 font-family: "Lalezar";
 src: url("/assets/fonts/lalezar-arabic.woff2") format("woff2");
-font-display: swap;
+font-display: optional;
 unicode-range: U+0600-06FF, U+0750-077F, U+200C-200E, U+2010-2011, U+FB50-FDFF, U+FE70-FEFC;
 }
 @font-face {
@@ -552,7 +553,8 @@ transition: background-color .15s, border-color .15s;
 .segmented input:focus-visible + span { outline: 3px solid var(--focus); outline-offset: 2px; }
 .stepper { display: grid; gap: var(--s2); }
 .stepper[hidden] { display: none; }
-.step-count { margin: 0; font-size: var(--t-sm); font-weight: 700; color: var(--ink-2); }
+html:not(.js) .stepper { display: none; }
+.step-count { margin: 0; min-height: 1.85em; font-size: var(--t-sm); font-weight: 700; color: var(--ink-2); }
 .step-progress { height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; }
 .step-progress span { display: block; height: 100%; background: var(--cta); transform-origin: right; transform: scaleX(var(--p, 0)); transition: transform .35s var(--ease); }
 .step { display: grid; gap: var(--s4); min-width: 0; }
@@ -820,12 +822,12 @@ html { scroll-behavior: auto; }
     <div class="wrap narrow">
       <h2 id="form-title" class="visually-hidden">فرم دعوت به همکاری</h2>
       <form class="form form-wide" id="careers" novalidate data-form="career" data-steps action="/api/careers" method="post">
-        <div class="stepper" data-stepper hidden>
+        <div class="stepper" data-stepper>
           <p class="step-count" data-step-label></p>
           <div class="step-progress" aria-hidden="true"><span data-step-progress></span></div>
         </div>
         <p class="required-note">همه‌ی موارد لازم‌اند. نام و رشته را به فارسی بنویسید.</p>
-        <div class="step" data-step>
+        <div class="step is-active" data-step>
           <div class="field">
             <label for="c-fullName">نام و نام خانوادگی</label>
             <input id="c-fullName" name="fullName" autocomplete="name" required maxlength="60" lang="fa">
