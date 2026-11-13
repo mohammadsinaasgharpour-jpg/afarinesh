@@ -7,10 +7,14 @@ initChrome();
 // The page is drawn first; the teachers section, the menu highlight and the callback form are set up a
 // moment later, when the browser is idle, so their work does not hold up the first paint on phones.
 const whenIdle = (fn) => {
-  const run = () => (window.requestIdleCallback ? requestIdleCallback(fn, { timeout: 1500 }) : setTimeout(fn, 1));
-  // a link to a section further down needs the final layout at once, or the target would move after the jump
-  if (location.hash) fn();
-  else if (document.readyState === "complete") run();
+  let started = false;
+  const start = () => { if (started) return; started = true; fn(); };
+  // wide screens have time to spare, and a link to a section further down needs the final layout at once
+  if (location.hash || !matchMedia("(max-width: 700px)").matches) return start();
+  // phones: when the browser is idle after loading, or at once when the visitor starts to scroll or tap
+  for (const type of ["scroll", "pointerdown", "keydown", "focusin"]) addEventListener(type, start, { once: true, passive: true });
+  const run = () => (window.requestIdleCallback ? requestIdleCallback(start, { timeout: 1500 }) : setTimeout(start, 1));
+  if (document.readyState === "complete") run();
   else addEventListener("load", run, { once: true });
 };
 whenIdle(() => {
@@ -225,6 +229,8 @@ whenIdle(() => {
   }
   let searchTimer;
   search.addEventListener("input", () => { clearTimeout(searchTimer); searchTimer = setTimeout(applyTeamSearch, 120); });
+  // text typed before this script started is applied now
+  if (search.value.trim()) applyTeamSearch();
   $("[data-team-reset]").addEventListener("click", () => {
     search.value = "";
     applyTeamSearch();
