@@ -69,6 +69,8 @@ test("after the last teacher the list stops pinning, without moving the page", a
   test.skip(isMobile, "phones swipe instead of pinning");
   await page.goto("/");
   const track = page.locator("[data-team-track]");
+  // the section's script starts once the page is idle; measure the pinned length after that
+  await expect(track).toHaveClass(/is-deck/);
   await page.evaluate(() => { const t = document.querySelector("[data-team-track]"); scrollTo({ top: t.offsetTop + t.offsetHeight - 200, behavior: "instant" }); });
   await expect(track).toHaveClass(/is-done/);
   const faqTop = await page.locator("#faq").evaluate((el) => el.getBoundingClientRect().top);
