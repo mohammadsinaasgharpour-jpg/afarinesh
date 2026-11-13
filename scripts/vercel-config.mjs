@@ -2,7 +2,7 @@
 // Re-run (npm run build) whenever the inline script in public/index.html changes: its CSP hash lives here.
 import { readFile, writeFile } from "node:fs/promises";
 import { pathToFileURL } from "node:url";
-import { buildSecurityHeaders, inlineScriptHashes } from "../server/app.mjs";
+import { buildSecurityHeaders, inlineScriptHashes, inlineStyleHashes } from "../server/app.mjs";
 
 const root = new URL("../", import.meta.url);
 const toList = (obj) => Object.entries(obj).map(([key, value]) => ({ key, value }));
@@ -17,9 +17,10 @@ export async function buildVercelConfig() {
     cleanUrls: true,
     trailingSlash: false,
     headers: [
-      { source: "/(.*)", headers: toList(buildSecurityHeaders(inlineScriptHashes(html))) },
-      // file names are not content-hashed: code revalidates, media is cached for a week
-      { source: "/assets/(img|fonts)/(.*)", headers: [{ key: "Cache-Control", value: "public, max-age=604800" }] },
+      { source: "/(.*)", headers: toList(buildSecurityHeaders(inlineScriptHashes(html), inlineStyleHashes(html))) },
+      // file names are not content-hashed: code revalidates, pictures are cached for a month, fonts for a year
+      { source: "/assets/fonts/(.*)", headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }] },
+      { source: "/assets/img/(.*)", headers: [{ key: "Cache-Control", value: "public, max-age=2592000, stale-while-revalidate=86400" }] },
       { source: "/assets/(css|js)/(.*)", headers: [{ key: "Cache-Control", value: "public, max-age=0, must-revalidate" }] },
     ],
   };

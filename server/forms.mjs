@@ -100,6 +100,56 @@ export function createTelegramSender({ token, chatId, fetchImpl = fetch }) {
   };
 }
 
+// The school's Supabase project. The default key is public by design: it can only call submit_form(),
+// which validates, rate-limits and inserts; nothing can be read back with it. When SUPABASE_SECRET_KEY
+// is set in the host's settings the server uses it instead, and the public key's access can be revoked
+// (security-audit/ADDENDUM-2026-11-12.md, SEC-14).
+export const SUPABASE = {
+  url: process.env.SUPABASE_URL || "https://dtqwxyfxemnkautcufho.supabase.co",
+  key: process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || "sb_publishable_mFp765GwgQbxblw6fvIpOw_6fJvhNY0",
+};
+
+/**
+ * Stores a record through the database's submit_form() function. Its limits are counted in the
+ * database, so they hold across every server instance. Sets record.repeat from the database's count.
+ */
+export function createSupabaseStore({ url = SUPABASE.url, key = SUPABASE.key, fetchImpl = fetch } = {}) {
+  return async (record) => {
+    const { kind, id, receivedAt, repeat, ...data } = record;
+    let res;
+    try {
+      res = await fetchImpl(`${url}/rest/v1/rpc/submit_form`, {
+        method: "POST",
+        headers: { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ p_kind: kind, p_id: id, p_data: data }),
+        signal: AbortSignal.timeout(8000),
+      });
+    } catch { throw Object.assign(new Error("store_unreachable"), { status: 503 }); }
+    if (res.ok) {
+      const count = Number(await res.json().catch(() => 1));
+      if (count > 1) record.repeat = count; else delete record.repeat;
+      return;
+    }
+    const body = await res.json().catch(() => ({}));
+    if (body.message === "duplicate") throw Object.assign(new Error("duplicate"), { status: 429 });
+    if (body.message === "rate_limited") throw Object.assign(new Error("rate_limited"), { status: 429 });
+    if (body.message === "invalid") throw Object.assign(new Error("invalid"), { status: 422 });
+    throw Object.assign(new Error(`store ${res.status}`), { status: 503 });
+  };
+}
+
+/**
+ * The database is the record; the staff channel is a notification. A failed notification never loses
+ * a stored form. With no database (store: null) the notification is the only copy and must succeed.
+ */
+export function storeThenNotify({ store, notify, logger = console }) {
+  return async (record) => {
+    if (!store) return notify(record);
+    await store(record);
+    try { await notify(record); } catch (err) { if (err.message !== "inbox_not_configured") logger.error?.(`notify failed for ${record.id}`); }
+  };
+}
+
 /**
  * Fixed-window limiter. In memory, so it is exact for one server process (the school's own host)
  * and best-effort on serverless platforms, where each instance counts separately.

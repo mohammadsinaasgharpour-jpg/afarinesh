@@ -1,6 +1,6 @@
 import { validateInquiry, toPersianDigits, GRADE_LABEL } from "./validate.js";
 import { searchItem, searchTeachers } from "./search.js";
-import { $, $$, initChrome, createFormController } from "./common.js";
+import { $, $$, initChrome, createFormController, reduceMotion } from "./common.js";
 
 initChrome();
 
@@ -14,12 +14,15 @@ const spy = new IntersectionObserver((entries) => {
 }, { rootMargin: "-45% 0px -50% 0px" });
 navLinks.forEach((a) => { const s = document.querySelector(a.hash); if (s) spy.observe(s); });
 
-/* team: skeleton, reveal on scroll, search */
+/* team: skeleton, one-by-one scroll, list mode, search */
+const track = $("[data-team-track]");
 const team = $("[data-team]");
 const cards = $$(".teacher", team);
 const search = $("[data-team-search]");
 const status = $("[data-team-status]");
 const empty = $("[data-team-empty]");
+const bar = $("[data-team-bar]");
+const allBtn = $("[data-team-all]");
 
 for (const img of $$(".teacher-photo img", team)) {
   const box = img.parentElement;
@@ -41,11 +44,64 @@ const reveal = new IntersectionObserver((entries) => {
 }, { rootMargin: "0px 0px -12% 0px" });
 cards.forEach((c) => reveal.observe(c));
 
-const items = cards.map((c) => searchItem(`${$("h3", c).textContent} ${$(".teacher-role", c).textContent}`, c.textContent));
+// One by one: the section pins and each stretch of scrolling brings the next teacher. Pressing
+// «نمایش همه» or searching gives the plain list instead. Under reduced motion the cards swap without moving.
+let wantsDeck = true;
+let index = -1;
+const inDeck = () => track.classList.contains("is-deck");
+const stepLen = () => innerHeight * 0.3;
+const setIndex = (i) => {
+  if (i === index) return;
+  index = i;
+  cards.forEach((c, n) => {
+    c.classList.toggle("is-current", n === i);
+    c.classList.toggle("is-near", Math.abs(n - i) <= 1);
+    c.classList.toggle("is-before", n < i);
+  });
+  $("[data-team-now]").textContent = toPersianDigits(i + 1);
+  $("[data-team-progress]").style.setProperty("--p", String((i + 1) / cards.length));
+};
+const syncDeck = () => {
+  if (!inDeck()) return;
+  const passed = -track.getBoundingClientRect().top;
+  setIndex(Math.max(0, Math.min(cards.length - 1, Math.floor(passed / stepLen()))));
+};
+const setDeck = (on) => {
+  if (on === inDeck()) return;
+  track.classList.toggle("is-deck", on);
+  bar.hidden = false;
+  $("[data-team-prev]").hidden = $("[data-team-next]").hidden = !on;
+  bar.querySelector(".team-count").hidden = bar.querySelector(".team-progress").hidden = !on;
+  allBtn.textContent = on ? "نمایش همه" : "نمایش یکی‌یکی";
+  index = -1;
+  if (on) syncDeck();
+  else cards.forEach((c) => c.classList.remove("is-current", "is-near", "is-before"));
+};
+const goTo = (i) => scrollTo({ top: scrollY + track.getBoundingClientRect().top + (i + 0.5) * stepLen(), behavior: reduceMotion.matches ? "auto" : "smooth" });
+track.style.setProperty("--steps", String(cards.length));
+$("[data-team-total]").textContent = toPersianDigits(cards.length);
+$("[data-team-prev]").addEventListener("click", () => goTo(Math.max(0, index - 1)));
+$("[data-team-next]").addEventListener("click", () => (index >= cards.length - 1 ? $("#faq").scrollIntoView() : goTo(index + 1)));
+allBtn.addEventListener("click", () => {
+  wantsDeck = !inDeck();
+  setDeck(wantsDeck);
+  track.scrollIntoView();
+});
+let deckTick = false;
+addEventListener("scroll", () => {
+  if (deckTick) return;
+  deckTick = true;
+  requestAnimationFrame(() => { syncDeck(); deckTick = false; });
+}, { passive: true });
+setDeck(wantsDeck);
+
+const items = cards.map((c) => searchItem(`${$(".teacher-name", c).textContent} ${$(".teacher-role", c).textContent}`, c.textContent));
 
 function applyTeamSearch() {
   const q = search.value.trim();
   const { matches, partial } = searchTeachers(items, q);
+  // results are a list; clearing the search goes back to one by one
+  setDeck(!q && wantsDeck);
   cards.forEach((c, i) => {
     const show = !q || matches.has(i);
     c.hidden = !show;

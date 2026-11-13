@@ -14,6 +14,10 @@ function between(html, start, end, label) {
   return html.slice(a, b + end.length);
 }
 
+const fa = (n) => String(n).replace(/\d/g, (d) => "۰۱۲۳۴۵۶۷۸۹"[d]);
+const options = (from, to, pad = 0) => Array.from({ length: Math.abs(to - from) + 1 }, (_, i) => from + Math.sign(to - from) * i)
+  .map((n) => `<option value="${String(n).padStart(pad, "0")}">${fa(n)}</option>`).join("");
+
 export function sharedBlocks(index) {
   const header = between(index, '<header class="site-header"', "</header>", "header")
     // section links point back to the home page
@@ -24,6 +28,9 @@ export function sharedBlocks(index) {
     header,
     footer: between(index, '<footer class="site-footer">', "</footer>", "footer"),
     floating: between(index, '<a class="insta-fab"', "data-toasts></div>", "floating"),
+    css: between(index, "<!-- css:start -->", "<!-- css:end -->", "css"),
+    days: options(1, 31, 2),
+    years: options(1400, 1380),
   };
 }
 

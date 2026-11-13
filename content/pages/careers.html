@@ -6,7 +6,7 @@
 <title>دعوت به همکاری | دبیرستان غیردولتی آفرینش شیراز</title>
 <meta name="description" content="فرم دعوت به همکاری دبیرستان غیردولتی پسرانه‌ی آفرینش شیراز برای دبیران و مربیان؛ همکاران ما در اولین فرصت با شما تماس می‌گیرند.">
 <link rel="canonical" href="https://afarineshshiraz.ir/careers">
-<meta name="theme-color" content="#f6f8fa">
+<meta name="theme-color" content="#e8edf2">
 <meta name="color-scheme" content="light dark">
 <meta name="robots" content="index, follow">
 <meta property="og:type" content="website">
@@ -16,13 +16,13 @@
 <meta property="og:description" content="برای همکاری با دبیرستان آفرینش فرم را پر کنید.">
 <meta property="og:url" content="https://afarineshshiraz.ir/careers">
 <meta property="og:image" content="https://afarineshshiraz.ir/assets/img/og-cover.jpg">
-<link rel="icon" href="/assets/img/icon-32.png" sizes="32x32">
+<link rel="icon" href="/assets/img/icon-48.png" type="image/png" sizes="48x48">
 <link rel="icon" href="/assets/img/icon-192.png" sizes="192x192">
 <link rel="apple-touch-icon" href="/assets/img/icon-180.png">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="preload" href="/assets/fonts/estedad-arabic.woff2" as="font" type="font/woff2" crossorigin>
 <!-- shared:theme-script -->
-<link rel="stylesheet" href="/assets/css/main.css">
+<!-- shared:css -->
 <link rel="modulepreload" href="/assets/js/validate.js">
 <link rel="modulepreload" href="/assets/js/common.js">
 <script type="module" src="/assets/js/form-page.js"></script>
@@ -50,20 +50,26 @@
   <section class="section form-section" aria-labelledby="form-title">
     <div class="wrap narrow">
       <h2 id="form-title" class="visually-hidden">فرم دعوت به همکاری</h2>
-      <form class="form form-wide" id="careers" novalidate data-form="career" action="/api/careers" method="post">
-        <p class="required-note">همه‌ی موارد لازم‌اند.</p>
-        <div class="grid-2">
+      <form class="form form-wide" id="careers" novalidate data-form="career" data-steps action="/api/careers" method="post">
+        <div class="stepper" data-stepper hidden>
+          <p class="step-count" data-step-label></p>
+          <div class="step-progress" aria-hidden="true"><span data-step-progress></span></div>
+        </div>
+        <p class="required-note">همه‌ی موارد لازم‌اند. نام و رشته را به فارسی بنویسید.</p>
+        <div class="step" data-step>
           <div class="field">
             <label for="c-fullName">نام و نام خانوادگی</label>
-            <input id="c-fullName" name="fullName" autocomplete="name" required maxlength="60">
+            <input id="c-fullName" name="fullName" autocomplete="name" required maxlength="60" lang="fa">
             <p class="hint" data-error></p>
           </div>
+        </div>
+        <div class="step" data-step>
           <div class="field">
             <label for="c-field">رشته‌ی تحصیلی</label>
-            <input id="c-field" name="field" autocomplete="off" required maxlength="80">
+            <input id="c-field" name="field" autocomplete="off" required maxlength="80" lang="fa" placeholder="مثلاً: ریاضی محض">
             <p class="hint" data-error></p>
           </div>
-          <fieldset class="field span-2">
+          <fieldset class="field">
             <legend>مقطع تحصیلی</legend>
             <div class="segmented">
               <label><input type="radio" name="degree" value="کارشناسی" required><span>کارشناسی</span></label>
@@ -72,7 +78,9 @@
             </div>
             <p class="hint" data-error></p>
           </fieldset>
-          <fieldset class="field span-2">
+        </div>
+        <div class="step" data-step>
+          <fieldset class="field">
             <legend>سابقه‌ی تدریس</legend>
             <div class="segmented seg-2">
               <label><input type="radio" name="experience" value="زیر ۵ سال" required><span>زیر ۵ سال</span></label>
@@ -80,19 +88,25 @@
             </div>
             <p class="hint" data-error></p>
           </fieldset>
-          <div class="field span-2">
+        </div>
+        <div class="step" data-step>
+          <div class="field">
             <label for="c-phone">شماره تماس</label>
-            <input id="c-phone" name="phone" type="tel" inputmode="numeric" dir="ltr" autocomplete="tel" required placeholder="09xx xxx xxxx">
+            <input id="c-phone" name="phone" type="tel" inputmode="numeric" dir="ltr" autocomplete="tel" required maxlength="15" placeholder="09xx xxx xxxx">
+            <p class="hint" data-error></p>
+          </div>
+          <div class="field consent">
+            <label class="check"><input type="checkbox" name="consent" required><span>موافقم این اطلاعات برای بررسی همکاری و تماس با من در اختیار دفتر مدرسه قرار بگیرد. <a href="/privacy" target="_blank" rel="noopener">حریم خصوصی</a></span></label>
             <p class="hint" data-error></p>
           </div>
         </div>
-        <div class="field consent">
-          <label class="check"><input type="checkbox" name="consent" required><span>موافقم این اطلاعات برای بررسی همکاری و تماس با من به دفتر مدرسه فرستاده شود.</span></label>
-          <p class="hint" data-error></p>
-        </div>
         <input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
         <input type="hidden" name="startedAt" data-started>
-        <button class="btn btn-primary btn-block" type="submit" data-submit><span class="spinner" aria-hidden="true"></span><span data-submit-label>بررسی و ارسال</span></button>
+        <div class="step-actions">
+          <button class="btn btn-ghost" type="button" data-step-back hidden>مرحله‌ی قبل</button>
+          <button class="btn btn-primary" type="button" data-step-next hidden>مرحله‌ی بعد</button>
+          <button class="btn btn-primary" type="submit" data-submit><span class="spinner" aria-hidden="true"></span><span data-submit-label>بررسی و ارسال</span></button>
+        </div>
         <p class="privacy-note">این اطلاعات فقط در اختیار دفتر مدرسه قرار می‌گیرد.</p>
       </form>
     </div>

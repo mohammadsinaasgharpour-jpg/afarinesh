@@ -40,7 +40,10 @@ export function normalizeMobile(value) {
   else if (v.startsWith("0098")) v = "0" + v.slice(4);
   else if (v.startsWith("98") && v.length === 12) v = "0" + v.slice(2);
   else if (v.startsWith("9") && v.length === 10) v = "0" + v;
-  return /^09\d{9}$/.test(v) ? v : null;
+  if (!/^09\d{9}$/.test(v)) return null;
+  // placeholders people type to get past a form: one digit repeated, or the keyboard run
+  if (/^09(\d)\1{8}$/.test(v) || v === "09123456789") return null;
+  return v;
 }
 
 /** A mobile number, or an Iranian landline with its area code (e.g. 07132293194). */
@@ -72,8 +75,16 @@ export function normalizeJalaliDate(value, { minYear = 1380, maxYear = 1405 } = 
 }
 
 export const LIMITS = { nameMin: 3, nameMax: 60, messageMax: 500, shortMax: 80, addressMax: 250 };
-const NAME_ERR = "نام و نام خانوادگی را کامل بنویسید.";
+const NAME_ERR = "نام و نام خانوادگی را کامل و به فارسی بنویسید.";
+const FA_ERR = "لطفاً به فارسی بنویسید.";
 const looksLikeName = (s) => !/https?:|www\.|@/i.test(s);
+const PERSIAN_LETTERS = /^[ء-غف-يپچژکگۀیٔ‌ ]+$/;
+/** Persian letters only (no digits, Latin or symbols), with no letter typed three times in a row. */
+export const isPersianName = (s) => PERSIAN_LETTERS.test(s) && !/(.)\1\1/.test(s.replace(/[ ‌]/g, ""));
+/** A person's full name: at least two Persian words of two letters or more. */
+export const isFullPersianName = (s) => isPersianName(s) && s.split(/[ ‌]+/).filter((w) => w.length >= 2).length >= 2;
+/** Free text (address, school, job, message): Persian letters present and no Latin letters. */
+export const isPersianText = (s) => /[ء-ی]/.test(s) && !/[A-Za-z]/.test(s);
 
 function result(errors, value) {
   return Object.keys(errors).length ? { ok: false, errors } : { ok: true, value };
@@ -87,14 +98,14 @@ export function validateInquiry(input) {
   const grade = scalar(input?.grade);
   const message = cleanText(input?.message, { multiline: true });
 
-  if (parentName.length < LIMITS.nameMin) errors.parentName = NAME_ERR;
-  else if (parentName.length > LIMITS.nameMax) errors.parentName = `نام حداکثر ${toPersianDigits(LIMITS.nameMax)} حرف است.`;
-  else if (!looksLikeName(parentName)) errors.parentName = "نام فقط باید شامل حروف باشد.";
+  if (parentName.length > LIMITS.nameMax) errors.parentName = `نام حداکثر ${toPersianDigits(LIMITS.nameMax)} حرف است.`;
+  else if (parentName.length < LIMITS.nameMin || !isFullPersianName(parentName)) errors.parentName = NAME_ERR;
 
   if (!phone) errors.phone = "شماره همراه ۱۱ رقمی را با ۰۹ شروع کنید؛ مثلاً ۰۹۱۷۱۲۳۴۵۶۷.";
   if (!["7", "8", "9"].includes(grade)) errors.grade = "یکی از پایه‌ها را انتخاب کنید.";
   if (message.length > LIMITS.messageMax) errors.message = `پیام حداکثر ${toPersianDigits(LIMITS.messageMax)} حرف است.`;
   else if (/https?:|www\./i.test(message)) errors.message = "لطفاً پیام را بدون لینک بنویسید.";
+  else if (message && !isPersianText(message)) errors.message = "لطفاً پیام را به فارسی بنویسید.";
 
   return result(errors, { parentName, phone, grade, message });
 }
@@ -136,17 +147,23 @@ export function validatePreRegistration(input) {
     consent: input?.consent === true || input?.consent === "on" || input?.consent === "true",
   };
 
-  if (v.fullName.length < LIMITS.nameMin || v.fullName.length > LIMITS.nameMax || !looksLikeName(v.fullName)) e.fullName = NAME_ERR;
-  if (!isValidNationalId(v.nationalId)) e.nationalId = "کد ملی ۱۰ رقمی معتبر نیست؛ دوباره بررسی کنید.";
-  if (!v.birthDate) e.birthDate = "تاریخ تولد را به شکل ۱۳۹۴/۰۵/۱۲ بنویسید.";
-  if (!v.studentMobile) e.studentMobile = "شماره همراه ۱۱ رقمی را با ۰۹ شروع کنید.";
-  if (v.address.length < 8 || v.address.length > LIMITS.addressMax) e.address = "نشانی محل سکونت را کامل بنویسید.";
-  for (const k of ["motherName", "fatherName", "motherJob", "fatherJob"]) {
-    if (v[k].length > LIMITS.shortMax || (v[k] && !looksLikeName(v[k]))) e[k] = "این مورد را کوتاه و بدون لینک بنویسید.";
+  if (v.fullName.length < LIMITS.nameMin || v.fullName.length > LIMITS.nameMax || !isFullPersianName(v.fullName)) e.fullName = NAME_ERR;
+  if (!isValidNationalId(v.nationalId)) e.nationalId = "این کد ملی معتبر نیست؛ ۱۰ رقم را دوباره بررسی کنید.";
+  if (!v.birthDate) e.birthDate = "روز، ماه و سال تولد را انتخاب کنید.";
+  if (!v.studentMobile) e.studentMobile = "شماره همراه باید ۱۱ رقم باشد و با ۰۹ شروع شود.";
+  if (v.address.length > LIMITS.addressMax) e.address = `نشانی حداکثر ${toPersianDigits(LIMITS.addressMax)} حرف است.`;
+  else if (!isPersianText(v.address)) e.address = "نشانی را به فارسی بنویسید.";
+  else if (v.address.length < 10 || v.address.split(/[\s،,]+/).filter(Boolean).length < 3) e.address = "نشانی را کامل بنویسید؛ مثلاً: شیراز، بلوار ارم، کوچه‌ی ۵، پلاک ۱۲.";
+  for (const k of ["motherName", "fatherName"]) {
+    if (v[k] && (v[k].length > LIMITS.shortMax || !isPersianName(v[k]))) e[k] = "نام را فقط با حروف فارسی بنویسید.";
   }
-  if (!v.motherMobile) e.motherMobile = "شماره همراه مادر را با ۰۹ شروع کنید.";
-  if (!v.fatherMobile) e.fatherMobile = "شماره همراه پدر را با ۰۹ شروع کنید.";
+  for (const k of ["motherJob", "fatherJob"]) {
+    if (v[k] && (v[k].length > LIMITS.shortMax || !looksLikeName(v[k]) || !isPersianText(v[k]))) e[k] = FA_ERR;
+  }
+  if (!v.motherMobile) e.motherMobile = "شماره همراه مادر باید ۱۱ رقم باشد و با ۰۹ شروع شود.";
+  if (!v.fatherMobile) e.fatherMobile = "شماره همراه پدر باید ۱۱ رقم باشد و با ۰۹ شروع شود.";
   if (v.currentSchool.length < 2 || v.currentSchool.length > LIMITS.shortMax) e.currentSchool = "نام مدرسه‌ی فعلی را بنویسید.";
+  else if (!isPersianText(v.currentSchool)) e.currentSchool = "نام مدرسه را به فارسی بنویسید.";
   const gpa = Number(v.gpa);
   if (v.gpa === "" || !/^\d{1,2}(\.\d{1,2})?$/.test(v.gpa) || gpa < 0 || gpa > 20) e.gpa = "معدل را به عدد بین ۰ تا ۲۰ بنویسید؛ مثلاً ۱۹٫۵۰.";
   if (!v.discipline) e.discipline = "نمره‌ی انضباط را انتخاب کنید.";
@@ -167,8 +184,9 @@ export function validateCareer(input) {
     phone: normalizePhone(input?.phone) ?? "",
     consent: input?.consent === true || input?.consent === "on" || input?.consent === "true",
   };
-  if (v.fullName.length < LIMITS.nameMin || v.fullName.length > LIMITS.nameMax || !looksLikeName(v.fullName)) e.fullName = NAME_ERR;
+  if (v.fullName.length < LIMITS.nameMin || v.fullName.length > LIMITS.nameMax || !isFullPersianName(v.fullName)) e.fullName = NAME_ERR;
   if (v.field.length < 2 || v.field.length > LIMITS.shortMax || !looksLikeName(v.field)) e.field = "رشته‌ی تحصیلی را بنویسید.";
+  else if (!isPersianText(v.field)) e.field = "رشته‌ی تحصیلی را به فارسی بنویسید.";
   if (!v.degree) e.degree = "مقطع تحصیلی را انتخاب کنید.";
   if (!v.experience) e.experience = "سابقه‌ی تدریس را انتخاب کنید.";
   if (!v.phone) e.phone = "شماره‌ی همراه یا ثابت با پیش‌شماره را بنویسید.";

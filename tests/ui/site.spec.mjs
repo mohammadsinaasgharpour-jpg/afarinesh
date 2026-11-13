@@ -31,36 +31,51 @@ test("no horizontal scrolling", async ({ page }) => {
   expect(overflow).toBeLessThanOrEqual(0);
 });
 
-test("teachers appear in the school's order and reveal while scrolling", async ({ page }) => {
+test("teachers come one at a time while the section is pinned, in the school's order", async ({ page }) => {
   await page.goto("/");
-  const names = page.locator(".teacher h3");
-  await expect(names).toHaveCount(30);
+  const names = page.locator(".teacher .teacher-name");
+  await expect(names).toHaveCount(29);
   await expect(names.nth(0)).toHaveText("فرشید فلاحی");
-  await expect(names.nth(1)).toHaveText("عبدالرحمان یدالهی");
-  await expect(names.nth(29)).toHaveText("حسین قاسمی");
-  const last = page.locator(".teacher").last();
-  await expect(last).not.toHaveClass(/is-in/);
-  await last.scrollIntoViewIfNeeded();
-  await expect(last).toHaveClass(/is-in/);
+  await expect(names.nth(28)).toHaveText("حسین قاسمی");
+  await expect(page.locator("[data-team]")).not.toContainText("قزلباش");
+  await expect(page.locator(".teacher h3")).toHaveCount(0);
+  const current = page.locator(".teacher.is-current .teacher-name");
+  const toStep = (i) => page.evaluate((n) => { const t = document.querySelector("[data-team-track]"); scrollTo(0, t.offsetTop + innerHeight * 0.3 * (n + 0.5)); }, i);
+  await toStep(0);
+  await expect(current).toHaveText("فرشید فلاحی");
+  await expect(page.locator(".teacher.is-current")).toHaveCount(1);
+  await toStep(4);
+  await expect(current).toHaveText("مجید میرزایی");
+  await expect(page.locator("[data-team-now]")).toHaveText("۵");
+  // the search box and the card stay on screen while pinned
+  await expect(page.locator("[data-team-search]")).toBeInViewport();
+  await expect(page.locator(".teacher.is-current")).toBeInViewport();
+  await page.locator("[data-team-next]").click();
+  await expect(current).toHaveText("کریم کشاورز");
+  await page.locator("[data-team-all]").click();
+  await expect(page.locator("[data-team-track]")).not.toHaveClass(/is-deck/);
+  await expect(page.locator(".teacher")).toHaveCount(29);
 });
 
 test("teacher search really hides non-matching teachers", async ({ page }) => {
   await page.goto("/");
   const search = page.locator("[data-team-search]");
-  const visibleNames = () => page.locator(".teacher:visible h3").allTextContents();
+  const visibleNames = () => page.locator(".teacher:visible .teacher-name").allTextContents();
   await search.fill("آمادگی دفاعی");
   await expect(page.locator(".teacher:visible")).toHaveCount(1);
   expect(await visibleNames()).toEqual(["شهرام ده‌بزرگی"]);
   await search.fill("ریاضی");
   await expect(page.locator(".teacher:visible")).toHaveCount(3);
-  await expect(page.locator("[data-team-status]")).toHaveText("۳ نفر از ۳۰ نفر");
+  await expect(page.locator("[data-team-status]")).toHaveText("۳ نفر از ۲۹ نفر");
   await search.fill("زبان");
   await expect(page.locator(".teacher:visible")).toHaveCount(4);
   await search.fill("zzzz");
   await expect(page.locator(".teacher:visible")).toHaveCount(0);
   await expect(page.locator("[data-team-empty]")).toBeVisible();
   await page.locator("[data-team-reset]").click();
-  await expect(page.locator(".teacher:visible")).toHaveCount(30);
+  // with the search cleared the section goes back to one teacher at a time
+  await expect(page.locator("[data-team-track]")).toHaveClass(/is-deck/);
+  await expect(page.locator(".teacher.is-current")).toHaveCount(1);
 });
 
 test("FAQ has no sports-hall question and opens and closes", async ({ page }) => {
@@ -85,11 +100,33 @@ test("mobile menu opens and closes", async ({ page, isMobile }) => {
 });
 
 test.describe("callback form", () => {
-  test("shows field errors instead of sending", async ({ page }) => {
+  const next = (page) => page.locator("#inquiry [data-step-next]").click();
+  const fill = async (page, { name = "مریم احمدی", phone = "۰۹۱۷۱۲۳۴۵۶۷", grade = "هشتم" } = {}) => {
+    await page.fill("#f-name", name);
+    await next(page);
+    await page.fill("#f-phone", phone);
+    await next(page);
+    await page.locator("#inquiry .segmented label", { hasText: grade }).click();
+  };
+
+  test("shows one step at a time and an error only after pressing next", async ({ page }) => {
     await page.goto("/");
-    await page.locator("[data-submit]").click();
-    await expect(page.locator("#f-name-err")).not.toBeEmpty();
-    await expect(page.locator("#f-phone-err")).not.toBeEmpty();
+    await expect(page.locator("#f-name")).toBeVisible();
+    await expect(page.locator("#f-phone")).toBeHidden();
+    await page.fill("#f-name", "Maryam");
+    await page.locator("#f-name").blur();
+    await expect(page.locator("#inquiry .step.is-active [data-error]")).toBeEmpty();
+    await next(page);
+    await expect(page.locator("#inquiry .step.is-active [data-error]")).toContainText("فارسی");
+    await expect(page.locator("#f-phone")).toBeHidden();
+    await page.fill("#f-name", "مریم احمدی");
+    await expect(page.locator("#inquiry .step.is-active [data-error]")).toBeEmpty();
+    await next(page);
+    await expect(page.locator("#f-phone")).toBeVisible();
+    await expect(page.locator("#inquiry [data-step-label]")).toHaveText("مرحله‌ی ۲ از ۳");
+    await page.fill("#f-phone", "0911111111");
+    await next(page);
+    await expect(page.locator("#inquiry .step.is-active [data-error]")).not.toBeEmpty();
     await expect(page.locator("[data-confirm-dialog]")).not.toBeVisible();
   });
 
@@ -100,10 +137,8 @@ test.describe("callback form", () => {
       await route.fulfill({ status: 201, contentType: "application/json", body: '{"ok":true}' });
     });
     await page.goto("/");
-    await page.fill("#f-name", "مریم احمدی");
-    await page.fill("#f-phone", "۰۹۱۷۱۲۳۴۵۶۷");
-    await page.locator(".segmented label", { hasText: "هشتم" }).click();
-    await page.locator("[data-submit]").click();
+    await fill(page);
+    await page.locator("#inquiry [data-submit]").click();
     const dialog = page.locator("[data-confirm-dialog]");
     await expect(dialog).toBeVisible();
     await expect(dialog).toContainText("۰۹۱۷۱۲۳۴۵۶۷");
@@ -111,15 +146,14 @@ test.describe("callback form", () => {
     await expect(page.locator(".toast.ok")).toBeVisible();
     expect(sent).toMatchObject({ parentName: "مریم احمدی", phone: "09171234567", grade: "8" });
     await expect(page.locator("#f-name")).toHaveValue("");
+    await expect(page.locator("#f-name")).toBeVisible();
   });
 
   test("tells parents to call when the inbox is down", async ({ page }) => {
     await page.route("**/api/inquiries", (route) => route.fulfill({ status: 503, contentType: "application/json", body: '{"error":"inbox_not_configured"}' }));
     await page.goto("/");
-    await page.fill("#f-name", "مریم احمدی");
-    await page.fill("#f-phone", "09171234567");
-    await page.locator(".segmented label", { hasText: "هفتم" }).click();
-    await page.locator("[data-submit]").click();
+    await fill(page, { phone: "09171234567", grade: "هفتم" });
+    await page.locator("#inquiry [data-submit]").click();
     await page.locator("[data-confirm-yes]").click();
     await expect(page.locator(".toast.err")).toContainText("تماس بگیرید");
     await expect(page.locator("#f-name")).toHaveValue("مریم احمدی");
@@ -136,10 +170,10 @@ test("Instagram button sits in the bottom-right corner", async ({ page }) => {
   expect(vp.height - (box.y + box.height)).toBeLessThanOrEqual(24);
 });
 
-test("the hero lede names the school level, city and founding year", async ({ page }) => {
+test("the hero names the school, its level, city and founding year", async ({ page }) => {
   await page.goto("/");
-  await expect(page.locator(".hero-kicker")).toHaveCount(0);
-  await expect(page.locator(".hero-lede")).toContainText("دوره اول متوسطه در شیراز، از ۱۳۸۷");
+  await expect(page.locator("h1")).toContainText("دبیرستان غیردولتی آفرینش شیراز");
+  await expect(page.locator(".hero-lede")).toContainText("دوره اول متوسطه در شیراز، از سال ۱۳۸۷");
 });
 
 test("touch targets in contact and footer are at least 44px tall", async ({ page }) => {
@@ -149,38 +183,47 @@ test("touch targets in contact and footer are at least 44px tall", async ({ page
   for (const h of heights) expect(h).toBeGreaterThanOrEqual(44);
 });
 
-test("the plus sign comes before ۱۰۰ when read right to left", async ({ page }) => {
+test("the student count reads +۱۰۰, plus sign on the left", async ({ page }) => {
   await page.goto("/");
   const dd = page.locator(".f-paper dd");
-  await expect(dd).toHaveText("۱۰۰+");
+  await expect(dd).toHaveText("+۱۰۰");
   const box = await dd.evaluate((el) => {
     const r = document.createRange(); const t = el.firstChild;
-    r.setStart(t, 3); r.setEnd(t, 4); const plus = r.getBoundingClientRect();
-    r.setStart(t, 0); r.setEnd(t, 3); const num = r.getBoundingClientRect();
+    r.setStart(t, 0); r.setEnd(t, 1); const plus = r.getBoundingClientRect();
+    r.setStart(t, 1); r.setEnd(t, 4); const num = r.getBoundingClientRect();
     return { plus: plus.left, num: num.left };
   });
-  expect(box.plus).toBeGreaterThan(box.num);
+  expect(box.plus).toBeLessThan(box.num);
 });
 
-test("logo is not a link and footer carries the credit, without the virtual-school link", async ({ page }) => {
-  await page.goto("/");
-  await expect(page.locator("header a.brand")).toHaveCount(0);
+test("the school name in the header goes back to the top of the home page", async ({ page }) => {
+  await page.goto("/#programs");
+  await page.evaluate(() => document.querySelector("#faq").scrollIntoView());
+  await page.locator("header a.brand").click();
+  await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
+  await expect(page).toHaveURL(/\/$/);
+  await page.goto("/careers");
+  await page.locator("header a.brand").click();
+  await expect(page).toHaveURL(/\/$/);
   await expect(page.locator(".site-footer")).toContainText("طراحی و ساخت: محمدسینا اصغرپور");
   await expect(page.locator(".site-footer")).not.toContainText("سامانه");
-  await expect(page.locator("#approach img")).toHaveCount(0);
 });
 
-test("Instagram button fades over text and returns on empty space", async ({ page }) => {
+test("Instagram button drops behind text and comes back on empty space", async ({ page }) => {
   await page.goto("/");
   const fab = page.locator(".insta-fab");
   const box = await fab.boundingBox();
-  expect(box.width).toBeGreaterThanOrEqual(54);
-  expect(box.width).toBeLessThanOrEqual(62);
-  await page.locator(".faq").scrollIntoViewIfNeeded();
-  await page.evaluate(() => { const f = document.querySelector(".faq details p, .faq summary"); window.scrollTo(0, f.getBoundingClientRect().top + scrollY - innerHeight + 30); });
-  await page.waitForTimeout(150);
-  const states = await page.evaluate(() => document.querySelector(".insta-fab").classList.contains("is-over-text"));
-  expect(typeof states).toBe("boolean");
+  expect(box.width).toBeGreaterThanOrEqual(page.viewportSize().width < 520 ? 64 : 58);
+  // wherever it is, the button is behind the content exactly while it covers text or a picture
+  for (const y of [0, 600, 1400, 2600]) {
+    await page.evaluate((top) => scrollTo(0, top), y);
+    await page.waitForTimeout(120);
+    const { over, z, opacity } = await fab.evaluate((el) => ({ over: el.classList.contains("is-over-text"), z: getComputedStyle(el).zIndex, opacity: Number(getComputedStyle(el).opacity) }));
+    expect(z).toBe(over ? "0" : "30");
+    if (over) expect(opacity).toBeLessThan(1);
+  }
+  const main = await page.locator("main").evaluate((el) => getComputedStyle(el).zIndex);
+  expect(main).toBe("1");
 });
 
 test("right-click on images is blocked", async ({ page }) => {
@@ -200,7 +243,7 @@ test("every part of the page follows the light/dark switch, even when toggled qu
   const probe = () => page.evaluate(() => {
     const bg = (sel) => getComputedStyle(document.querySelector(sel)).backgroundColor;
     const fg = (sel) => getComputedStyle(document.querySelector(sel)).color;
-    return [bg("body"), bg(".site-header"), bg(".teacher"), bg(".form"), bg(".search input"), bg(".programs"), fg("h2"), fg(".teacher h3")].join("|");
+    return [bg("body"), bg(".site-header"), bg(".teacher"), bg(".form"), bg(".search input"), bg(".programs"), fg("h2"), fg(".teacher-name")].join("|");
   });
   const light = await probe();
   const btn = page.locator("[data-theme-toggle]");
@@ -219,41 +262,65 @@ test("every part of the page follows the light/dark switch, even when toggled qu
 test("pre-registration buttons lead to our own page for 1406-1407", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator('a[href*="porsline"]')).toHaveCount(0);
-  await expect(page.locator(".hero .btn-primary")).toContainText("۱۴۰۶-۱۴۰۷");
-  await page.locator(".hero .btn-primary").click();
+  await expect(page.locator(".hero .btn-cta")).toContainText("۱۴۰۶-۱۴۰۷");
+  expect(await page.locator(".hero .btn-cta").evaluate((el) => getComputedStyle(el).backgroundColor)).toBe("rgb(198, 56, 44)");
+  await page.locator(".hero .btn-cta").click();
   await expect(page).toHaveURL(/\/pre-registration$/);
   await expect(page.locator("h1")).toContainText("۱۴۰۶-۱۴۰۷");
 });
 
-test("pre-registration form validates, reviews and sends", async ({ page }) => {
+test("pre-registration goes step by step, validates each step, reviews and sends", async ({ page }) => {
   let sent;
   await page.route("**/api/pre-registration", async (route) => {
     sent = route.request().postDataJSON();
     await route.fulfill({ status: 201, contentType: "application/json", body: '{"ok":true,"id":"abcdef12-0000"}' });
   });
   await page.goto("/pre-registration");
-  await page.locator("[data-submit]").click();
-  await expect(page.locator("#p-nationalId").locator("xpath=..").locator("[data-error]")).not.toBeEmpty();
+  const next = () => page.locator("[data-step-next]").click();
+  const error = page.locator(".step.is-active [data-error]").first();
+  await expect(page.locator("[data-step-label]")).toHaveText("مرحله‌ی ۱ از ۱۰");
+  await expect(page.locator("#p-nationalId")).toBeHidden();
+  await next();
+  await expect(error).not.toBeEmpty();
   await page.fill("#p-fullName", "آرین رضایی");
+  await next();
+  await page.fill("#p-nationalId", "1234567890");
+  await next();
+  await expect(error).toContainText("کد ملی");
   await page.fill("#p-nationalId", "۰۴۹۹۳۷۰۸۹۹");
-  await page.fill("#p-birthDate", "۱۳۹۳/۰۴/۲۳");
+  await next();
+  await next();
+  await expect(error).toContainText("تولد");
+  await page.selectOption('[data-date-part="day"]', "23");
+  await page.selectOption('[data-date-part="month"]', "04");
+  await page.selectOption('[data-date-part="year"]', "1393");
+  await next();
   await page.fill("#p-studentMobile", "09171234567");
-  await page.fill("#p-address", "شیراز، بلوار ارم، کوچه ۵");
-  await page.fill("#p-motherMobile", "09171111111");
-  await page.fill("#p-fatherMobile", "09172222222");
+  await next();
+  await page.fill("#p-address", "Shiraz, Eram");
+  await next();
+  await expect(error).toContainText("فارسی");
+  await page.fill("#p-address", "شیراز، بلوار ارم، کوچه ۵، پلاک ۱۲");
+  await next();
+  await page.selectOption("#p-motherEducation", "لیسانس");
+  await page.fill("#p-motherMobile", "09171111112");
+  await next();
+  await page.fill("#p-fatherMobile", "۰۹۱۷۲۲۲۲۲۲۳");
+  await next();
   await page.fill("#p-currentSchool", "دبستان نمونه");
   await page.fill("#p-gpa", "۱۹٫۵");
-  await page.selectOption("#p-motherEducation", "لیسانس");
-  await page.locator(".segmented label", { hasText: "عالی" }).click();
-  await page.locator(".segmented label", { hasText: "هشتم" }).click();
-  await page.locator(".check").click();
+  await next();
+  await page.locator(".step.is-active .segmented label", { hasText: "عالی" }).click();
+  await page.locator(".step.is-active .segmented label", { hasText: "هشتم" }).click();
+  await next();
+  await page.locator(".check input").check();
   await page.locator("[data-submit]").click();
   const dialog = page.locator("[data-confirm-dialog]");
   await expect(dialog).toBeVisible();
   await expect(dialog).toContainText("۰۴۹۹۳۷۰۸۹۹");
   await page.locator("[data-confirm-yes]").click();
   await expect(page.locator(".toast.ok")).toContainText("abcdef12");
-  expect(sent).toMatchObject({ nationalId: "0499370899", birthDate: "1393/04/23", gpa: "19.5", grade: "8", motherEducation: "لیسانس", consent: true });
+  expect(sent).toMatchObject({ nationalId: "0499370899", birthDate: "1393/04/23", fatherMobile: "09172222223", gpa: "19.5", grade: "8", motherEducation: "لیسانس", consent: true });
 });
 
 test("careers page sends a job application", async ({ page }) => {
@@ -263,16 +330,40 @@ test("careers page sends a job application", async ({ page }) => {
     await route.fulfill({ status: 201, contentType: "application/json", body: '{"ok":true,"id":"12345678"}' });
   });
   await page.goto("/careers");
+  const next = () => page.locator("[data-step-next]").click();
   await page.fill("#c-fullName", "مریم احمدی");
+  await next();
   await page.fill("#c-field", "ریاضی محض");
   await page.locator(".segmented label", { hasText: "کارشناسی ارشد" }).click();
+  await next();
   await page.locator(".segmented label", { hasText: "بالای ۵ سال" }).click();
+  await next();
   await page.fill("#c-phone", "071 3229 3194");
-  await page.locator(".check").click();
+  await page.locator(".check input").check();
   await page.locator("[data-submit]").click();
   await page.locator("[data-confirm-yes]").click();
   await expect(page.locator(".toast.ok")).toBeVisible();
   expect(sent).toMatchObject({ degree: "کارشناسی ارشد", experience: "بالای ۵ سال", phone: "07132293194" });
+});
+
+test("the contact section puts the form first on wide screens and links the map to Neshan", async ({ page }) => {
+  await page.goto("/");
+  const top = (sel) => page.locator(sel).evaluate((el) => el.getBoundingClientRect().top + scrollY);
+  const wide = page.viewportSize().width > 860;
+  if (wide) expect(await top("#inquiry")).toBeLessThan(await top(".contact-info"));
+  else expect(await top(".contact-info")).toBeLessThan(await top("#inquiry"));
+  await expect(page.locator(".map-card a")).toHaveAttribute("href", /neshan\.org/);
+  await expect(page.locator('a[href*="google.com/maps"], a[href*="maps.google"]')).toHaveCount(0);
+});
+
+test("the privacy page exists and every form links to it", async ({ page }) => {
+  await page.goto("/privacy");
+  await expect(page.locator("h1")).toContainText("حریم خصوصی");
+  await expect(page.locator("main")).toContainText("۱۲ ماه");
+  for (const path of ["/", "/pre-registration", "/careers"]) {
+    await page.goto(path);
+    await expect(page.locator('form a[href="/privacy"]').first()).toBeAttached();
+  }
 });
 
 test("subpages share the home page's header, theme and footer", async ({ page }) => {

@@ -14,7 +14,7 @@ export function renderTeam(people) {
           <div class="teacher-photo"><img src="/assets/img/team/${esc(p.id)}.webp" width="400" height="400" loading="lazy" decoding="async" alt="${esc(p.name)}، ${esc(p.role)}"></div>
           <div class="teacher-body">
             <p class="teacher-role">${esc(p.role)}</p>
-            <h3>${esc(p.name)}</h3>
+            <p class="teacher-name">${esc(p.name)}</p>
             <ul class="teacher-edu" role="list">${edu}</ul>${note}
           </div>
         </li>`;

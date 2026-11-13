@@ -31,11 +31,16 @@ export function inlineScriptHashes(html) {
     .map((m) => `'sha256-${createHash("sha256").update(m[1]).digest("base64")}'`);
 }
 
-export const buildSecurityHeaders = (scriptHashes = []) => ({
+/** sha256 sources for every inline <style> block (the page's own stylesheet, inlined at build time). */
+export function inlineStyleHashes(html) {
+  return [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map((m) => `'sha256-${createHash("sha256").update(m[1]).digest("base64")}'`);
+}
+
+export const buildSecurityHeaders = (scriptHashes = [], styleHashes = []) => ({
   "Content-Security-Policy": [
     "default-src 'self'",
     "img-src 'self' data:",
-    "style-src 'self'",
+    ["style-src 'self'", ...styleHashes].join(" "),
     "font-src 'self'",
     // the inline theme script runs before paint to avoid a flash of the wrong theme
     ["script-src 'self'", ...scriptHashes].join(" "),
@@ -53,7 +58,8 @@ export const buildSecurityHeaders = (scriptHashes = []) => ({
 
 export function createApp({ publicDir, dataDir, logger = console, rateLimit, trustProxy }) {
   const root = resolve(publicDir);
-  const securityHeaders = buildSecurityHeaders(inlineScriptHashes(readFileSync(join(root, "index.html"), "utf8")));
+  const indexHtml = readFileSync(join(root, "index.html"), "utf8");
+  const securityHeaders = buildSecurityHeaders(inlineScriptHashes(indexHtml), inlineStyleHashes(indexHtml));
 
   // Each submission is appended to data/<form>.jsonl (readable only by the server account) and, when the
   // Telegram variables are set, also sent to the school's channel.
@@ -101,7 +107,8 @@ export function createApp({ publicDir, dataDir, logger = console, rateLimit, tru
       ETag: etag,
       "Last-Modified": info.mtime.toUTCString(),
       // file names are not content-hashed: code revalidates via ETag (cheap 304), media is cached for a week
-      "Cache-Control": /\/assets\/(fonts|img)\//.test(file.replaceAll("\\", "/")) ? "public, max-age=604800" : "no-cache",
+      "Cache-Control": /\/assets\/fonts\//.test(file.replaceAll("\\", "/")) ? "public, max-age=31536000, immutable"
+        : /\/assets\/img\//.test(file.replaceAll("\\", "/")) ? "public, max-age=2592000, stale-while-revalidate=86400" : "no-cache",
       Vary: "Accept-Encoding",
     };
     if (status === 200 && req.headers["if-none-match"] === etag) { res.writeHead(304, headers); return res.end(); }

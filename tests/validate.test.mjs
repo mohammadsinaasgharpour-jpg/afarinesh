@@ -28,9 +28,10 @@ test("validateInquiry reports every invalid field", () => {
 });
 
 test("validateInquiry strips markup and rejects links", () => {
-  const r = validateInquiry({ parentName: "<b>علی</b> رضایی", phone: "09171234567", grade: "7", message: "<img src=x onerror=alert(1)>" });
+  const r = validateInquiry({ parentName: "<علی> رضایی", phone: "09171234567", grade: "7", message: "سلام <> {}" });
   assert.equal(r.ok, true);
-  assert.ok(!/[<>]/.test(r.value.parentName + r.value.message));
+  assert.ok(!/[<>{}]/.test(r.value.parentName + r.value.message));
+  assert.equal(validateInquiry({ parentName: "علی رضایی", phone: "09171234567", grade: "7", message: "<img src=x onerror=alert(1)>" }).ok, false);
   assert.equal(validateInquiry({ parentName: "visit https://x", phone: "09171234567", grade: "7" }).ok, false);
   assert.equal(validateInquiry({ parentName: "علی رضایی", phone: "09171234567", grade: "7", message: "see www.spam.com" }).ok, false);
 });
@@ -89,4 +90,23 @@ test("job application", () => {
 
 test("GPA accepts the Persian decimal separator", () => {
   for (const g of ["۱۹٫۵", "19/5", "19,5", "۱۹.۵"]) assert.equal(validatePreRegistration({ ...goodPre, gpa: g }).value.gpa, "19.5", g);
+});
+
+test("names, address and messages must be Persian; numbers may use either keyboard", () => {
+  const base = { parentName: "مریم احمدی", phone: "۰۹۱۷۱۲۳۴۵۶۷", grade: "7" };
+  assert.equal(validateInquiry(base).ok, true);
+  assert.equal(validateInquiry(base).value.phone, "09171234567");
+  assert.ok(validateInquiry({ ...base, parentName: "Maryam Ahmadi" }).errors.parentName);
+  assert.ok(validateInquiry({ ...base, parentName: "مریم" }).errors.parentName, "one word is not a full name");
+  assert.ok(validateInquiry({ ...base, parentName: "ااااا بببب" }).errors.parentName, "a letter typed three times in a row");
+  assert.ok(validateInquiry({ ...base, parentName: "مریم۱ احمدی" }).errors.parentName);
+  assert.ok(validateInquiry({ ...base, message: "please call me" }).errors.message);
+  assert.equal(validateInquiry({ ...base, message: "لطفاً بعد از ساعت ۱۰ تماس بگیرید." }).ok, true);
+});
+
+test("placeholder mobile numbers are refused", () => {
+  const base = { parentName: "مریم احمدی", grade: "7" };
+  for (const phone of ["09111111111", "09000000000", "09123456789", "0917123456", "08171234567"]) {
+    assert.ok(validateInquiry({ ...base, phone }).errors.phone, phone);
+  }
 });

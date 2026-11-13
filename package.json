@@ -8,7 +8,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "build": "node scripts/render-team.mjs && node scripts/render-pages.mjs && node scripts/vercel-config.mjs",
+    "build": "node scripts/inline-css.mjs && node scripts/render-team.mjs && node scripts/render-pages.mjs && node scripts/vercel-config.mjs",
     "build:images": "python -I scripts/build_images.py source-images public/assets/img",
     "start": "node server/index.mjs",
     "dev": "node --watch server/index.mjs",

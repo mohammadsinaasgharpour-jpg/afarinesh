@@ -4,7 +4,9 @@ import { toPersianDigits } from "./validate.js";
 export const $ = (sel, root = document) => root.querySelector(sel);
 export const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 export const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
-const SCHOOL_PHONE = "۰۷۱-۳۲۲۹۳۱۹۴";
+// isolated left-to-right, so the area code stays first inside right-to-left sentences
+const SCHOOL_PHONE = "⁦۰۷۱-۳۲۲۹۳۱۹۴⁩";
+const PAPER = { light: "#e8edf2", dark: "#0d2131" };
 
 /* toasts */
 export function toast(text, kind = "ok", ms = 5200) {
@@ -30,7 +32,7 @@ export function initChrome() {
   const isDark = () => document.documentElement.dataset.theme === "dark";
   const syncTheme = () => {
     themeBtn.setAttribute("aria-label", isDark() ? "تغییر به حالت روشن" : "تغییر به حالت تاریک");
-    if (themeMeta) themeMeta.content = isDark() ? "#0d2131" : "#f6f8fa";
+    if (themeMeta) themeMeta.content = isDark() ? PAPER.dark : PAPER.light;
   };
   // Every colour flips in the same frame: transitions are paused while the theme changes, the page is
   // forced to restyle, and where supported the switch is a single crossfade of the whole page.
@@ -66,6 +68,7 @@ export function initChrome() {
   });
 
   const toTop = $("[data-to-top]");
+  const goTop = () => scrollTo({ top: 0, behavior: reduceMotion.matches ? "auto" : "smooth" });
   let ticking = false;
   addEventListener("scroll", () => {
     if (ticking) return;
@@ -77,11 +80,24 @@ export function initChrome() {
     });
   }, { passive: true });
   toTop.addEventListener("click", () => {
-    scrollTo({ top: 0, behavior: reduceMotion.matches ? "auto" : "smooth" });
+    goTop();
     $("#main").focus({ preventScroll: true });
   });
+  // on the home page the school name scrolls back to the top instead of reloading
+  $("[data-home]")?.addEventListener("click", (e) => {
+    if (location.pathname !== "/") return;
+    e.preventDefault();
+    setMenu(false);
+    history.replaceState(null, "", "/");
+    goTop();
+  });
 
-  /* Instagram button fades while it covers text */
+  $("[data-copy-link]")?.addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(`${location.origin}/`); toast("نشانی سایت رونوشت شد."); }
+    catch { toast(`نشانی سایت: ${location.origin}/`); }
+  });
+
+  /* Instagram button fades and drops behind the content while it covers text */
   const fab = $(".insta-fab");
   const TEXTY = "p, h1, h2, h3, li, a, dt, dd, label, summary, figcaption, img, input, textarea, select, button, .btn";
   const fabOverText = () => {
@@ -100,12 +116,13 @@ export function initChrome() {
   updateFab();
 
   /* images: no long-press save menu or drag-out */
-  document.addEventListener("contextmenu", (e) => { if (e.target.closest("img, picture, .brand")) e.preventDefault(); });
+  document.addEventListener("contextmenu", (e) => { if (e.target.closest("img, picture") && !e.target.closest(".map-card")) e.preventDefault(); });
   document.addEventListener("dragstart", (e) => { if (e.target.closest("img")) e.preventDefault(); });
 }
 
 /**
- * One controller for every form: inline validation, a review dialog, sending, and clear outcomes.
+ * One controller for every form: one step at a time, errors only after a step is finished, a review
+ * dialog, sending, and clear outcomes.
  * @param {{ form: HTMLFormElement, validate: (input: object) => {ok: boolean, value?: object, errors?: object},
  *   review: (value: object) => [string, string][], success: string, draftKey?: string }} opts
  */
@@ -127,25 +144,42 @@ export function createFormController({ form, validate, review, success, draftKey
     const f = form.elements[name];
     return f instanceof RadioNodeList ? [...f] : f ? [f] : [];
   };
-  const showErrors = (errors, touchedOnly) => {
-    for (const name of names) {
-      const els = fieldEls(name);
-      if (!els.length || (touchedOnly && !els.some((el) => el.dataset.touched))) continue;
+  // what the visitor actually touches for a field: a date keeps its value in a hidden input beside three selects
+  const controls = (name) => fieldEls(name).flatMap((el) => (el.type === "hidden" ? $$("select", el.closest(".field")) : [el]));
+  const showErrors = (errors, only = names) => {
+    for (const name of only) {
+      const els = controls(name);
+      if (!els.length) continue;
       const msg = errors[name] || "";
       const slot = $("[data-error]", els[0].closest(".field"));
       if (slot) { slot.textContent = msg; if (!slot.id) slot.id = `${form.id || "f"}-${name}-err`; }
       els.forEach((el) => { el.setAttribute("aria-invalid", String(!!msg)); if (slot) el.setAttribute("aria-describedby", slot.id); });
     }
   };
-  const recheck = () => { const r = validate(read()); showErrors(r.ok ? {} : r.errors, true); };
-  form.addEventListener("focusout", (e) => { if (e.target.name) { e.target.dataset.touched = "1"; recheck(); } });
-  form.addEventListener("change", (e) => { if (e.target.name) { e.target.dataset.touched = "1"; recheck(); } });
+  const errorsNow = () => { const r = validate(read()); return r.ok ? {} : r.errors; };
+
+  /* a date picked from three lists (day, month, year) */
+  for (const box of $$("[data-date]", form)) {
+    const target = $('input[type="hidden"]', box.closest(".field"));
+    box.addEventListener("change", () => {
+      const [d, m, y] = ["day", "month", "year"].map((k) => $(`[data-date-part="${k}"]`, box).value);
+      target.value = d && m && y ? `${y}/${m}/${d}` : "";
+    });
+  }
+
   form.addEventListener("input", (e) => {
     const counter = $(`[data-count-for="${e.target.name}"]`, form);
     if (counter) counter.textContent = toPersianDigits(e.target.value.length);
-    if (e.target.getAttribute("aria-invalid") === "true") recheck();
     if (draftKey) try { const { website, startedAt, ...draft } = read(); sessionStorage.setItem(draftKey, JSON.stringify(draft)); } catch {}
   });
+  // a message already on screen clears as soon as the field is right; nothing new appears while typing
+  const clearFixed = (e) => {
+    const name = e.target.name || $('input[type="hidden"]', e.target.closest(".field") ?? form)?.name;
+    if (!name || e.target.getAttribute("aria-invalid") !== "true") return;
+    if (!errorsNow()[name]) showErrors({}, [name]);
+  };
+  form.addEventListener("input", clearFixed);
+  form.addEventListener("change", clearFixed);
 
   // forms with personal identifiers keep no draft; the short callback form restores an unsent draft (per tab)
   if (draftKey) try {
@@ -158,19 +192,62 @@ export function createFormController({ form, validate, review, success, draftKey
     }
   } catch {}
 
+  /* steps */
+  const steps = $$("[data-step]", form);
+  const stepper = $("[data-stepper]", form);
+  const backBtn = $("[data-step-back]", form);
+  const nextBtn = $("[data-step-next]", form);
+  const stepNames = steps.map((s) => [...new Set($$("[name]", s).map((el) => el.name))]);
+  let current = 0;
+  const showStep = (i, focus = true) => {
+    current = Math.max(0, Math.min(steps.length - 1, i));
+    steps.forEach((s, n) => s.classList.toggle("is-active", n === current));
+    const last = current === steps.length - 1;
+    backBtn.hidden = current === 0;
+    nextBtn.hidden = last;
+    submitBtn.hidden = !last;
+    $("[data-step-label]", stepper).textContent = `مرحله‌ی ${toPersianDigits(current + 1)} از ${toPersianDigits(steps.length)}`;
+    $("[data-step-progress]", stepper).style.setProperty("--p", String((current + 1) / steps.length));
+    if (focus) $("input:not([type=hidden]), select, textarea", steps[current])?.focus({ preventScroll: true });
+    if (focus) form.scrollIntoView({ block: "nearest", behavior: reduceMotion.matches ? "auto" : "smooth" });
+  };
+  const stepOf = (name) => stepNames.findIndex((list) => list.includes(name));
+  const checkStep = () => {
+    const errors = errorsNow();
+    const mine = stepNames[current].filter((n) => errors[n]);
+    showErrors(errors, stepNames[current]);
+    if (mine.length) controls(mine[0])[0]?.focus();
+    return !mine.length;
+  };
+  if (steps.length > 1) {
+    stepper.hidden = false;
+    nextBtn.addEventListener("click", () => { if (checkStep()) showStep(current + 1); });
+    backBtn.addEventListener("click", () => showStep(current - 1));
+    form.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter" || e.target.tagName === "TEXTAREA" || e.target.tagName === "BUTTON" || current === steps.length - 1) return;
+      e.preventDefault();
+      nextBtn.click();
+    });
+    showStep(0, false);
+  }
+  const showAllErrors = (errors) => {
+    showErrors(errors);
+    const first = Object.keys(errors)[0];
+    if (steps.length > 1 && stepOf(first) >= 0) showStep(stepOf(first), false);
+    controls(first)[0]?.focus();
+  };
+
   let pending = null;
   form.addEventListener("submit", (e) => {
     e.preventDefault();
     const data = read();
     const r = validate(data);
     if (!r.ok) {
-      $$("input, textarea, select", form).forEach((el) => (el.dataset.touched = "1"));
-      showErrors(r.errors, false);
-      fieldEls(Object.keys(r.errors)[0])[0]?.focus();
-      toast("چند مورد نیاز به اصلاح دارد. پیام زیر هر فیلد را ببینید.", "err");
+      showAllErrors(r.errors);
+      toast("چند مورد نیاز به اصلاح دارد. پیام زیر هر مورد را ببینید.", "err");
       return;
     }
-    showErrors({}, false);
+    showErrors({});
     pending = { ...r.value, website: data.website, startedAt: Number(data.startedAt) || 0 };
     $("[data-review]", dialog).replaceChildren(...review(r.value).filter(([, v]) => v).flatMap(([k, v]) => [
       Object.assign(document.createElement("dt"), { textContent: k }),
@@ -179,7 +256,7 @@ export function createFormController({ form, validate, review, success, draftKey
     dialog.showModal();
   });
 
-  $("[data-confirm-no]", dialog).addEventListener("click", () => { dialog.close(); fieldEls(names[0])[0]?.focus(); });
+  $("[data-confirm-no]", dialog).addEventListener("click", () => { dialog.close(); if (steps.length > 1) showStep(0); else fieldEls(names[0])[0]?.focus(); });
   $("[data-confirm-yes]", dialog).addEventListener("click", async () => {
     dialog.close();
     submitBtn.disabled = true;
@@ -193,15 +270,15 @@ export function createFormController({ form, validate, review, success, draftKey
         signal: AbortSignal.timeout(15000),
       });
       const body = await res.json().catch(() => ({}));
-      if (res.status === 422 && body.errors) { showErrors(body.errors, false); throw new Error("چند مورد نیاز به اصلاح دارد."); }
+      if (res.status === 422 && body.errors) { showAllErrors(body.errors); throw new Error("چند مورد نیاز به اصلاح دارد."); }
       if (res.status === 429 && body.error === "duplicate") throw new Error("این اطلاعات به‌تازگی ثبت شده است؛ نیازی به ارسال دوباره نیست.");
       if (res.status === 429) throw new Error("چند درخواست پشت سر هم ثبت شد. کمی بعد دوباره ارسال کنید.");
       if (res.status === 503) throw new Error(`ارسال آنلاین فعلاً در دسترس نیست. لطفاً با ${SCHOOL_PHONE} تماس بگیرید.`);
       if (!res.ok) throw new Error();
       form.reset();
       $$("[data-count-for]", form).forEach((c) => (c.textContent = "۰"));
-      $$("[data-touched]", form).forEach((el) => delete el.dataset.touched);
       $("[data-started]", form).value = String(Date.now());
+      if (steps.length > 1) showStep(0, false);
       if (draftKey) try { sessionStorage.removeItem(draftKey); } catch {}
       toast(`${success} کد پیگیری: ${String(body.id || "").slice(0, 8)}`, "ok", 9000);
     } catch (err) {

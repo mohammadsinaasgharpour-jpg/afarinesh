@@ -6,7 +6,7 @@
 <title>پیش‌ثبت‌نام ۱۴۰۶-۱۴۰۷ | دبیرستان غیردولتی آفرینش شیراز</title>
 <meta name="description" content="فرم پیش‌ثبت‌نام آنلاین دبیرستان غیردولتی پسرانه‌ی آفرینش شیراز برای پایه‌های هفتم، هشتم و نهم، سال تحصیلی ۱۴۰۶-۱۴۰۷؛ شرایط ثبت‌نام و مراحل پذیرش.">
 <link rel="canonical" href="https://afarineshshiraz.ir/pre-registration">
-<meta name="theme-color" content="#f6f8fa">
+<meta name="theme-color" content="#e8edf2">
 <meta name="color-scheme" content="light dark">
 <meta name="robots" content="index, follow">
 <meta property="og:type" content="website">
@@ -16,13 +16,13 @@
 <meta property="og:description" content="پیش‌ثبت‌نام آنلاین پایه‌های هفتم تا نهم، دوره اول متوسطه پسرانه.">
 <meta property="og:url" content="https://afarineshshiraz.ir/pre-registration">
 <meta property="og:image" content="https://afarineshshiraz.ir/assets/img/og-cover.jpg">
-<link rel="icon" href="/assets/img/icon-32.png" sizes="32x32">
+<link rel="icon" href="/assets/img/icon-48.png" type="image/png" sizes="48x48">
 <link rel="icon" href="/assets/img/icon-192.png" sizes="192x192">
 <link rel="apple-touch-icon" href="/assets/img/icon-180.png">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="preload" href="/assets/fonts/estedad-arabic.woff2" as="font" type="font/woff2" crossorigin>
 <!-- shared:theme-script -->
-<link rel="stylesheet" href="/assets/css/main.css">
+<!-- shared:css -->
 <link rel="modulepreload" href="/assets/js/validate.js">
 <link rel="modulepreload" href="/assets/js/common.js">
 <script type="module" src="/assets/js/form-page.js"></script>
@@ -58,151 +58,192 @@
   <section class="section form-section" aria-labelledby="form-title">
     <div class="wrap narrow">
       <h2 id="form-title" class="visually-hidden">فرم پیش‌ثبت‌نام</h2>
-      <form class="form form-wide" id="pre-registration" novalidate data-form="preRegistration" action="/api/pre-registration" method="post">
-        <p class="required-note">موارد ستاره‌دار <span aria-hidden="true">*</span> لازم‌اند.</p>
-
-        <fieldset class="group">
-          <legend>اطلاعات دانش‌آموز</legend>
-          <div class="grid-2">
-            <div class="field span-2">
-              <label for="p-fullName">نام و نام خانوادگی <span class="req" aria-hidden="true">*</span></label>
-              <input id="p-fullName" name="fullName" autocomplete="off" required maxlength="60">
-              <p class="hint" data-error></p>
-            </div>
-            <div class="field">
-              <label for="p-nationalId">کد ملی <span class="req" aria-hidden="true">*</span></label>
-              <input id="p-nationalId" name="nationalId" inputmode="numeric" dir="ltr" autocomplete="off" required maxlength="10" placeholder="۰۱۲۳۴۵۶۷۸۹">
-              <p class="hint" data-error></p>
-            </div>
-            <div class="field">
-              <label for="p-birthDate">تاریخ تولد <span class="req" aria-hidden="true">*</span></label>
-              <input id="p-birthDate" name="birthDate" inputmode="numeric" dir="ltr" autocomplete="off" required maxlength="10" placeholder="۱۳۹۴/۰۵/۱۲">
-              <p class="hint" data-error></p>
-            </div>
-            <div class="field">
-              <label for="p-studentMobile">شماره همراه دانش‌آموز <span class="req" aria-hidden="true">*</span></label>
-              <input id="p-studentMobile" name="studentMobile" type="tel" inputmode="numeric" dir="ltr" autocomplete="off" required placeholder="09xx xxx xxxx">
-              <p class="hint" data-error></p>
-            </div>
-            <div class="field span-2">
-              <label for="p-address">نشانی محل سکونت <span class="req" aria-hidden="true">*</span></label>
-              <textarea id="p-address" name="address" rows="2" autocomplete="street-address" required maxlength="250"></textarea>
-              <p class="hint" data-error></p>
-            </div>
-          </div>
-        </fieldset>
-
-        <fieldset class="group">
-          <legend>اطلاعات مادر و پدر</legend>
-          <div class="grid-2">
-            <div class="field">
-              <label for="p-motherName">نام مادر</label>
-              <input id="p-motherName" name="motherName" autocomplete="off" maxlength="80">
-              <p class="hint" data-error></p>
-            </div>
-            <div class="field">
-              <label for="p-fatherName">نام پدر</label>
-              <input id="p-fatherName" name="fatherName" autocomplete="off" maxlength="80">
-              <p class="hint" data-error></p>
-            </div>
-            <div class="field">
-              <label for="p-motherEducation">میزان تحصیلات مادر</label>
-              <select id="p-motherEducation" name="motherEducation">
-                <option value="">انتخاب کنید</option>
-                <option>سیکل</option><option>دیپلم</option><option>فوق دیپلم</option><option>لیسانس</option><option>فوق لیسانس</option><option>دکتری</option><option>فوق دکتری</option>
-              </select>
-              <p class="hint" data-error></p>
-            </div>
-            <div class="field">
-              <label for="p-fatherEducation">میزان تحصیلات پدر</label>
-              <select id="p-fatherEducation" name="fatherEducation">
-                <option value="">انتخاب کنید</option>
-                <option>سیکل</option><option>دیپلم</option><option>فوق دیپلم</option><option>لیسانس</option><option>فوق لیسانس</option><option>دکتری</option><option>فوق دکتری</option>
-              </select>
-              <p class="hint" data-error></p>
-            </div>
-            <div class="field">
-              <label for="p-motherJob">شغل مادر</label>
-              <input id="p-motherJob" name="motherJob" autocomplete="off" maxlength="80">
-              <p class="hint" data-error></p>
-            </div>
-            <div class="field">
-              <label for="p-fatherJob">شغل پدر</label>
-              <input id="p-fatherJob" name="fatherJob" autocomplete="off" maxlength="80">
-              <p class="hint" data-error></p>
-            </div>
-            <div class="field">
-              <label for="p-motherMobile">شماره همراه مادر <span class="req" aria-hidden="true">*</span></label>
-              <input id="p-motherMobile" name="motherMobile" type="tel" inputmode="numeric" dir="ltr" autocomplete="off" required placeholder="09xx xxx xxxx">
-              <p class="hint" data-error></p>
-            </div>
-            <div class="field">
-              <label for="p-fatherMobile">شماره همراه پدر <span class="req" aria-hidden="true">*</span></label>
-              <input id="p-fatherMobile" name="fatherMobile" type="tel" inputmode="numeric" dir="ltr" autocomplete="off" required placeholder="09xx xxx xxxx">
-              <p class="hint" data-error></p>
-            </div>
-          </div>
-        </fieldset>
-
-        <fieldset class="group">
-          <legend>اطلاعات آموزشی</legend>
-          <div class="grid-2">
-            <div class="field">
-              <label for="p-currentSchool">نام مدرسه‌ی فعلی <span class="req" aria-hidden="true">*</span></label>
-              <input id="p-currentSchool" name="currentSchool" autocomplete="off" required maxlength="80">
-              <p class="hint" data-error></p>
-            </div>
-            <div class="field">
-              <label for="p-gpa">معدل <span class="req" aria-hidden="true">*</span></label>
-              <input id="p-gpa" name="gpa" inputmode="decimal" dir="ltr" autocomplete="off" required maxlength="5" placeholder="۱۹٫۵۰">
-              <p class="hint" data-error></p>
-            </div>
-            <div class="field">
-              <label for="p-gpaDescriptive">نمره‌ی توصیفی معدل</label>
-              <select id="p-gpaDescriptive" name="gpaDescriptive">
-                <option value="">انتخاب کنید</option>
-                <option>خیلی خوب</option><option>خوب</option><option>قابل قبول</option><option>نیاز به تلاش بیشتر</option>
-              </select>
-              <p class="hint" data-error></p>
-            </div>
-            <div class="field">
-              <label for="p-referral">نحوه‌ی آشنایی با مدرسه</label>
-              <select id="p-referral" name="referral">
-                <option value="">انتخاب کنید</option>
-                <option>جستجو در اینترنت</option><option>دبیران</option><option>مسئولین مدارس</option><option>دوستان و آشنایان</option>
-              </select>
-              <p class="hint" data-error></p>
-            </div>
-            <fieldset class="field span-2">
-              <legend>نمره‌ی انضباط <span class="req" aria-hidden="true">*</span></legend>
-              <div class="segmented seg-4">
-                <label><input type="radio" name="discipline" value="عالی" required><span>عالی</span></label>
-                <label><input type="radio" name="discipline" value="خیلی خوب"><span>خیلی خوب</span></label>
-                <label><input type="radio" name="discipline" value="خوب"><span>خوب</span></label>
-                <label><input type="radio" name="discipline" value="نیاز به تلاش بیشتر"><span>نیاز به تلاش بیشتر</span></label>
-              </div>
-              <p class="hint" data-error></p>
-            </fieldset>
-            <fieldset class="field span-2">
-              <legend>متقاضی ثبت‌نام در پایه <span class="req" aria-hidden="true">*</span></legend>
-              <div class="segmented">
-                <label><input type="radio" name="grade" value="7" required><span>هفتم</span></label>
-                <label><input type="radio" name="grade" value="8"><span>هشتم</span></label>
-                <label><input type="radio" name="grade" value="9"><span>نهم</span></label>
-              </div>
-              <p class="hint" data-error></p>
-            </fieldset>
-          </div>
-        </fieldset>
-
-        <div class="field consent">
-          <label class="check"><input type="checkbox" name="consent" required><span>موافقم اطلاعات این فرم فقط برای بررسی پیش‌ثبت‌نام و تماس با خانواده به دفتر مدرسه فرستاده شود.</span></label>
-          <p class="hint" data-error></p>
+      <form class="form form-wide" id="pre-registration" novalidate data-form="preRegistration" data-steps action="/api/pre-registration" method="post">
+        <div class="stepper" data-stepper hidden>
+          <p class="step-count" data-step-label></p>
+          <div class="step-progress" aria-hidden="true"><span data-step-progress></span></div>
         </div>
+        <p class="required-note">موارد ستاره‌دار <span aria-hidden="true">*</span> لازم‌اند. نام‌ها و نشانی را به فارسی بنویسید.</p>
+
+        <div class="step" data-step>
+          <div class="field">
+            <label for="p-fullName">نام و نام خانوادگی دانش‌آموز <span class="req" aria-hidden="true">*</span></label>
+            <input id="p-fullName" name="fullName" autocomplete="off" required maxlength="60" lang="fa" placeholder="مثلاً: آرین رضایی">
+            <p class="hint" data-error></p>
+          </div>
+        </div>
+
+        <div class="step" data-step>
+          <div class="field">
+            <label for="p-nationalId">کد ملی دانش‌آموز <span class="req" aria-hidden="true">*</span></label>
+            <input id="p-nationalId" name="nationalId" inputmode="numeric" dir="ltr" autocomplete="off" required maxlength="10" placeholder="۱۰ رقم">
+            <p class="example">عددها را با صفحه‌کلید فارسی یا انگلیسی می‌توانید بنویسید.</p>
+            <p class="hint" data-error></p>
+          </div>
+        </div>
+
+        <div class="step" data-step>
+          <fieldset class="field">
+            <legend>تاریخ تولد دانش‌آموز <span class="req" aria-hidden="true">*</span></legend>
+            <div class="date-parts" data-date>
+              <select data-date-part="day" aria-label="روز تولد">
+                <option value="">روز</option>
+                <!-- shared:days -->
+              </select>
+              <select data-date-part="month" aria-label="ماه تولد">
+                <option value="">ماه</option>
+                <option value="01">فروردین</option><option value="02">اردیبهشت</option><option value="03">خرداد</option><option value="04">تیر</option><option value="05">مرداد</option><option value="06">شهریور</option><option value="07">مهر</option><option value="08">آبان</option><option value="09">آذر</option><option value="10">دی</option><option value="11">بهمن</option><option value="12">اسفند</option>
+              </select>
+              <select data-date-part="year" aria-label="سال تولد">
+                <option value="">سال</option>
+                <!-- shared:years -->
+              </select>
+            </div>
+            <input type="hidden" name="birthDate">
+            <p class="hint" data-error></p>
+          </fieldset>
+        </div>
+
+        <div class="step" data-step>
+          <div class="field">
+            <label for="p-studentMobile">شماره همراه دانش‌آموز <span class="req" aria-hidden="true">*</span></label>
+            <input id="p-studentMobile" name="studentMobile" type="tel" inputmode="numeric" dir="ltr" autocomplete="off" required maxlength="15" placeholder="09xx xxx xxxx">
+            <p class="example">۱۱ رقم که با ۰۹ شروع می‌شود.</p>
+            <p class="hint" data-error></p>
+          </div>
+        </div>
+
+        <div class="step" data-step>
+          <div class="field">
+            <label for="p-address">نشانی محل سکونت <span class="req" aria-hidden="true">*</span></label>
+            <textarea id="p-address" name="address" rows="3" autocomplete="street-address" required maxlength="250" lang="fa"></textarea>
+            <p class="example">مثال: شیراز، بلوار ارم، خیابان نارون، کوچه‌ی ۵، پلاک ۱۲، واحد ۳</p>
+            <p class="hint" data-error></p>
+          </div>
+        </div>
+
+        <fieldset class="step group" data-step>
+          <legend>اطلاعات مادر</legend>
+          <div class="field">
+            <label for="p-motherName">نام مادر</label>
+            <input id="p-motherName" name="motherName" autocomplete="off" maxlength="80" lang="fa">
+            <p class="hint" data-error></p>
+          </div>
+          <div class="field">
+            <label for="p-motherEducation">میزان تحصیلات مادر</label>
+            <select id="p-motherEducation" name="motherEducation">
+              <option value="">انتخاب کنید</option>
+              <option>سیکل</option><option>دیپلم</option><option>فوق دیپلم</option><option>لیسانس</option><option>فوق لیسانس</option><option>دکتری</option><option>فوق دکتری</option>
+            </select>
+            <p class="hint" data-error></p>
+          </div>
+          <div class="field">
+            <label for="p-motherJob">شغل مادر</label>
+            <input id="p-motherJob" name="motherJob" autocomplete="off" maxlength="80" lang="fa">
+            <p class="hint" data-error></p>
+          </div>
+          <div class="field">
+            <label for="p-motherMobile">شماره همراه مادر <span class="req" aria-hidden="true">*</span></label>
+            <input id="p-motherMobile" name="motherMobile" type="tel" inputmode="numeric" dir="ltr" autocomplete="off" required maxlength="15" placeholder="09xx xxx xxxx">
+            <p class="hint" data-error></p>
+          </div>
+        </fieldset>
+
+        <fieldset class="step group" data-step>
+          <legend>اطلاعات پدر</legend>
+          <div class="field">
+            <label for="p-fatherName">نام پدر</label>
+            <input id="p-fatherName" name="fatherName" autocomplete="off" maxlength="80" lang="fa">
+            <p class="hint" data-error></p>
+          </div>
+          <div class="field">
+            <label for="p-fatherEducation">میزان تحصیلات پدر</label>
+            <select id="p-fatherEducation" name="fatherEducation">
+              <option value="">انتخاب کنید</option>
+              <option>سیکل</option><option>دیپلم</option><option>فوق دیپلم</option><option>لیسانس</option><option>فوق لیسانس</option><option>دکتری</option><option>فوق دکتری</option>
+            </select>
+            <p class="hint" data-error></p>
+          </div>
+          <div class="field">
+            <label for="p-fatherJob">شغل پدر</label>
+            <input id="p-fatherJob" name="fatherJob" autocomplete="off" maxlength="80" lang="fa">
+            <p class="hint" data-error></p>
+          </div>
+          <div class="field">
+            <label for="p-fatherMobile">شماره همراه پدر <span class="req" aria-hidden="true">*</span></label>
+            <input id="p-fatherMobile" name="fatherMobile" type="tel" inputmode="numeric" dir="ltr" autocomplete="off" required maxlength="15" placeholder="09xx xxx xxxx">
+            <p class="hint" data-error></p>
+          </div>
+        </fieldset>
+
+        <fieldset class="step group" data-step>
+          <legend>مدرسه و معدل</legend>
+          <div class="field">
+            <label for="p-currentSchool">نام مدرسه‌ی فعلی <span class="req" aria-hidden="true">*</span></label>
+            <input id="p-currentSchool" name="currentSchool" autocomplete="off" required maxlength="80" lang="fa">
+            <p class="hint" data-error></p>
+          </div>
+          <div class="field">
+            <label for="p-gpa">معدل <span class="req" aria-hidden="true">*</span></label>
+            <input id="p-gpa" name="gpa" inputmode="decimal" dir="ltr" autocomplete="off" required maxlength="5" placeholder="۱۹٫۵۰">
+            <p class="hint" data-error></p>
+          </div>
+          <div class="field">
+            <label for="p-gpaDescriptive">نمره‌ی توصیفی معدل</label>
+            <select id="p-gpaDescriptive" name="gpaDescriptive">
+              <option value="">انتخاب کنید</option>
+              <option>خیلی خوب</option><option>خوب</option><option>قابل قبول</option><option>نیاز به تلاش بیشتر</option>
+            </select>
+            <p class="hint" data-error></p>
+          </div>
+        </fieldset>
+
+        <fieldset class="step group" data-step>
+          <legend>انضباط و پایه</legend>
+          <fieldset class="field">
+            <legend>نمره‌ی انضباط <span class="req" aria-hidden="true">*</span></legend>
+            <div class="segmented seg-4">
+              <label><input type="radio" name="discipline" value="عالی" required><span>عالی</span></label>
+              <label><input type="radio" name="discipline" value="خیلی خوب"><span>خیلی خوب</span></label>
+              <label><input type="radio" name="discipline" value="خوب"><span>خوب</span></label>
+              <label><input type="radio" name="discipline" value="نیاز به تلاش بیشتر"><span>نیاز به تلاش بیشتر</span></label>
+            </div>
+            <p class="hint" data-error></p>
+          </fieldset>
+          <fieldset class="field">
+            <legend>متقاضی ثبت‌نام در پایه <span class="req" aria-hidden="true">*</span></legend>
+            <div class="segmented">
+              <label><input type="radio" name="grade" value="7" required><span>هفتم</span></label>
+              <label><input type="radio" name="grade" value="8"><span>هشتم</span></label>
+              <label><input type="radio" name="grade" value="9"><span>نهم</span></label>
+            </div>
+            <p class="hint" data-error></p>
+          </fieldset>
+          <div class="field">
+            <label for="p-referral">نحوه‌ی آشنایی با مدرسه</label>
+            <select id="p-referral" name="referral">
+              <option value="">انتخاب کنید</option>
+              <option>جستجو در اینترنت</option><option>دبیران</option><option>مسئولین مدارس</option><option>دوستان و آشنایان</option>
+            </select>
+            <p class="hint" data-error></p>
+          </div>
+        </fieldset>
+
+        <div class="step" data-step>
+          <div class="field consent">
+            <label class="check"><input type="checkbox" name="consent" required><span>ولیِ دانش‌آموز هستم و موافقم اطلاعات این فرم فقط برای بررسی پیش‌ثبت‌نام و تماس با خانواده در اختیار دفتر مدرسه قرار بگیرد. <a href="/privacy" target="_blank" rel="noopener">حریم خصوصی و شرایط استفاده</a> را خوانده‌ام.</span></label>
+            <p class="hint" data-error></p>
+          </div>
+        </div>
+
         <input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
         <input type="hidden" name="startedAt" data-started>
-        <button class="btn btn-primary btn-block" type="submit" data-submit><span class="spinner" aria-hidden="true"></span><span data-submit-label>بررسی و ثبت پیش‌ثبت‌نام</span></button>
-        <p class="privacy-note">این اطلاعات فقط در اختیار دفتر مدرسه قرار می‌گیرد. برای اصلاح یا حذف آن با ۰۷۱-۳۲۲۹۳۱۹۴ تماس بگیرید.</p>
+        <div class="step-actions">
+          <button class="btn btn-ghost" type="button" data-step-back hidden>مرحله‌ی قبل</button>
+          <button class="btn btn-primary" type="button" data-step-next hidden>مرحله‌ی بعد</button>
+          <button class="btn btn-cta" type="submit" data-submit><span class="spinner" aria-hidden="true"></span><span data-submit-label>بررسی و ثبت پیش‌ثبت‌نام</span></button>
+        </div>
+        <p class="privacy-note">این اطلاعات فقط در اختیار دفتر مدرسه قرار می‌گیرد. برای اصلاح یا حذف آن با <a href="/#contact">شماره‌های مدرسه</a> تماس بگیرید.</p>
       </form>
     </div>
   </section>
