@@ -182,11 +182,13 @@ addEventListener("scroll", () => {
 }, { passive: true });
 setDeck(wantsDeck);
 
-const items = cards.map((c) => searchItem(`${$(".teacher-name", c).textContent} ${$(".teacher-role", c).textContent}`, c.textContent));
+// the search index is built on first use, not while the page loads
+let items;
+const searchItems = () => (items ??= cards.map((c) => searchItem(`${$(".teacher-name", c).textContent} ${$(".teacher-role", c).textContent}`, c.textContent)));
 
 function applyTeamSearch() {
   const q = search.value.trim();
-  const { matches, partial } = searchTeachers(items, q);
+  const { matches, partial } = searchTeachers(searchItems(), q);
   // results are a list; clearing the search goes back to one by one
   setDeck(!q && wantsDeck);
   cards.forEach((c, i) => {

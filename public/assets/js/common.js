@@ -134,7 +134,9 @@ export function initChrome() {
   };
   addEventListener("scroll", updateFab, { passive: true });
   addEventListener("resize", updateFab);
-  updateFab();
+  // the first check waits until the page has finished loading, so it does not hold up the first paint
+  const idle = window.requestIdleCallback || ((fn) => setTimeout(fn, 200));
+  addEventListener("load", () => idle(updateFab), { once: true });
 
   /* images: no long-press save menu or drag-out */
   document.addEventListener("contextmenu", (e) => { if (e.target.closest("img, picture") && !e.target.closest(".map-card")) e.preventDefault(); });
