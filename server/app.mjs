@@ -68,7 +68,8 @@ export function createApp({ publicDir, dataDir, logger = console, rateLimit, tru
     : null;
   const save = async (record) => {
     await mkdir(dataDir, { recursive: true, mode: 0o700 });
-    await appendFile(join(dataDir, `${record.kind}.jsonl`), JSON.stringify(record) + "\n", { encoding: "utf8", mode: 0o600 });
+    const { quota, ...stored } = record; // the hour's allowance belongs to the notification, not the record
+    await appendFile(join(dataDir, `${record.kind}.jsonl`), JSON.stringify(stored) + "\n", { encoding: "utf8", mode: 0o600 });
     if (telegram) await telegram(record);
   };
   const forms = {

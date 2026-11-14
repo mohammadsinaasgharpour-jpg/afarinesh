@@ -181,7 +181,7 @@ export function validatePreRegistration(input) {
   };
 
   if (!v.fullName) e.fullName = "نام و نام خانوادگی دانش‌آموز را بنویسید.";
-  else e.fullName = personNameError(v.fullName, "دانش‌آموز");
+  else e.fullName = personNameError(v.fullName, "دانش‌آموز") || genderError(v.fullName, "دانش‌آموز");
   if (!v.nationalId) e.nationalId = "کد ملی دانش‌آموز را بنویسید.";
   else if (v.nationalId.length !== 10) e.nationalId = `کد ملی ۱۰ رقم است؛ شما ${toPersianDigits(v.nationalId.length)} رقم نوشته‌اید.`;
   else if (!isValidNationalId(v.nationalId)) e.nationalId = "این کد ملی معتبر نیست؛ رقم‌ها را از روی کارت ملی یا شناسنامه دوباره بررسی کنید.";
@@ -191,7 +191,7 @@ export function validatePreRegistration(input) {
 
   for (const [name, job, mobile, label] of [["motherName", "motherJob", "motherMobile", "مادر"], ["fatherName", "fatherJob", "fatherMobile", "پدر"]]) {
     if (!v[name]) e[name] = `نام و نام خانوادگی ${label} را بنویسید.`;
-    else e[name] = personNameError(v[name], label);
+    else e[name] = personNameError(v[name], label) || genderError(v[name], label);
     if (!e[name] && v[name] === v.fullName) e[name] = `این نام دانش‌آموز است؛ نام و نام خانوادگی ${label} را بنویسید.`;
     if (v[job]) e[job] = jobError(v[job], label);
     if (!v[mobile]) e[mobile] = mobileError(input?.[mobile], label);
@@ -225,6 +225,31 @@ export function validatePreRegistration(input) {
 }
 
 /* pre-registration: one specific message per field, so the visitor knows exactly what to fix */
+
+// Common first names that are clearly one gender, to catch a father's and mother's name written in each
+// other's field. Names used for both are left out, so an unusual name is never rejected.
+const FEMALE_NAMES = new Set(("مریم فاطمه زهرا زینب معصومه سمیه طاهره طیبه سکینه رقیه خدیجه اعظم اکرم اشرف اقدس منیژه منیره منصوره " +
+  "ملیحه ملیکا مهسا مهناز مهین مهری مهرنوش مینا نازنین نرگس نسرین نسیم نیلوفر نگار نگین پریسا پروانه پروین پری پوران " +
+  "ژاله ساره سارا سحر سمانه سیما سیمین شهلا شهناز شیرین شیما شبنم صدیقه صغری کبری عاطفه عفت فرشته فریبا فرزانه فرحناز " +
+  "فهیمه گلناز گلنار گلی لیلا لادن لاله الهام الهه آزاده آزیتا آتنا آرزو آمنه آناهیتا آیدا آیسان ارمیتا افسانه اعظم بهاره " +
+  "بهناز بیتا پگاه ترانه تینا حمیده حمیرا راحله راضیه رویا رها ریحانه زری زیبا سودابه سوسن سهیلا شکوفه شقایق صبا عذرا " +
+  "فائزه فاطیما کتایون کوثر لیدا مائده محبوبه مرضیه مژگان مهتاب مهدیس مهشید نجمه ندا نفیسه هانیه هما هدیه هستی یاسمن یگانه").split(" "));
+const MALE_NAMES = new Set(("علی محمد حسین حسن رضا مهدی احمد محمود مصطفی مرتضی مجتبی جواد جعفر کاظم قاسم عباس اصغر اکبر ابراهیم اسماعیل " +
+  "یوسف یعقوب یحیی موسی عیسی داود سلیمان صادق باقر هادی امیر امین ایمان بهروز بهرام بیژن پرویز پیمان جمشید جهانگیر " +
+  "حمید حمیدرضا خسرو داریوش رامین رحیم رحمان روح‌الله سعید سجاد سهراب سیاوش شاهین شهرام شهریار عادل عبدالله عرفان " +
+  "عماد فرامرز فرهاد فرشید فریدون کامران کیوان کوروش مجید محسن مسعود منصور منوچهر میلاد ناصر نادر نوید نیما هومن " +
+  "وحید یاسر آرش آرین ابوالفضل احسان ارسلان اسفندیار افشین امیرحسین امیرعلی بابک بهزاد بهنام پوریا تورج جلال جمال " +
+  "حامد حمزه رسول رستم روزبه سامان سینا شاپور صالح عبدالرضا عمار غلامرضا غلامحسین فرزاد فرید قربان کریم کمال " +
+  "محمدرضا محمدحسین محمدعلی مهرداد مهران مهیار نصرالله نعمت‌الله هوشنگ یدالله").split(" "));
+const firstName = (s) => s.split(/[ ]+/)[0].replace(/ي/g, "ی").replace(/ك/g, "ک");
+
+function genderError(name, label) {
+  const first = firstName(name);
+  if (label === "پدر" && FEMALE_NAMES.has(first)) return `«${first}» نام زنانه است؛ نام و نام خانوادگی پدر را بنویسید (شاید جای نام پدر و مادر عوض شده باشد).`;
+  if (label === "مادر" && MALE_NAMES.has(first)) return `«${first}» نام مردانه است؛ نام و نام خانوادگی مادر را بنویسید (شاید جای نام پدر و مادر عوض شده باشد).`;
+  if (label === "دانش‌آموز" && FEMALE_NAMES.has(first)) return `«${first}» نام دخترانه است و آفرینش دبیرستان پسرانه است؛ نام دانش‌آموز را دوباره بررسی کنید.`;
+  return "";
+}
 
 function personNameError(s, label) {
   if (s.length > LIMITS.nameMax) return `نام حداکثر ${toPersianDigits(LIMITS.nameMax)} حرف است.`;

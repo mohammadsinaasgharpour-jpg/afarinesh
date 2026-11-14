@@ -153,3 +153,13 @@ test("placeholder mobile numbers are refused", () => {
     assert.ok(validateInquiry({ ...base, phone }).errors.phone, phone);
   }
 });
+
+test("pre-registration: a father's and mother's names written in each other's field are caught", () => {
+  const e = validatePreRegistration({ fullName: "آرین رضایی", fatherName: "ارمیتا یدالله", motherName: "اصغر احمدپور" }).errors;
+  assert.match(e.fatherName, /زنانه/);
+  assert.match(e.motherName, /مردانه/);
+  const ok = validatePreRegistration({ fullName: "آرین رضایی", fatherName: "علی رضایی", motherName: "مریم احمدی" }).errors;
+  assert.equal(ok.fatherName, undefined);
+  assert.equal(ok.motherName, undefined);
+  assert.match(validatePreRegistration({ fullName: "سارا رضایی" }).errors.fullName, /پسرانه/);
+});

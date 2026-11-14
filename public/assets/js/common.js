@@ -25,6 +25,8 @@ export function toast(text, kind = "ok", ms = 5200) {
 
 export function initChrome() {
   document.documentElement.classList.add("js");
+  // alignment guides for checking the layout; loaded only when the address asks for them (?guides)
+  if (new URLSearchParams(location.search).has("guides")) import("./guides.js").then((m) => m.initGuides(), () => {});
 
   /* theme: the inline script in <head> picks light before 18:00 and dark after; the button overrides it for this visit */
   const themeBtn = $("[data-theme-toggle]");
@@ -106,17 +108,35 @@ export function initChrome() {
   // links to the school's numbers land on the contact card and highlight it briefly
   const contacts = $("#school-contacts");
   if (contacts) {
-    const flash = () => {
+    const flash = (e) => {
       if (location.hash !== "#school-contacts") return;
+      e?.preventDefault?.();
       // scrolled here rather than left to the browser: sections above change height once the page script runs
-      contacts.scrollIntoView({ block: "start", behavior: "instant" });
+      contacts.scrollIntoView({ block: "center", behavior: "instant" });
       contacts.focus({ preventScroll: true });
       contacts.classList.add("is-flash");
       setTimeout(() => contacts.classList.remove("is-flash"), 1600);
     };
-    addEventListener("hashchange", flash);
+    addEventListener("hashchange", () => flash());
     setTimeout(flash, 0);
+    // the same link pressed again (the address already ends in #school-contacts) still brings the card back
+    document.addEventListener("click", (e) => {
+      const a = e.target.closest?.('a[href$="#school-contacts"]');
+      if (a && a.pathname === location.pathname && location.hash === "#school-contacts") flash(e);
+    });
   }
+
+  // phone fields take digits only (Persian or English), at most 11; a pasted +98 / 0098 number becomes 09…
+  document.addEventListener("input", (e) => {
+    const el = e.target;
+    if (!(el instanceof HTMLInputElement) || el.type !== "tel") return;
+    let digits = el.value.replace(/[^0-9۰-۹٠-٩]/g, "");
+    const latin = digits.replace(/[۰-۹]/g, (d) => "۰۱۲۳۴۵۶۷۸۹".indexOf(d)).replace(/[٠-٩]/g, (d) => "٠١٢٣٤٥٦٧٨٩".indexOf(d));
+    const intl = latin.match(/^(?:0098|98)(9\d*)$/);
+    if (intl) digits = `0${intl[1]}`;
+    digits = digits.slice(0, 11);
+    if (digits !== el.value) el.value = digits;
+  });
 
   /* Instagram button fades and drops behind the content while it covers text */
   const fab = $(".insta-fab");
@@ -231,7 +251,11 @@ export function createFormController({ form, validate, review, success, draftKey
   const stepNames = steps.map((s) => [...new Set($$("[name]", s).map((el) => el.name))]);
   let current = 0;
   const showStep = (i, focus = true) => {
-    current = Math.max(0, Math.min(steps.length - 1, i));
+    const target = Math.max(0, Math.min(steps.length - 1, i));
+    // which side the new step slides in from (main.css); a jump without focus (reset, start) just fades
+    if (focus && target !== current) form.dataset.stepDir = target > current ? "next" : "prev";
+    else delete form.dataset.stepDir;
+    current = target;
     steps.forEach((s, n) => s.classList.toggle("is-active", n === current));
     const last = current === steps.length - 1;
     backBtn.hidden = current === 0;
@@ -335,8 +359,9 @@ function getSheet() {
   sheet.className = "sheet";
   sheet.innerHTML = `<div class="sheet-head"><h3 class="sheet-title"></h3><button type="button" class="icon-btn sheet-close" aria-label="بستن"><svg class="ic" aria-hidden="true"><use href="#i-close"/></svg></button></div><div class="sheet-list" role="listbox"></div>`;
   $(".sheet-close", sheet).addEventListener("click", () => sheet.close());
-  // a tap on the dimmed backdrop closes the sheet
-  sheet.addEventListener("click", (e) => { if (e.target === sheet) sheet.close(); });
+  // a tap on the dimmed backdrop closes the sheet: declared where the browser supports it, scripted in Safari
+  sheet.setAttribute("closedby", "any");
+  if (!("closedBy" in HTMLDialogElement.prototype)) sheet.addEventListener("click", (e) => { if (e.target === sheet) sheet.close(); });
   document.body.append(sheet);
   return sheet;
 }

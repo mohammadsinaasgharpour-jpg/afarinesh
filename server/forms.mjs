@@ -6,6 +6,8 @@ import {
 } from "../public/assets/js/validate.js";
 
 const MIN_FILL_MS = 3000;
+/** Accepted forms of one kind per hour; the database (submit_form) enforces the same number. */
+export const PER_FORM_HOURLY = 120;
 const HOUR = 60 * 60_000;
 const fmtTime = (iso) => new Intl.DateTimeFormat("fa-IR", { timeZone: "Asia/Tehran", dateStyle: "medium", timeStyle: "short" }).format(new Date(iso));
 const or = (v) => v || "ثبت نشده";
@@ -41,10 +43,10 @@ export const FORMS = {
       "",
       "◼ دانش‌آموز",
       `نام: ${r.fullName}`,
-      `کد ملی: ${r.nationalId}`,
-      `تاریخ تولد: ${toPersianDigits(r.birthDate)}`,
+      // the channel keeps its history and has its own members: identifiers stay in the database only
+      // (threat model 2026-11-14, T-003). The last four digits are enough to match a call to a record.
+      `کد ملی: …${toPersianDigits(String(r.nationalId).slice(-4))} (کامل در پایگاه داده)`,
       `همراه دانش‌آموز: ${r.studentMobile}`,
-      `نشانی: ${r.address}`,
       "",
       "◼ والدین",
       `مادر: ${or(r.motherName)} | تحصیلات: ${or(r.motherEducation)} | شغل: ${or(r.motherJob)} | همراه: ${r.motherMobile}`,
@@ -81,8 +83,25 @@ export function formatRecord(record) {
   const repeat = record.repeat > 1
     ? [`⚠ ارسال شماره‌ی ${toPersianDigits(record.repeat)} با همین ${form.dedupeKey === "nationalId" ? "کد ملی" : "شماره"} در ۲۴ ساعت گذشته؛ پیش از اقدام تلفنی بررسی شود.`, ""]
     : [];
-  return [...repeat, ...form.lines(record), "", `زمان: ${fmtTime(record.receivedAt)}`, `کد پیگیری: ${record.id.slice(0, 8)}`]
-    .filter((l) => l !== null).join("\n").slice(0, 4000);
+  // anyone can type someone else's number or ID into a form (threat model 2026-11-14, T-002)
+  const verify = "فرستنده تأیید نشده است؛ در اولین تماس، هویت ولی را بپرسید.";
+  const body = [...repeat, ...form.lines(record), "", verify, `زمان: ${fmtTime(record.receivedAt)}`, `کد پیگیری: ${record.id.slice(0, 8)}`]
+    .filter((l) => l !== null).join("\n");
+  // always the last line, even if a long message has to be shortened
+  const usage = usageLine(record.quota);
+  return `${body.slice(0, 4000 - usage.length - 1)}\n${usage}`;
+}
+
+/**
+ * How many more forms of this kind the system will accept in the current hour, as counted by whoever
+ * enforces the limit (the database on Vercel, the server process on the school's own host). Never guessed:
+ * when that count did not come back, the line says so.
+ */
+export function usageLine(quota) {
+  const ok = quota && Number.isInteger(quota.remaining) && Number.isInteger(quota.limit);
+  return ok
+    ? `سهمیه‌ی باقی‌مانده (Usage remaining): ${toPersianDigits(quota.remaining)} از ${toPersianDigits(quota.limit)} فرم از این نوع در یک ساعت اخیر`
+    : "سهمیه‌ی باقی‌مانده (Usage remaining): نامعلوم (شمارش پایگاه داده دریافت نشد)";
 }
 export const formatInquiry = (record) => formatRecord({ kind: "inquiry", ...record });
 
@@ -115,7 +134,7 @@ export const SUPABASE = {
  */
 export function createSupabaseStore({ url = SUPABASE.url, key = SUPABASE.key, fetchImpl = fetch } = {}) {
   return async (record) => {
-    const { kind, id, receivedAt, repeat, ...data } = record;
+    const { kind, id, receivedAt, repeat, quota, ...data } = record;
     let res;
     try {
       res = await fetchImpl(`${url}/rest/v1/rpc/submit_form`, {
@@ -126,8 +145,13 @@ export function createSupabaseStore({ url = SUPABASE.url, key = SUPABASE.key, fe
       });
     } catch { throw Object.assign(new Error("store_unreachable"), { status: 503 }); }
     if (res.ok) {
-      const count = Number(await res.json().catch(() => 1));
+      // the database answers {repeat, remaining, limit}; an older version answered the repeat count alone
+      const reply = await res.json().catch(() => null);
+      const count = Number(typeof reply === "object" && reply !== null ? reply.repeat : reply ?? 1);
       if (count > 1) record.repeat = count; else delete record.repeat;
+      // the hour's remaining allowance is the database's own count, or unknown; never the server's guess
+      record.quota = reply && Number.isInteger(reply.remaining) && Number.isInteger(reply.limit)
+        ? { remaining: reply.remaining, limit: reply.limit } : null;
       return;
     }
     const body = await res.json().catch(() => ({}));
@@ -218,7 +242,7 @@ export function createFormHandler(kind, { save, logger = console, rateLimit, tru
   const perIp = createRateLimiter(rateLimit ?? form.perIp);
   const perKey = createRateLimiter(form.perKey);
   // flood guard for the staff channel; only accepted submissions count, so junk cannot lock real families out
-  const global = createRateLimiter({ limit: 120, windowMs: HOUR });
+  const global = createRateLimiter({ limit: PER_FORM_HOURLY, windowMs: HOUR });
   const proxy = trustProxy ?? (process.env.TRUST_PROXY || (process.env.VERCEL ? "vercel" : ""));
 
   return async function handleForm(req, res) {
@@ -253,6 +277,9 @@ export function createFormHandler(kind, { save, logger = console, rateLimit, tru
       const { consent, ...value } = result.value;
       const repeat = perKey.count(key);
       const record = { kind, id: randomUUID(), receivedAt: new Date().toISOString(), ...value, ...(repeat > 1 && { repeat }) };
+      // this process's own count of the hour's allowance (exact on a single-process host); a database
+      // store replaces it with the database's count, which is the one that holds across instances
+      record.quota = { remaining: Math.max(0, PER_FORM_HOURLY - global.count("all")), limit: PER_FORM_HOURLY };
       await save(record);
       logger.info?.(`${kind} ${record.id}`); // ids only: personal data never goes to logs
       return send(res, 201, { ok: true, id: record.id });

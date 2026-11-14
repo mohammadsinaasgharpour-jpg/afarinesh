@@ -235,11 +235,17 @@ button, input, textarea { font: inherit; color: inherit; }
   .hero-cta .btn { flex: 1 1 100%; }
 }
 
-/* page-load moment: the headline settles once */
+/* page-load moment, played once by the browser itself (no script, so the headline is never held back):
+   school name, the two title lines, the lede, then each button, 80 ms apart; the photo settles under it.
+   Only the wait before each start is filled (fill: backwards), so hover and focus styles stay in charge after. */
+.hero-line { display: inline-block; }
 @media (prefers-reduced-motion: no-preference) {
-  .hero-body > * { animation: reveal var(--dur-very-slow) ease-in-out both; }
-  .hero-body > :nth-child(2) { animation-delay: .08s; }
-  .hero-body > :nth-child(3) { animation-delay: .16s; }
+  .hero-school, .hero-line, .hero-lede, .hero-cta > .btn { animation: reveal var(--dur-very-slow) var(--ease) backwards; }
+  .hero-line:nth-of-type(2) { animation-delay: .08s; }
+  .hero-line:nth-of-type(3) { animation-delay: .16s; }
+  .hero-lede { animation-delay: .24s; }
+  .hero-cta > .btn:nth-child(1) { animation-delay: .32s; }
+  .hero-cta > .btn:nth-child(2) { animation-delay: .4s; }
   @media (min-width: 641px) { .hero-media img { animation: settle 1.6s var(--ease) both; } }
 }
 @keyframes rise { from { opacity: 0; transform: translateY(14px); } }
@@ -281,7 +287,15 @@ button, input, textarea { font: inherit; color: inherit; }
 .split-solo { grid-template-columns: 1fr; }
 .split-solo .split-text { padding: var(--s6); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
 .split-solo .split-text p:last-child { margin-bottom: 0; }
-.split-solo .split-text p { max-width: 72ch; }
+/* shorter lines and a heavier weight: the thin face at full width was hard to read on light laptop screens */
+.split-solo .split-text p { max-width: 60ch; font-weight: 500; line-height: 2; color: var(--ink); }
+.split-solo .split-text p + p { font-size: 1.08rem; color: var(--ink-2); font-weight: 600; }
+/* wide screens: the counsellors line sits beside the main text instead of leaving half the box empty */
+@media (min-width: 861px) {
+  .split-solo .split-text { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 0 var(--s7); align-items: start; }
+  .split-solo .split-text .h2 { grid-column: 1 / -1; }
+  .split-solo .split-text p + p { margin: 0; padding: var(--s4) var(--s5); border-inline-start: 4px solid var(--sun); border-radius: var(--r-sm); background: var(--paper); color: var(--ink); }
+}
 
 
 @media (max-width: 860px) { .split { grid-template-columns: 1fr; gap: var(--s6); } }
@@ -354,6 +368,10 @@ button, input, textarea { font: inherit; color: inherit; }
 .c-research { grid-column: 1 / 6; grid-row: 1 / 3; background: #16789c; --fg: #ffd166; --muted: #fff; }
 .c-research h3 { font-size: 2.6rem; }
 .c-research p { font-size: 1.08rem; }
+/* the four stages of a project, filling the tall research tile */
+.path { list-style: none; counter-reset: step; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: var(--s4) 0 var(--s2); padding: 0; }
+.path li { counter-increment: step; display: flex; align-items: center; gap: var(--s3); padding: var(--s3); border-radius: 10px; background: rgba(14, 42, 63, .32); color: #fff; font-weight: 800; font-size: 1.05rem; }
+.path li::before { content: counter(step, persian); display: grid; place-items: center; flex: none; width: 38px; height: 38px; border-radius: 50%; background: #ffd166; color: #0e2a3f; font-family: var(--display); font-size: 1.25rem; line-height: 1; }
 .c-art { grid-column: 6 / 11; background: #f2a516; --fg: #0e2a3f; --muted: #3a2604; }
 .c-blank-1 { grid-column: 11 / 13; background: #c6382c; }
 .c-lang { grid-column: 6 / 13; background: #0e2a3f; --fg: #ffd166; --muted: #e6eef4; }
@@ -442,7 +460,8 @@ button, input, textarea { font: inherit; color: inherit; }
 .team-section.is-deck.is-done { height: auto; padding-block: var(--s7) !important; }
 .is-done .team-pin { position: static; height: auto; }
 .is-deck .team-pin { position: sticky; top: 72px; height: calc(100svh - 72px); display: flex; flex-direction: column; justify-content: flex-start; padding-block: var(--s5) var(--s4); overflow: hidden; }
-.is-deck .team { flex: 1 1 auto; min-height: 0; align-content: stretch; }
+/* the card keeps its own height; stretching it to the pinned area left a large empty band under short cards */
+.is-deck .team { flex: 0 1 auto; min-height: 0; align-content: start; align-items: start; }
 .is-deck .section-head { margin-bottom: var(--s4); }
 .is-deck .team-status { margin-bottom: var(--s2); min-height: 0; }
 .is-deck .team { grid-template-columns: 1fr; max-width: none; }
@@ -465,16 +484,24 @@ button, input, textarea { font: inherit; color: inherit; }
   .team-nav .btn { flex: 1; padding: 0 var(--s3); }
 }
 
-/* phones: teachers side by side, one per screen width, moved by swiping or by the buttons (no pinning) */
-.is-swipe .team {
-  display: grid; grid-auto-flow: column; grid-auto-columns: 100%; grid-template-columns: none; gap: var(--s3); max-width: none;
-  overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; padding-bottom: 2px;
-}
-.is-swipe .team::-webkit-scrollbar { display: none; }
-.is-swipe .team { align-items: start; overflow-y: hidden; transition: height var(--dur-fast) var(--ease); }
+/* phones: one whole teacher at a time, changed by swiping or by the buttons (no pinning, no sideways scrolling,
+   so a card can never stop half way); the new card slides in from the side it comes from */
+.is-swipe .team { display: grid; grid-template-columns: minmax(0, 1fr); max-width: none; touch-action: pan-y; }
 .is-swipe .teacher {
-  scroll-snap-align: center; scroll-snap-stop: always;
-  grid-template-columns: 1fr; justify-items: center; align-content: start; gap: var(--s4); padding: var(--s5) var(--s4); text-align: center;
+  display: none; grid-template-columns: minmax(0, 1fr); min-width: 0; justify-items: center; align-content: start; gap: var(--s4); padding: var(--s5) var(--s4); text-align: center;
+}
+.is-swipe .teacher.is-current { display: grid; }
+.is-swipe .teacher.is-dragging { transition: none; }
+/* while search results glide to their places (GSAP Flip), the cards' own CSS transitions stand aside */
+.team.is-flipping .teacher { transition: none !important; }
+.is-swipe .teacher.is-settling { transition: transform .25s var(--ease); }
+.is-swipe[data-dir="next"] .teacher.is-current { animation: card-from-left .42s var(--ease) both; }
+.is-swipe[data-dir="prev"] .teacher.is-current { animation: card-from-right .42s var(--ease) both; }
+@keyframes card-from-left { from { opacity: 0; transform: translateX(-56px); } }
+@keyframes card-from-right { from { opacity: 0; transform: translateX(56px); } }
+@media (prefers-reduced-motion: reduce) {
+  .is-swipe[data-dir] .teacher.is-current { animation-name: card-fade; animation-duration: .2s; }
+  @keyframes card-fade { from { opacity: 0; } }
 }
 .is-swipe .teacher-photo { width: min(44vw, 180px); }
 .is-swipe .teacher-name { font-family: var(--display); font-weight: 400; font-size: 1.8rem; }
@@ -504,7 +531,7 @@ button, input, textarea { font: inherit; color: inherit; }
 .faq { display: grid; gap: var(--s3); }
 .faq details { border-radius: var(--r); overflow: hidden; border: 2px solid var(--rule); }
 .faq summary {
-  display: flex; justify-content: space-between; align-items: center; gap: var(--s4);
+  display: flex; justify-content: flex-start; align-items: center; gap: var(--s3);
   padding: var(--s4) var(--s5); cursor: pointer; list-style: none; font-weight: 750; font-size: var(--t-md);
   background: var(--sun); color: #1d1404; transition: background-color .15s;
 }
@@ -512,13 +539,10 @@ button, input, textarea { font: inherit; color: inherit; }
 .faq details[open] summary { background: #16789c; color: #fff; }
 .faq details[open] { border-color: #16789c; }
 .faq summary::-webkit-details-marker { display: none; }
-.faq summary .ic { flex: none; transition: transform var(--dur-fast) var(--ease); }
-/* the answer grows open and shrinks shut where the browser can animate to its natural height */
-@media (prefers-reduced-motion: no-preference) {
-  .faq details::details-content { block-size: 0; overflow: clip; transition: block-size var(--dur-slow) var(--ease), content-visibility var(--dur-slow) allow-discrete; }
-  .faq details[open]::details-content { block-size: auto; }
-}
-.faq details[open] summary .ic { transform: rotate(45deg); }
+/* the open/close sign sits right before the question, where the eye and a screen magnifier find it */
+.faq summary .ic { flex: none; order: -1; transition: transform var(--dur-fast) var(--ease); }
+/* the plus turns as soon as a question is tapped, in both directions (main.js sets .is-open) */
+.faq details.is-open summary .ic, html:not(.js) .faq details[open] summary .ic { transform: rotate(45deg); }
 .faq details > :not(summary) {
   margin: 0; padding: var(--s4) var(--s5) var(--s5); max-width: none;
   background: var(--surface); color: var(--ink); font-size: 1.08rem; line-height: 2;
@@ -602,10 +626,15 @@ html:not(.js) .stepper { display: none; }
 .step-actions [hidden] { display: none; }
 .date-parts { display: grid; grid-template-columns: 1fr 1.4fr 1.2fr; gap: var(--s2); }
 .example { margin: 0; font-size: var(--t-sm); color: var(--ink-2); }
+/* a new step arrives from the side it comes from: forward from the left, back from the right (right-to-left page) */
 @media (prefers-reduced-motion: no-preference) {
   .js [data-steps] .step.is-active { animation: step-in var(--dur-fast) var(--ease); }
+  .js [data-steps][data-step-dir="next"] .step.is-active { animation-name: step-next; }
+  .js [data-steps][data-step-dir="prev"] .step.is-active { animation-name: step-prev; }
 }
 @keyframes step-in { from { opacity: 0; transform: translateY(6px); } }
+@keyframes step-next { from { opacity: 0; transform: translateX(-14px); } }
+@keyframes step-prev { from { opacity: 0; transform: translateX(14px); } }
 /* a refused field shakes once, so the message under it is noticed */
 @media (prefers-reduced-motion: no-preference) {
   .field [aria-invalid="true"] { animation: shake .32s cubic-bezier(.36, .07, .19, .97); }
@@ -695,7 +724,8 @@ html:not(.js) .stepper { display: none; }
 /* footer */
 .site-footer { background: var(--rule); color: #cfdbe4; padding-block: var(--s8) var(--s5); }
 .footer-row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--s7); }
-.footer-brand { display: flex; gap: var(--s4); align-items: center; }
+/* the brand block starts at the top like the two link columns beside it (it used to float to their middle) */
+.footer-brand { display: flex; gap: var(--s4); align-items: center; align-self: flex-start; }
 .footer-brand img { width: 64px; height: 64px; background: #fff; border-radius: var(--r-sm); padding: 6px; }
 .footer-brand b { color: #fff; font-family: var(--display); font-weight: 400; font-size: 1.3rem; }
 .footer-h { font-size: 1rem; color: #fff; margin-bottom: var(--s3); }
@@ -787,9 +817,25 @@ html:not(.js) .stepper { display: none; }
   .btn-cta::after { animation: ring 2.4s var(--ease) 1s infinite; }
   @keyframes ring { 0% { opacity: .75; transform: scale(1); } 70%, 100% { opacity: 0; transform: scale(1.14, 1.42); } }
 
+  /* cards answer a pointer with a short lift (transform and shadow only; touch screens are left alone) */
+  @media (hover: hover) {
+    .features > li, .cell:not(.c-blank) { transition: transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
+    .features > li:hover, .cell:not(.c-blank):hover { transform: translateY(-3px); box-shadow: 0 10px 24px -14px rgba(9, 25, 38, .45); }
+  }
+
   /* the light/dark switch crossfades the whole page */
   ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .45s; animation-timing-function: var(--ease); }
 }
+
+/* measurement guides (?guides in the address; assets/js/guides.js): fixed, click-through, never in print */
+.guides { position: fixed; inset: 0; z-index: 9999; pointer-events: none; direction: ltr; font: 600 11px/1 ui-monospace, monospace; }
+.guides-ruler { position: absolute; inset: 0 0 auto; height: 18px; background: repeating-linear-gradient(to right, rgba(220, 38, 38, .85) 0 1px, transparent 1px 10px) bottom / 100% 6px no-repeat, repeating-linear-gradient(to right, rgba(220, 38, 38, .9) 0 1px, transparent 1px 100px) bottom / 100% 12px no-repeat, rgba(255, 255, 255, .85); }
+.guides-ruler span { position: absolute; top: 2px; padding-left: 3px; color: #b91c1c; }
+.guides-line { position: absolute; top: 0; bottom: 0; width: 0; }
+.guides-centre { border-left: 1px dashed #dc2626; }
+.guides-edge { border-left: 1px solid #2563eb; }
+.guides-readout { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); padding: 6px 10px; border-radius: 6px; background: rgba(15, 23, 42, .88); color: #fff; white-space: nowrap; }
+@media print { .guides { display: none; } }
 
 /* below-the-fold blocks are laid out only when they come near the screen (faster first load on phones) */
 #programs, #faq, #contact, .enrol, .site-footer { content-visibility: auto; contain-intrinsic-size: auto 900px; }

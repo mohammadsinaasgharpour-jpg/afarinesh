@@ -88,6 +88,7 @@ test("teacher search really hides non-matching teachers", async ({ page }) => {
   const search = page.locator("[data-team-search]");
   const visibleNames = () => page.locator(".teacher:visible .teacher-name").allTextContents();
   await search.fill("آمادگی دفاعی");
+  await expect(page.locator("[data-team-track]")).not.toHaveClass(/is-deck|is-swipe/);
   await expect(page.locator(".teacher:visible")).toHaveCount(1);
   expect(await visibleNames()).toEqual(["شهرام ده‌بزرگی"]);
   await search.fill("ریاضی");
@@ -127,6 +128,7 @@ test("phones: teachers are swiped one at a time, starting with the founder, each
   await page.locator("[data-team-next]").click();
   await expect(current).toHaveText("سینا عباسلو");
   // the card on screen is the one counted, its photo and name belong together, and it fits the screen width
+  await page.waitForTimeout(500); // the new card slides in
   const fits = await page.evaluate(() => {
     const row = document.querySelector("[data-team]").getBoundingClientRect();
     const c = document.querySelector(".teacher.is-current");
@@ -150,12 +152,12 @@ test("FAQ has no sports-hall question and opens and closes", async ({ page }) =>
   await expect(first).toHaveAttribute("open", "");
   await first.locator("summary").click();
   await expect(first).not.toHaveAttribute("open", "");
-  // one question open at a time, and the open one is blue
+  // answers open independently (closing one automatically pushed the tapped question off screen), and an open one is blue
   const second = page.locator(".faq details").nth(1);
   await first.locator("summary").click();
   await second.locator("summary").click();
   await expect(second).toHaveAttribute("open", "");
-  await expect(first).not.toHaveAttribute("open", "");
+  await expect(first).toHaveAttribute("open", "");
   await page.mouse.move(0, 0);
   await expect.poll(() => second.locator("summary").evaluate((el) => getComputedStyle(el).backgroundColor)).toBe("rgb(22, 120, 156)");
 });
@@ -444,7 +446,7 @@ test("careers page sends a job application", async ({ page }) => {
   await next();
   await page.locator(".segmented label", { hasText: "بالای ۵ سال" }).click();
   await next();
-  await page.fill("#c-phone", "071 3229 3194");
+  await page.fill("#c-phone", "07132293194");
   await page.locator(".check input").check();
   await page.locator("[data-submit]").click();
   await page.locator("[data-confirm-yes]").click();
@@ -499,4 +501,18 @@ test("the share block carries a description, not just the address", async ({ pag
   const tg = await page.locator('[data-share="tg"]').getAttribute("href");
   expect(decodeURIComponent(tg)).toContain("کلاس‌های ۱۵ تا ۱۷ نفره");
   await expect(page.locator(".credit a")).toHaveCount(0);
+});
+
+test("the menu's contact link lands on the school's contact card", async ({ page, isMobile }) => {
+  await page.goto("/");
+  if (isMobile) await page.locator("[data-menu]").click();
+  await page.locator('#nav a[href="#school-contacts"]').click();
+  await expect(page.locator("#school-contacts")).toBeInViewport({ ratio: 0.9 });
+});
+
+test("phone fields keep digits only, at most 11", async ({ page }) => {
+  await page.goto("/pre-registration");
+  const f = page.locator("#p-studentMobile");
+  await f.evaluate((el) => { el.value = "091552474551234"; el.dispatchEvent(new Event("input", { bubbles: true })); });
+  await expect(f).toHaveValue("09155247455");
 });

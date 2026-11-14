@@ -18,6 +18,10 @@ const whenIdle = (fn) => {
   else addEventListener("load", run, { once: true });
 };
 whenIdle(() => {
+  /* motion (GSAP) loads in the background; until it is ready, or if it never is, everything works without it */
+  let motion = null;
+  if (!reduceMotion.matches) import("./motion.js").then((m) => m.initMotion()).then((api) => { motion = api; }, () => {});
+
   /* nav: highlight the section in view */
   const navLinks = $$('#nav a[href^="#"]');
   const spy = new IntersectionObserver((entries) => {
@@ -49,11 +53,44 @@ whenIdle(() => {
     }
   }
 
-  /* FAQ: opening one question closes the others (browsers without the details name attribute) */
+  /* FAQ: each answer slides open and shut in every browser (Safari has no animation to an intrinsic size).
+     Answers stay open independently: closing one automatically pushed the question just tapped off screen.
+     After opening, the page moves just enough for the whole answer to be visible. */
   const faqItems = $$(".faq details");
-  faqItems.forEach((d) => d.addEventListener("toggle", () => {
-    if (d.open) faqItems.forEach((o) => { if (o !== d && o.open) o.open = false; });
+  const header = $(".site-header");
+  const faqAnim = new WeakMap();
+  const slide = (d, open) => {
+    // with GSAP loaded the motion system animates it (height, answer fade); otherwise the browser does
+    const animated = motion?.accordion(d, open);
+    if (animated) return animated;
+    faqAnim.get(d)?.cancel();
+    const summary = $("summary", d);
+    const closedH = summary.offsetHeight + (d.offsetHeight - d.clientHeight);
+    const from = d.offsetHeight;
+    if (open) d.open = true;
+    d.classList.toggle("is-open", open);
+    const to = open ? d.offsetHeight : closedH;
+    if (reduceMotion.matches) { if (!open) d.open = false; return Promise.resolve(); }
+    const a = d.animate({ height: [`${from}px`, `${to}px`] }, { duration: 320, easing: "cubic-bezier(.22,1,.36,1)" });
+    faqAnim.set(d, a);
+    return a.finished.then(() => { if (!open) d.open = false; }, () => {});
+  };
+  const showWhole = (d) => {
+    const r = d.getBoundingClientRect();
+    const top = (header?.offsetHeight ?? 0) + 12;
+    const over = r.bottom - (innerHeight - 16);
+    if (over > 0) scrollBy({ top: Math.min(over, r.top - top), behavior: reduceMotion.matches ? "instant" : "smooth" });
+    else if (r.top < top) scrollBy({ top: r.top - top, behavior: reduceMotion.matches ? "instant" : "smooth" });
+  };
+  faqItems.forEach((d) => $("summary", d).addEventListener("click", (e) => {
+    e.preventDefault();
+    // an answer that is still closing counts as shut, so a quick second click opens it again
+    if (d.open && d.classList.contains("is-open")) { slide(d, false); return; }
+    slide(d, true).then(() => showWhole(d));
   }));
+  // answers opened before this script ran (or by the browser's find-in-page) carry the open state too
+  faqItems.forEach((d) => d.classList.toggle("is-open", d.open));
+  faqItems.forEach((d) => d.addEventListener("toggle", () => { if (d.open) d.classList.add("is-open"); }));
 
   const reveal = new IntersectionObserver((entries) => {
     for (const entry of entries) {
@@ -77,15 +114,10 @@ whenIdle(() => {
   const phone = matchMedia("(max-width: 700px)");
   const inSwipe = () => track.classList.contains("is-swipe");
 
-  // phones: the row is as tall as the teacher on screen, so a short card leaves no empty space under it
-  const fitRow = () => {
-    if (!inSwipe() || index < 0) { team.style.height = ""; return; }
-    team.style.height = `${cards[index].offsetHeight}px`;
-  };
-  // and follows it when its photo loads, its text wraps differently or the screen turns
-  const cardSize = new ResizeObserver((entries) => { if (entries.some((e) => e.target === cards[index])) fitRow(); });
   const setIndex = (i) => {
     if (i === index) return;
+    // phones: the new card slides in from the side it comes from (next from the left in this right-to-left page)
+    if (inSwipe() && index >= 0) track.dataset.dir = i > index ? "next" : "prev";
     index = i;
     cards.forEach((c, n) => {
       c.classList.toggle("is-current", n === i);
@@ -94,36 +126,42 @@ whenIdle(() => {
     });
     $("[data-team-now]").textContent = toPersianDigits(i + 1);
     $("[data-team-progress]").style.setProperty("--p", String((i + 1) / cards.length));
-    fitRow();
-    cardSize.disconnect();
-    if (cards[i]) cardSize.observe(cards[i]);
   };
-  /* phones: swipe mode, no pinning */
-  // the horizontal distance that centres card i in the row (from the rectangles, so it works right to left)
-  const swipeTo = (i, smooth = true) => {
+  /* phones: one card at a time; a sideways swipe moves to the next or previous teacher */
+  const swipeTo = (i) => {
     i = Math.max(0, Math.min(cards.length - 1, i));
-    const row = team.getBoundingClientRect();
-    const card = cards[i].getBoundingClientRect();
-    team.scrollBy({ left: card.left - row.left - (row.width - card.width) / 2, behavior: smooth && !reduceMotion.matches ? "smooth" : "instant" });
+    if (i === index) return;
     setIndex(i);
+    // the whole card stays on screen when its height changes
+    const top = track.getBoundingClientRect().top;
+    if (top < 0) track.scrollIntoView({ block: "start", behavior: "instant" });
   };
-  const nearestCard = () => {
-    const row = team.getBoundingClientRect();
-    const mid = row.left + row.width / 2;
-    let best = 0, dist = Infinity;
-    cards.forEach((c, n) => {
-      const r = c.getBoundingClientRect();
-      const d = Math.abs(r.left + r.width / 2 - mid);
-      if (d < dist) { dist = d; best = n; }
-    });
-    return best;
-  };
-  let swipeTick = false;
-  team.addEventListener("scroll", () => {
-    if (!inSwipe() || swipeTick) return;
-    swipeTick = true;
-    requestAnimationFrame(() => { setIndex(nearestCard()); swipeTick = false; });
+  let touch = null;
+  team.addEventListener("touchstart", (e) => {
+    if (!inSwipe() || e.touches.length !== 1) return;
+    touch = { x: e.touches[0].clientX, y: e.touches[0].clientY, sideways: null };
   }, { passive: true });
+  team.addEventListener("touchmove", (e) => {
+    if (!touch) return;
+    const dx = e.touches[0].clientX - touch.x, dy = e.touches[0].clientY - touch.y;
+    touch.sideways ??= Math.abs(dx) > 8 || Math.abs(dy) > 8 ? Math.abs(dx) > Math.abs(dy) : null;
+    if (!touch.sideways) return;
+    // the card follows the finger a little, so the swipe feels attached
+    const card = cards[index];
+    card.classList.add("is-dragging");
+    card.style.transform = `translateX(${dx * 0.4}px)`;
+  }, { passive: true });
+  team.addEventListener("touchend", (e) => {
+    if (!touch) return;
+    const dx = e.changedTouches[0].clientX - touch.x;
+    const card = cards[index];
+    card.classList.remove("is-dragging");
+    card.style.transform = "";
+    // dragging to the right brings the next card (it waits on the left in this right-to-left page)
+    if (touch.sideways && Math.abs(dx) > 40) swipeTo(index + (dx > 0 ? 1 : -1));
+    touch = null;
+  }, { passive: true });
+  team.addEventListener("touchcancel", () => { if (touch) { cards[index].classList.remove("is-dragging"); cards[index].style.transform = ""; } touch = null; });
 
   const pinned = () => {
     const r = track.getBoundingClientRect();
@@ -162,11 +200,11 @@ whenIdle(() => {
     bar.querySelector(".team-count").hidden = bar.querySelector(".team-progress").hidden = !on;
     allBtn.textContent = on ? "نمایش همه" : "نمایش یکی‌یکی";
     index = -1;
-    if (mode === "swipe") { team.scrollLeft = 0; setIndex(0); }
+    delete track.dataset.dir;
+    if (mode === "swipe") setIndex(0);
     else if (mode === "deck" && done) setIndex(0);
     else if (mode === "deck") syncDeck();
     else cards.forEach((c) => c.classList.remove("is-current", "is-near", "is-before"));
-    if (mode !== "swipe") team.style.height = "";
   };
   const goTo = (i) => {
     i = Math.max(0, Math.min(cards.length - 1, i));
@@ -214,13 +252,17 @@ whenIdle(() => {
   function applyTeamSearch() {
     const q = search.value.trim();
     const { matches, partial } = searchTeachers(searchItems(), q);
-    // results are a list; clearing the search goes back to one by one
-    setDeck(!q && wantsDeck);
-    cards.forEach((c, i) => {
-      const show = !q || matches.has(i);
-      c.hidden = !show;
-      if (show) c.classList.add("is-in");
+    const show = () => cards.forEach((c, i) => {
+      const visible = !q || matches.has(i);
+      c.hidden = !visible;
+      if (visible) c.classList.add("is-in");
     });
+    // results are a list; clearing the search goes back to one by one
+    const listBefore = !inDeck() && !inSwipe();
+    setDeck(!q && wantsDeck);
+    // narrowing or widening a list that stays a list: the cards glide to their new places
+    if (listBefore && !inDeck() && !inSwipe() && motion) motion.flip(cards, show, { root: team });
+    else show();
     const shown = q ? matches.size : cards.length;
     empty.hidden = shown > 0;
     status.textContent = !q ? "" : partial
