@@ -372,7 +372,7 @@ gap: 8px; padding: 8px; background: var(--rule); border-radius: 4px;
 .c-research h3 { font-size: 2.6rem; }
 .c-research p { font-size: 1.08rem; }
 .path { list-style: none; counter-reset: step; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: var(--s4) 0 var(--s2); padding: 0; }
-.path li { counter-increment: step; min-width: 0; display: flex; align-items: center; gap: var(--s3); padding: var(--s3); border-radius: 10px; background: rgba(14, 42, 63, .32); color: #fff; font-weight: 800; font-size: 1.05rem; }
+.path li { counter-increment: step; min-width: 0; display: flex; align-items: center; justify-content: center; text-align: center; gap: var(--s3); padding: var(--s3); border-radius: 10px; background: rgba(14, 42, 63, .32); color: #fff; font-weight: 800; font-size: 1.05rem; }
 .path li::before { content: counter(step, persian); display: grid; place-items: center; flex: none; width: 38px; height: 38px; border-radius: 50%; background: #ffd166; color: #0e2a3f; font-family: var(--display); font-size: 1.25rem; line-height: 1; }
 .c-art { grid-column: 6 / 11; background: #f2a516; --fg: #0e2a3f; --muted: #3a2604; }
 .c-blank-1 { grid-column: 11 / 13; background: #c6382c; }
@@ -397,6 +397,7 @@ gap: 8px; padding: 8px; background: var(--rule); border-radius: 4px;
 .c-art, .c-culture, .c-sport, .c-special, .c-lang { grid-column: 1 / 7; }
 .c-blank-1, .c-blank-2 { display: none; }
 .cell { min-height: 0; }
+.chips { justify-content: center; }
 .cell-tag { position: static; align-self: flex-start; }
 .c-research h3 { font-size: 2.1rem; }
 }
