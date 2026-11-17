@@ -1,6 +1,6 @@
 import { validateInquiry, toPersianDigits, GRADE_LABEL } from "./validate.js";
 import { searchItem, searchTeachers } from "./search.js";
-import { $, $$, initChrome, createFormController, reduceMotion } from "./common.js";
+import { $, $$, initChrome, createFormController, reduceMotion, scroller } from "./common.js";
 
 initChrome();
 
@@ -54,8 +54,9 @@ whenIdle(() => {
   }
 
   /* FAQ: each answer slides open and shut in every browser (Safari has no animation to an intrinsic size).
-     Answers stay open independently: closing one automatically pushed the question just tapped off screen.
-     After opening, the page moves just enough for the whole answer to be visible. */
+     One answer at a time: opening a question folds the one that was open. When that one sits above, the
+     page is moved frame by frame by exactly what it gives up, so the question just tapped stays under the
+     finger. After opening, the page moves just enough for the whole answer to be visible. */
   const faqItems = $$(".faq details");
   const header = $(".site-header");
   const faqAnim = new WeakMap();
@@ -79,14 +80,33 @@ whenIdle(() => {
     const r = d.getBoundingClientRect();
     const top = (header?.offsetHeight ?? 0) + 12;
     const over = r.bottom - (innerHeight - 16);
-    if (over > 0) scrollBy({ top: Math.min(over, r.top - top), behavior: reduceMotion.matches ? "instant" : "smooth" });
-    else if (r.top < top) scrollBy({ top: r.top - top, behavior: reduceMotion.matches ? "instant" : "smooth" });
+    if (over > 0) scroller.by(Math.min(over, r.top - top));
+    else if (r.top < top) scroller.by(r.top - top);
+  };
+  // keeps `el` where it is on screen until `done` settles, while content above it changes height
+  const holdInPlace = (el, done) => {
+    const html = document.documentElement;
+    html.style.overflowAnchor = "none"; // the browser's own correction would count the shift twice
+    const y0 = el.getBoundingClientRect().top;
+    let on = true;
+    const tick = () => {
+      const dy = el.getBoundingClientRect().top - y0;
+      if (Math.abs(dy) >= 1) scroller.by(dy, false);
+      if (on) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+    return done.then(() => { on = false; tick(); html.style.overflowAnchor = ""; });
   };
   faqItems.forEach((d) => $("summary", d).addEventListener("click", (e) => {
     e.preventDefault();
     // an answer that is still closing counts as shut, so a quick second click opens it again
     if (d.open && d.classList.contains("is-open")) { slide(d, false); return; }
-    slide(d, true).then(() => showWhole(d));
+    const others = faqItems.filter((o) => o !== d && o.classList.contains("is-open"));
+    const above = others.some((o) => o.compareDocumentPosition(d) & Node.DOCUMENT_POSITION_FOLLOWING);
+    const closing = Promise.all(others.map((o) => slide(o, false)));
+    const opening = slide(d, true);
+    const settled = Promise.all([closing, opening]);
+    (above ? holdInPlace($("summary", d), settled) : settled).then(() => showWhole(d));
   }));
   // answers opened before this script ran (or by the browser's find-in-page) carry the open state too
   faqItems.forEach((d) => d.classList.toggle("is-open", d.open));
@@ -101,41 +121,24 @@ whenIdle(() => {
   }, { rootMargin: "0px 0px -12% 0px" });
   cards.forEach((c) => reveal.observe(c));
 
-  // One by one: the section pins and each short stretch of scrolling (or one arrow key) brings the next
-  // teacher. Once the visitor has scrolled past the last one the section stops pinning for the rest of the
-  // visit, so scrolling back up does not replay the list; the buttons and the faces still change teacher.
+  // One at a time on every screen: the buttons, a sideways swipe or the arrow keys change teacher. The page
+  // itself is never pinned or moved: every card sits in the same grid cell, so the row is always as tall as
+  // the tallest card and changing teacher shifts nothing above or below it.
   // Pressing «نمایش همه» or searching gives the plain list instead.
   let wantsDeck = true;
   let index = -1;
-  let done = false;
-  try { done = sessionStorage.getItem("team-seen") === "1"; } catch {}
-  const inDeck = () => track.classList.contains("is-deck");
-  const stepLen = () => innerHeight * 0.14;
-  const phone = matchMedia("(max-width: 700px)");
   const inSwipe = () => track.classList.contains("is-swipe");
 
   const setIndex = (i) => {
     if (i === index) return;
-    // phones: the new card slides in from the side it comes from (next from the left in this right-to-left page)
-    if (inSwipe() && index >= 0) track.dataset.dir = i > index ? "next" : "prev";
+    // the new card slides in from the side it comes from (next from the left in this right-to-left page)
+    if (index >= 0) track.dataset.dir = i > index ? "next" : "prev";
     index = i;
-    cards.forEach((c, n) => {
-      c.classList.toggle("is-current", n === i);
-      c.classList.toggle("is-near", Math.abs(n - i) <= 1);
-      c.classList.toggle("is-before", n < i);
-    });
+    cards.forEach((c, n) => c.classList.toggle("is-current", n === i));
     $("[data-team-now]").textContent = toPersianDigits(i + 1);
     $("[data-team-progress]").style.setProperty("--p", String((i + 1) / cards.length));
   };
-  /* phones: one card at a time; a sideways swipe moves to the next or previous teacher */
-  const swipeTo = (i) => {
-    i = Math.max(0, Math.min(cards.length - 1, i));
-    if (i === index) return;
-    setIndex(i);
-    // the whole card stays on screen when its height changes
-    const top = track.getBoundingClientRect().top;
-    if (top < 0) track.scrollIntoView({ block: "start", behavior: "instant" });
-  };
+  const goTo = (i) => { if (inSwipe()) setIndex(Math.max(0, Math.min(cards.length - 1, i))); };
   let touch = null;
   team.addEventListener("touchstart", (e) => {
     if (!inSwipe() || e.touches.length !== 1) return;
@@ -158,91 +161,40 @@ whenIdle(() => {
     card.classList.remove("is-dragging");
     card.style.transform = "";
     // dragging to the right brings the next card (it waits on the left in this right-to-left page)
-    if (touch.sideways && Math.abs(dx) > 40) swipeTo(index + (dx > 0 ? 1 : -1));
+    if (touch.sideways && Math.abs(dx) > 40) goTo(index + (dx > 0 ? 1 : -1));
     touch = null;
   }, { passive: true });
   team.addEventListener("touchcancel", () => { if (touch) { cards[index].classList.remove("is-dragging"); cards[index].style.transform = ""; } touch = null; });
 
-  const pinned = () => {
-    const r = track.getBoundingClientRect();
-    return inDeck() && !done && r.top <= 80 && r.bottom >= innerHeight - 4;
-  };
-  const finish = () => {
-    // the track shrinks to one screen; move the page by the same amount so nothing jumps
-    // (measured on the next section, which also covers the browser clamping scrollY on the shorter page)
-    // Browser scroll anchoring is paused meanwhile, or it would correct the same shift a second time.
-    const anchor = track.nextElementSibling;
-    const was = anchor.getBoundingClientRect().top;
-    const html = document.documentElement;
-    html.style.overflowAnchor = "none";
-    done = true;
-    track.classList.add("is-done");
-    scrollBy({ top: anchor.getBoundingClientRect().top - was, behavior: "instant" });
-    requestAnimationFrame(() => { html.style.overflowAnchor = ""; });
-    try { sessionStorage.setItem("team-seen", "1"); } catch {}
-  };
-  const syncDeck = () => {
-    if (!inDeck() || done) return;
-    const r = track.getBoundingClientRect();
-    if (r.bottom < innerHeight * 0.6) { setIndex(cards.length - 1); finish(); return; }
-    setIndex(Math.max(0, Math.min(cards.length - 1, Math.floor(-r.top / stepLen()))));
-  };
-  // on: one at a time (pinned deck on wide screens, swipe row on phones); off: the plain list
+  // on: one at a time; off: the plain list
   const setDeck = (on) => {
-    const mode = !on ? "list" : phone.matches ? "swipe" : "deck";
-    const was = inDeck() ? "deck" : inSwipe() ? "swipe" : "list";
-    if (mode === was) return;
-    track.classList.toggle("is-deck", mode === "deck");
-    track.classList.toggle("is-swipe", mode === "swipe");
-    track.classList.toggle("is-done", mode === "deck" && done);
+    if (on === inSwipe()) return;
+    track.classList.toggle("is-swipe", on);
     bar.hidden = false;
     $("[data-team-prev]").hidden = $("[data-team-next]").hidden = !on;
     bar.querySelector(".team-count").hidden = bar.querySelector(".team-progress").hidden = !on;
     allBtn.textContent = on ? "نمایش همه" : "نمایش یکی‌یکی";
     index = -1;
     delete track.dataset.dir;
-    if (mode === "swipe") setIndex(0);
-    else if (mode === "deck" && done) setIndex(0);
-    else if (mode === "deck") syncDeck();
-    else cards.forEach((c) => c.classList.remove("is-current", "is-near", "is-before"));
+    if (on) setIndex(0);
+    else cards.forEach((c) => c.classList.remove("is-current"));
   };
-  const goTo = (i) => {
-    i = Math.max(0, Math.min(cards.length - 1, i));
-    if (inSwipe()) return swipeTo(i);
-    if (done) return setIndex(i);
-    scrollTo({ top: scrollY + track.getBoundingClientRect().top + (i + 0.5) * stepLen(), behavior: "instant" });
-    setIndex(i);
-  };
-  phone.addEventListener("change", () => { if (wantsDeck && !search.value.trim()) { setDeck(false); setDeck(true); } });
-  track.style.setProperty("--steps", String(cards.length));
-  // the scroll length is set in pixels from the same numbers the script counts with
-  const sizeDeck = () => { track.style.setProperty("--deck-h", `${innerHeight}px`); track.style.setProperty("--step-len", `${stepLen()}px`); };
-  sizeDeck();
-  addEventListener("resize", sizeDeck);
   $("[data-team-total]").textContent = toPersianDigits(cards.length);
   $("[data-team-prev]").addEventListener("click", () => goTo(index - 1));
-  $("[data-team-next]").addEventListener("click", () => (index >= cards.length - 1 && inDeck() && !done ? $("#faq").scrollIntoView() : goTo(index + 1)));
+  $("[data-team-next]").addEventListener("click", () => goTo(index + 1));
   allBtn.addEventListener("click", () => {
-    wantsDeck = !(inDeck() || inSwipe());
+    wantsDeck = !inSwipe();
     setDeck(wantsDeck);
-    track.scrollIntoView();
+    if (!wantsDeck) track.scrollIntoView({ behavior: reduceMotion.matches ? "instant" : "smooth" });
   });
-  // while pinned, one arrow key (or Page Up/Down) is one teacher
-  addEventListener("keydown", (e) => {
-    if (!pinned() || e.altKey || e.ctrlKey || e.metaKey || e.target.closest?.("input, textarea, select")) return;
-    const dir = { ArrowDown: 1, PageDown: 1, ArrowUp: -1, PageUp: -1 }[e.key];
+  // with the focus on a card or its buttons, the left and right arrows change teacher (left is next in RTL)
+  team.parentElement.addEventListener("keydown", (e) => {
+    if (!inSwipe() || e.altKey || e.ctrlKey || e.metaKey || e.target.closest?.("input, textarea, select")) return;
+    const dir = { ArrowLeft: 1, ArrowRight: -1 }[e.key];
     if (!dir) return;
-    const next = index + dir;
-    if (next < 0 || next >= cards.length) return; // at either end the key scrolls the page as usual
     e.preventDefault();
-    goTo(next);
+    goTo(index + dir);
   });
-  let deckTick = false;
-  addEventListener("scroll", () => {
-    if (deckTick) return;
-    deckTick = true;
-    requestAnimationFrame(() => { syncDeck(); deckTick = false; });
-  }, { passive: true });
   setDeck(wantsDeck);
 
   // the search index is built on first use, not while the page loads
@@ -258,10 +210,10 @@ whenIdle(() => {
       if (visible) c.classList.add("is-in");
     });
     // results are a list; clearing the search goes back to one by one
-    const listBefore = !inDeck() && !inSwipe();
+    const listBefore = !inSwipe();
     setDeck(!q && wantsDeck);
     // narrowing or widening a list that stays a list: the cards glide to their new places
-    if (listBefore && !inDeck() && !inSwipe() && motion) motion.flip(cards, show, { root: team });
+    if (listBefore && !inSwipe() && motion) motion.flip(cards, show, { root: team });
     else show();
     const shown = q ? matches.size : cards.length;
     empty.hidden = shown > 0;

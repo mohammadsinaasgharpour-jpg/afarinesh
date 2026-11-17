@@ -120,3 +120,23 @@ test("form steps slide in from the side they come from", async ({ page }) => {
   await page.waitForTimeout(500);
   expect(await page.evaluate(() => !!window.gsap)).toBe(false);
 });
+
+test("smooth wheel scrolling runs on desktops only, and in-page links still land under the header", async ({ page, isMobile }) => {
+  await page.goto("/");
+  await startScripts(page);
+  await gsapLoaded(page);
+  const smooth = () => page.evaluate(() => document.documentElement.classList.contains("lenis"));
+  if (isMobile) {
+    // touch screens keep the browser's own scrolling
+    await page.waitForTimeout(300);
+    expect(await smooth()).toBe(false);
+    expect(await page.evaluate(() => !!window.Lenis)).toBe(false);
+    return;
+  }
+  await expect.poll(smooth).toBe(true);
+  await page.locator('#nav a[href="#faq"]').click();
+  await expect.poll(() => page.evaluate(() => Math.round(document.querySelector("#faq").getBoundingClientRect().top)), { timeout: 4000 }).toBeLessThanOrEqual(100);
+  const top = await page.evaluate(() => document.querySelector("#faq").getBoundingClientRect().top);
+  const header = await page.evaluate(() => document.querySelector(".site-header").getBoundingClientRect().bottom);
+  expect(top).toBeGreaterThanOrEqual(header - 1);
+});

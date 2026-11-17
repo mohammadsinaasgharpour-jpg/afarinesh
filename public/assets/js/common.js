@@ -4,6 +4,19 @@ import { toPersianDigits, jalaliMonthDays } from "./validate.js";
 export const $ = (sel, root = document) => root.querySelector(sel);
 export const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 export const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
+/** Page scrolling by script goes through here, so the smooth-scroll engine (motion.js, desktops only) can
+    take it over; without it the browser scrolls. `smooth` is ignored with reduced motion. */
+export const scroller = {
+  engine: null,
+  to(y, smooth = true) {
+    if (this.engine) return this.engine.to(y, smooth);
+    scrollTo({ top: y, behavior: smooth && !reduceMotion.matches ? "smooth" : "instant" });
+  },
+  by(dy, smooth = true) {
+    if (this.engine) return this.engine.by(dy, smooth);
+    scrollBy({ top: dy, behavior: smooth && !reduceMotion.matches ? "smooth" : "instant" });
+  },
+};
 // isolated left-to-right, so the area code stays first inside right-to-left sentences
 const SCHOOL_PHONE = "⁦۰۷۱-۳۲۲۹۳۱۹۴⁩";
 const PAPER = { light: "#e8edf2", dark: "#0d2131" };
@@ -70,7 +83,7 @@ export function initChrome() {
   });
 
   const toTop = $("[data-to-top]");
-  const goTop = () => scrollTo({ top: 0, behavior: reduceMotion.matches ? "auto" : "smooth" });
+  const goTop = () => scroller.to(0);
   let ticking = false;
   addEventListener("scroll", () => {
     if (ticking) return;
@@ -113,6 +126,14 @@ export function initChrome() {
       e?.preventDefault?.();
       // scrolled here rather than left to the browser: sections above change height once the page script runs
       contacts.scrollIntoView({ block: "center", behavior: "instant" });
+      // late layout above it (web fonts, the teachers section starting) can still push it away: for two
+      // seconds, if the page grows or shrinks and the card has left the screen, it is brought back
+      const keep = new ResizeObserver(() => {
+        const r = contacts.getBoundingClientRect();
+        if (r.bottom < 0 || r.top > innerHeight) contacts.scrollIntoView({ block: "center", behavior: "instant" });
+      });
+      keep.observe(document.body);
+      setTimeout(() => keep.disconnect(), 2000);
       contacts.focus({ preventScroll: true });
       contacts.classList.add("is-flash");
       setTimeout(() => contacts.classList.remove("is-flash"), 1600);

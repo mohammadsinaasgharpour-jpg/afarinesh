@@ -31,8 +31,7 @@ test("no horizontal scrolling", async ({ page }) => {
   expect(overflow).toBeLessThanOrEqual(0);
 });
 
-test("teachers come one at a time while the section is pinned, in the school's order", async ({ page, isMobile }) => {
-  test.skip(isMobile, "phones swipe instead of pinning");
+test("teachers come one at a time, in the school's order, and changing teacher never moves the page", async ({ page }) => {
   await page.goto("/");
   const names = page.locator(".teacher .teacher-name");
   await expect(names).toHaveCount(29);
@@ -40,47 +39,32 @@ test("teachers come one at a time while the section is pinned, in the school's o
   await expect(names.nth(28)).toHaveText("حسین قاسمی");
   await expect(page.locator("[data-team]")).not.toContainText("قزلباش");
   await expect(page.locator(".teacher h3")).toHaveCount(0);
+  const track = page.locator("[data-team-track]");
+  await expect(track).toHaveClass(/is-swipe/);
+  // nothing is pinned: the section is about one screen tall, not a long scroll
+  expect(await track.evaluate((el) => el.offsetHeight)).toBeLessThan(page.viewportSize().height * 2);
+  await page.evaluate(() => document.querySelector("#team").scrollIntoView({ behavior: "instant" }));
+  await page.waitForTimeout(500); // any smooth scrolling still in motion settles
   const current = page.locator(".teacher.is-current .teacher-name");
-  const toStep = (i) => page.evaluate((n) => { const t = document.querySelector("[data-team-track]"); scrollTo(0, t.offsetTop + innerHeight * 0.14 * (n + 0.5)); }, i);
-  await toStep(0);
   await expect(current).toHaveText("فرشید فلاحی");
   await expect(page.locator(".teacher.is-current")).toHaveCount(1);
-  await toStep(4);
+  // every card shares one frame as tall as the tallest, so the row height and the page position stay put
+  const where = () => page.evaluate(() => [Math.round(scrollY), Math.round(document.querySelector("[data-team]").getBoundingClientRect().height)]);
+  const before = await where();
+  for (let i = 0; i < 4; i++) await page.evaluate(() => document.querySelector("[data-team-next]").click());
   await expect(current).toHaveText("مجید میرزایی");
   await expect(page.locator("[data-team-now]")).toHaveText("۵");
-  // the search box and the card stay on screen while pinned
-  await expect(page.locator("[data-team-search]")).toBeInViewport();
-  await expect(page.locator(".teacher.is-current")).toBeInViewport();
-  await page.locator("[data-team-next]").click();
+  expect(await where()).toEqual(before);
+  // with the focus in the section, the left arrow is next and the right arrow previous (right to left)
+  await page.locator("[data-team-next]").focus();
+  await page.keyboard.press("ArrowLeft");
   await expect(current).toHaveText("کریم کشاورز");
-  // one arrow key is one teacher while the section is pinned
-  await page.keyboard.press("ArrowDown");
-  await expect(current).toHaveText("شهرام صدری");
-  await page.keyboard.press("ArrowUp");
-  await expect(current).toHaveText("کریم کشاورز");
-  // the strip of small faces is gone
+  await page.keyboard.press("ArrowRight");
+  await expect(current).toHaveText("مجید میرزایی");
   await expect(page.locator(".team-strip")).toHaveCount(0);
   await page.locator("[data-team-all]").click();
-  await expect(page.locator("[data-team-track]")).not.toHaveClass(/is-deck/);
+  await expect(track).not.toHaveClass(/is-swipe/);
   await expect(page.locator(".teacher")).toHaveCount(29);
-});
-
-test("after the last teacher the list stops pinning, without moving the page", async ({ page, isMobile }) => {
-  test.skip(isMobile, "phones swipe instead of pinning");
-  await page.goto("/");
-  const track = page.locator("[data-team-track]");
-  // the section's script starts once the page is idle; measure the pinned length after that
-  await expect(track).toHaveClass(/is-deck/);
-  await page.evaluate(() => { const t = document.querySelector("[data-team-track]"); scrollTo({ top: t.offsetTop + t.offsetHeight - 200, behavior: "instant" }); });
-  await expect(track).toHaveClass(/is-done/);
-  const faqTop = await page.locator("#faq").evaluate((el) => el.getBoundingClientRect().top);
-  expect(Math.abs(faqTop - 200)).toBeLessThanOrEqual(2);
-  // going back up passes the section in one screen, and it stays that way after a reload
-  expect(await track.evaluate((el) => el.offsetHeight)).toBeLessThan(page.viewportSize().height * 2);
-  await page.reload();
-  await expect(track).toHaveClass(/is-done/);
-  await page.locator("[data-team-next]").click();
-  await expect(page.locator(".teacher.is-current .teacher-name")).toHaveText("عبدالرحمان یدالهی");
 });
 
 test("teacher search really hides non-matching teachers", async ({ page }) => {
@@ -88,7 +72,7 @@ test("teacher search really hides non-matching teachers", async ({ page }) => {
   const search = page.locator("[data-team-search]");
   const visibleNames = () => page.locator(".teacher:visible .teacher-name").allTextContents();
   await search.fill("آمادگی دفاعی");
-  await expect(page.locator("[data-team-track]")).not.toHaveClass(/is-deck|is-swipe/);
+  await expect(page.locator("[data-team-track]")).not.toHaveClass(/is-swipe/);
   await expect(page.locator(".teacher:visible")).toHaveCount(1);
   expect(await visibleNames()).toEqual(["شهرام ده‌بزرگی"]);
   await search.fill("ریاضی");
@@ -101,7 +85,7 @@ test("teacher search really hides non-matching teachers", async ({ page }) => {
   await expect(page.locator("[data-team-empty]")).toBeVisible();
   await page.locator("[data-team-reset]").click();
   // with the search cleared the section goes back to one teacher at a time
-  await expect(page.locator("[data-team-track]")).toHaveClass(/is-deck|is-swipe/);
+  await expect(page.locator("[data-team-track]")).toHaveClass(/is-swipe/);
   await expect(page.locator(".teacher.is-current")).toHaveCount(1);
 });
 
@@ -152,13 +136,18 @@ test("FAQ has no sports-hall question and opens and closes", async ({ page }) =>
   await expect(first).toHaveAttribute("open", "");
   await first.locator("summary").click();
   await expect(first).not.toHaveAttribute("open", "");
-  // answers open independently (closing one automatically pushed the tapped question off screen), and an open one is blue
+  // one answer at a time: opening the next question folds the first, without moving the tapped question,
+  // and the folding one turns back to yellow while it folds; an open one is blue
   const second = page.locator(".faq details").nth(1);
   await first.locator("summary").click();
-  await second.locator("summary").click();
-  await expect(second).toHaveAttribute("open", "");
   await expect(first).toHaveAttribute("open", "");
   await page.mouse.move(0, 0);
+  await second.locator("summary").click();
+  await expect(first).not.toHaveClass(/is-open/);
+  await expect(second).toHaveAttribute("open", "");
+  await expect(first).not.toHaveAttribute("open", "");
+  await expect(second.locator("summary")).toBeInViewport();
+  await expect.poll(() => first.locator("summary").evaluate((el) => getComputedStyle(el).backgroundColor)).toBe("rgb(242, 165, 22)");
   await expect.poll(() => second.locator("summary").evaluate((el) => getComputedStyle(el).backgroundColor)).toBe("rgb(22, 120, 156)");
 });
 
@@ -292,8 +281,9 @@ test("Instagram button fades while over text and stays on top", async ({ page })
   await page.goto("/");
   const fab = page.locator(".insta-fab");
   const box = await fab.boundingBox();
-  expect(box.width).toBeGreaterThanOrEqual(44);
-  expect(box.width).toBeLessThanOrEqual(50);
+  // large enough to find and tap at once (it was too small on phones and tablets), still a corner button
+  expect(box.width).toBeGreaterThanOrEqual(54);
+  expect(box.width).toBeLessThanOrEqual(60);
   for (const y of [0, 600, 1400, 2600]) {
     await page.evaluate((top) => scrollTo(0, top), y);
     await page.waitForTimeout(120);

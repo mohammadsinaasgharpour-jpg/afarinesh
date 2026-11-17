@@ -11,6 +11,7 @@
 // - Every tween is made inside gsap.matchMedia(), so switching breakpoint or turning on reduced motion
 //   reverts it cleanly (inline styles removed, triggers killed).
 import { toPersianDigits } from "./validate.js";
+import { scroller } from "./common.js";
 
 /** Shared timing. ease ≈ main.css --ease: cubic-bezier(.22, 1, .36, 1). */
 export const MOTION = {
@@ -24,6 +25,9 @@ export const MOTION = {
 const WIDE = "(min-width: 861px)";
 const NARROW = "(max-width: 860px)";
 const STILL = "(prefers-reduced-motion: reduce)";
+// smooth wheel scrolling and magnetic buttons: wide screens driven by a mouse or trackpad only. Touch
+// screens keep the browser's own scrolling, which is already smooth and must never feel held back.
+const DESK = "(min-width: 861px) and (hover: hover) and (pointer: fine)";
 const VENDOR = "/assets/js/vendor/";
 
 let loading;
@@ -37,7 +41,9 @@ function loadGsap() {
     s.onerror = () => reject(new Error(`could not load ${name}`));
     document.head.append(s);
   });
-  return (loading ??= Promise.all(["gsap.min.js", "ScrollTrigger.min.js", "Flip.min.js"].map(load)).then(() => {
+  const files = ["gsap.min.js", "ScrollTrigger.min.js", "Flip.min.js"];
+  if (matchMedia(DESK).matches) files.push("lenis.min.js");
+  return (loading ??= Promise.all(files.map(load)).then(() => {
     const { gsap, ScrollTrigger, Flip } = window;
     gsap.registerPlugin(ScrollTrigger, Flip);
     return { gsap, ScrollTrigger, Flip };
@@ -154,6 +160,70 @@ function heroDepth(gsap) {
   });
 }
 
+/**
+ * Smooth wheel scrolling (Lenis) on desktops: a short, light glide (no long inertia), driven by GSAP's
+ * ticker so ScrollTrigger reads the same position every frame. In-page links keep the header offset
+ * (Lenis reads scroll-padding-top), and boxes that scroll on their own keep their native scrolling.
+ * Script scrolling (back to top, the FAQ) goes through `scroller`, so nothing fights the engine.
+ */
+function smoothScroll(gsap, ScrollTrigger) {
+  const Lenis = window.Lenis;
+  if (!Lenis) return undefined;
+  const lenis = new Lenis({ lerp: 0.14, wheelMultiplier: 1, allowNestedScroll: true, autoRaf: false, stopInertiaOnNavigate: true });
+  lenis.on("scroll", ScrollTrigger.update);
+  // in-page links glide to their section instead of jumping. Sections further down are laid out only as
+  // they come near (content-visibility), so the target can move while the page travels: on arrival the
+  // position is checked once more and finished with a short correction.
+  const onLink = (e) => {
+    const a = e.target.closest?.('a[href^="#"], a[href^="/#"]');
+    if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    if (a.pathname !== location.pathname || !a.hash) return;
+    const el = document.getElementById(decodeURIComponent(a.hash.slice(1)));
+    if (!el) return;
+    e.preventDefault();
+    if (location.hash !== a.hash) { history.pushState(null, "", a.hash); dispatchEvent(new HashChangeEvent("hashchange")); }
+    const pad = parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0;
+    lenis.scrollTo(el, {
+      duration: 0.9, easing: (t) => 1 - (1 - t) ** 3, force: true,
+      onComplete: () => { if (Math.abs(el.getBoundingClientRect().top - pad) > 2) lenis.scrollTo(el, { duration: 0.25, force: true }); },
+    });
+  };
+  document.addEventListener("click", onLink);
+  const raf = (time) => lenis.raf(time * 1000);
+  gsap.ticker.add(raf);
+  gsap.ticker.lagSmoothing(0);
+  scroller.engine = {
+    to: (y, smooth = true) => lenis.scrollTo(y, { immediate: !smooth, force: true }),
+    by: (dy, smooth = true) => lenis.scrollTo((smooth ? lenis.targetScroll : lenis.animatedScroll) + dy, { immediate: !smooth, force: true }),
+  };
+  return () => {
+    document.removeEventListener("click", onLink);
+    scroller.engine = null;
+    gsap.ticker.remove(raf);
+    gsap.ticker.lagSmoothing(500, 33);
+    lenis.destroy();
+  };
+}
+
+/** The main calls to action lean a few pixels toward the pointer (desktops only); a click is never moved off. */
+function magnetic(gsap) {
+  const undo = [];
+  for (const btn of document.querySelectorAll(".hero-cta .btn-cta, .site-header .btn-cta")) {
+    const x = gsap.quickTo(btn, "x", { duration: MOTION.dur.slow, ease: MOTION.ease });
+    const y = gsap.quickTo(btn, "y", { duration: MOTION.dur.slow, ease: MOTION.ease });
+    const move = (e) => {
+      const r = btn.getBoundingClientRect();
+      x(((e.clientX - r.left) / r.width - 0.5) * 8); // at most 4 px either way
+      y(((e.clientY - r.top) / r.height - 0.5) * 6);
+    };
+    const leave = () => { x(0); y(0); };
+    btn.addEventListener("pointermove", move);
+    btn.addEventListener("pointerleave", leave);
+    undo.push(() => { btn.removeEventListener("pointermove", move); btn.removeEventListener("pointerleave", leave); gsap.set(btn, { clearProps: "transform" }); });
+  }
+  return () => undo.forEach((u) => u());
+}
+
 /** Trigger positions follow layout changes below them (sections drawn late, the teacher deck finishing). */
 function followLayout(ScrollTrigger) {
   let timer;
@@ -229,6 +299,12 @@ export async function initMotion() {
     sequences(gsap, wide);
     if (wide) heroDepth(gsap);
     return undoCount;
+  });
+  // desktops: smooth scrolling and magnetic buttons; undone when the window narrows or motion is reduced
+  mm.add(`${DESK} and (prefers-reduced-motion: no-preference)`, () => {
+    const undoScroll = smoothScroll(gsap, ScrollTrigger);
+    const undoMagnet = magnetic(gsap);
+    return () => { undoMagnet(); undoScroll?.(); };
   });
   followLayout(ScrollTrigger);
 
