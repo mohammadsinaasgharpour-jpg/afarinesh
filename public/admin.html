@@ -5,25 +5,61 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow,noarchive">
   <title>پنل مدیر | دبیرستان آفرینش</title>
+  <link rel="icon" href="/assets/img/icon-32.png">
   <link rel="stylesheet" href="/assets/css/admin.css">
 </head>
 <body>
+  <header class="top">
+    <a class="brand" href="/"><img src="/assets/img/icon-192.png" alt="" width="36" height="36"><span>پنل مدیر آفرینش</span></a>
+    <button class="ghost hidden" id="logout" type="button">خروج</button>
+  </header>
   <main>
-    <section class="card" id="login-card">
+    <section class="card login hidden" id="login-card">
       <h1>ورود به پنل مدیر</h1>
-      <p class="muted">این بخش فقط برای معاون یا مدیر مجاز مدرسه است.</p>
+      <p class="muted">این بخش فقط برای معاون و مدیر مدرسه است.</p>
       <form id="login-form">
         <label for="password">رمز پنل</label>
         <input id="password" name="password" type="password" minlength="8" autocomplete="current-password" required>
-        <button type="submit">ورود امن</button>
+        <button type="submit">ورود</button>
         <p class="error" id="login-error" role="alert"></p>
       </form>
     </section>
-    <section class="card hidden" id="records-card">
-      <div class="toolbar"><div><h1>صندوق ثبت‌نام‌ها</h1><p class="muted">اطلاعات فقط پس از ورود مدیر نمایش داده می‌شود.</p></div><button class="secondary" id="logout" type="button">خروج</button></div>
+
+    <section class="hidden" id="records-card">
+      <div class="tabs" role="tablist" aria-label="نوع فرم">
+        <button role="tab" data-kind="preRegistration" aria-selected="true">پیش‌ثبت‌نام <b data-count="preRegistration">۰</b></button>
+        <button role="tab" data-kind="inquiry" aria-selected="false">درخواست تماس <b data-count="inquiry">۰</b></button>
+        <button role="tab" data-kind="career" aria-selected="false">همکاری <b data-count="career">۰</b></button>
+      </div>
+      <div class="tools">
+        <input type="search" id="q" placeholder="جستجو: نام، شماره، کد ملی، مدرسه…" aria-label="جستجو">
+        <select id="status-filter" aria-label="وضعیت">
+          <option value="">همه‌ی وضعیت‌ها</option>
+          <option value="new">جدید</option><option value="called">تماس گرفته شد</option><option value="interview">مصاحبه</option>
+          <option value="accepted">پذیرفته</option><option value="rejected">رد شد</option>
+        </select>
+        <a class="ghost" id="csv" href="/api/admin?action=csv&amp;kind=preRegistration">دانلود اکسل</a>
+      </div>
       <p class="error" id="records-error" role="alert"></p>
-      <div class="records" id="records"></div>
+      <div class="table-wrap"><table id="table"><thead></thead><tbody></tbody></table></div>
+      <p class="muted empty hidden" id="empty">رکوردی پیدا نشد.</p>
     </section>
+
+    <dialog id="detail">
+      <form method="dialog" class="detail-head"><h2 id="detail-title"></h2><button class="ghost" aria-label="بستن">✕</button></form>
+      <dl id="detail-fields"></dl>
+      <div class="detail-edit">
+        <label for="detail-status">وضعیت پیگیری</label>
+        <select id="detail-status">
+          <option value="new">جدید</option><option value="called">تماس گرفته شد</option><option value="interview">مصاحبه</option>
+          <option value="accepted">پذیرفته</option><option value="rejected">رد شد</option>
+        </select>
+        <label for="detail-note">یادداشت</label>
+        <textarea id="detail-note" rows="3" maxlength="1000"></textarea>
+        <button type="button" id="detail-save">ذخیره</button>
+        <span class="muted" id="detail-saved" role="status"></span>
+      </div>
+    </dialog>
   </main>
   <script src="/assets/js/admin.js" defer></script>
 </body>

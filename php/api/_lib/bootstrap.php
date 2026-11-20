@@ -1,0 +1,119 @@
+<?php
+// Shared by every endpoint: settings, JSON replies, the MySQL connection and tables, rate limits, the staff
+// notification. Settings and passwords live in CONFIG_FILE, outside the web root and outside Git.
+declare(strict_types=1);
+
+const CONFIG_FILE = '/home/mqcmfbjf/afarinesh-config.php';
+const SITE_URL = 'https://afarineshshiraz.ir';
+
+function cfg(string $key, $default = null) {
+  static $c = null;
+  if ($c === null) $c = is_file(CONFIG_FILE) ? (require CONFIG_FILE) : [];
+  return $c[$key] ?? $default;
+}
+
+function out(int $status, array $body, array $headers = []): void {
+  http_response_code($status);
+  header('Content-Type: application/json; charset=utf-8');
+  header('Cache-Control: no-store');
+  foreach ($headers as $k => $v) header("$k: $v");
+  echo json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+  exit;
+}
+
+/** The page always posts from its own origin; anything else is another site using a visitor's browser. */
+function require_same_origin(): void {
+  $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+  if ($origin === '') return;
+  $host = parse_url($origin, PHP_URL_HOST) ?: '';
+  $port = parse_url($origin, PHP_URL_PORT);
+  if (($port ? "$host:$port" : $host) !== ($_SERVER['HTTP_HOST'] ?? '')) out(403, ['error' => 'forbidden_origin']);
+}
+
+function read_json(int $maxBytes): array {
+  if (!str_starts_with((string)($_SERVER['CONTENT_TYPE'] ?? ''), 'application/json')) out(415, ['error' => 'unsupported_type']);
+  if ((int)($_SERVER['CONTENT_LENGTH'] ?? 0) > $maxBytes) out(413, ['error' => 'too_large']);
+  $raw = file_get_contents('php://input', false, null, 0, $maxBytes + 1);
+  if ($raw === false || strlen($raw) > $maxBytes) out(413, ['error' => 'too_large']);
+  $body = json_decode($raw, true);
+  if (!is_array($body) || array_is_list($body) && $body !== []) out(400, ['error' => 'bad_json']);
+  return $body;
+}
+
+function db(): PDO {
+  static $pdo = null;
+  if ($pdo) return $pdo;
+  try {
+    $pdo = new PDO('mysql:host=localhost;dbname=' . cfg('db_name') . ';charset=utf8mb4', (string)cfg('db_user'), (string)cfg('db_pass'), [
+      PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC, PDO::ATTR_EMULATE_PREPARES => false,
+    ]);
+  } catch (Throwable $e) { out(503, ['error' => 'store_unreachable']); }
+  $pdo->exec("CREATE TABLE IF NOT EXISTS submissions (
+    id CHAR(36) NOT NULL PRIMARY KEY,
+    kind VARCHAR(20) NOT NULL,
+    dedupe_key VARCHAR(80) NOT NULL,
+    data LONGTEXT NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'new',
+    note TEXT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX kind_time (kind, created_at), INDEX key_time (dedupe_key, created_at)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+  $pdo->exec("CREATE TABLE IF NOT EXISTS rate_hits (
+    bucket CHAR(64) NOT NULL, hit_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, INDEX bucket_time (bucket, hit_at)
+  ) ENGINE=InnoDB");
+  return $pdo;
+}
+
+/** Fixed-window limiter counted in the database. Buckets are hashed, so no address or number is stored. */
+function rate_hit(string $bucket, int $limit, int $windowSec): bool {
+  $key = hash_hmac('sha256', $bucket, (string)cfg('session_secret', 'x'));
+  $pdo = db();
+  if (random_int(1, 50) === 1) $pdo->exec("DELETE FROM rate_hits WHERE hit_at < UTC_TIMESTAMP() - INTERVAL 2 DAY");
+  $q = $pdo->prepare("SELECT COUNT(*) FROM rate_hits WHERE bucket = ? AND hit_at > UTC_TIMESTAMP() - INTERVAL ? SECOND");
+  $q->execute([$key, $windowSec]);
+  if ((int)$q->fetchColumn() >= $limit) return false;
+  $pdo->prepare("INSERT INTO rate_hits (bucket, hit_at) VALUES (?, UTC_TIMESTAMP())")->execute([$key]);
+  return true;
+}
+
+function client_ip(): string { return (string)($_SERVER['REMOTE_ADDR'] ?? ''); }
+
+function uuid4(): string {
+  $b = random_bytes(16);
+  $b[6] = chr(ord($b[6]) & 0x0f | 0x40);
+  $b[8] = chr(ord($b[8]) & 0x3f | 0x80);
+  return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($b), 4));
+}
+
+function fa_time(string $iso): string {
+  if (class_exists('IntlDateFormatter')) {
+    $f = new IntlDateFormatter('fa_IR@calendar=persian', IntlDateFormatter::MEDIUM, IntlDateFormatter::SHORT, 'Asia/Tehran', IntlDateFormatter::TRADITIONAL);
+    $s = $f->format(new DateTimeImmutable($iso));
+    if ($s) return $s;
+  }
+  return $iso;
+}
+
+/**
+ * Telegram is not reachable from servers in Iran, so the message goes to a small relay on the school's
+ * Vercel project (api/relay.js), signed with a shared secret. The database copy is the record; a failed
+ * notification never loses a form.
+ */
+function notify_staff(string $text): bool {
+  $url = cfg('relay_url');
+  $secret = cfg('relay_secret');
+  if (!$url || !$secret) return false;
+  $body = json_encode(['text' => $text, 'ts' => time()], JSON_UNESCAPED_UNICODE);
+  $ch = curl_init($url);
+  curl_setopt_array($ch, [
+    CURLOPT_POST => true, CURLOPT_POSTFIELDS => $body, CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_CONNECTTIMEOUT => 5, CURLOPT_TIMEOUT => 10,
+    CURLOPT_HTTPHEADER => ['Content-Type: application/json', 'X-Relay-Signature: ' . hash_hmac('sha256', $body, $secret)],
+  ]);
+  curl_exec($ch);
+  $ok = curl_getinfo($ch, CURLINFO_HTTP_CODE) === 200;
+  curl_close($ch);
+  return $ok;
+}
+
+function admin_record_url(string $id): string { return SITE_URL . '/admin?record=' . rawurlencode($id); }

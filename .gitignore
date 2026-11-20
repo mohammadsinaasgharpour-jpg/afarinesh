@@ -21,3 +21,4 @@ test-results/
 .mcp.json
 release/
 threat-model/
+*.local.txt
