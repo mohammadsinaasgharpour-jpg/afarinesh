@@ -1,5 +1,5 @@
 # The library at /library (generated into library-php/ by scripts/build-library.mjs).
-DirectoryIndex index.php
+DirectoryIndex index.php index.html
 ErrorDocument 404 /library/404.html
 <IfModule mod_rewrite.c>
   RewriteEngine On
