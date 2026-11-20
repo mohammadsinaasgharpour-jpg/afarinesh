@@ -12,3 +12,7 @@ node_modules/
 playwright-report/
 test-results/
 .omc/
+
+!library/.env.example
+!library/data/
+!library/data/books.json

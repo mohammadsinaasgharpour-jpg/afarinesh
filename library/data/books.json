@@ -1,0 +1,846 @@
+{
+ "exported": "2026-10-30",
+ "count": 105,
+ "books": [
+  {
+   "id": "LIB-0001",
+   "number": 1,
+   "title": "گیرنده‌ی شناخته‌نشده",
+   "author": "کاترین کرسمن تیلور",
+   "translator": "بهمن دارالشفایی",
+   "publisher": "ماهی"
+  },
+  {
+   "id": "LIB-0002",
+   "number": 2,
+   "title": "دیوان حافظ",
+   "author": "حافظ",
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0003",
+   "number": 3,
+   "title": "نقاشی دلپذیر",
+   "author": "مارسل امه",
+   "translator": "ناهید فروغان",
+   "publisher": null
+  },
+  {
+   "id": "LIB-0004",
+   "number": 4,
+   "title": "بوستان سعدی",
+   "author": "سعدی",
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0005",
+   "number": 5,
+   "title": "نگاه نو به نوروز و سفره هفت‌سین",
+   "author": "ابراهیم ایران‌دوست",
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0006",
+   "number": 7,
+   "title": "اطلس جیبی جهان",
+   "author": null,
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0007",
+   "number": 8,
+   "title": "تام گیتس ۱۴",
+   "author": "لیز پیچون",
+   "translator": "بهرنگ رجبی",
+   "publisher": "هوپا"
+  },
+  {
+   "id": "LIB-0008",
+   "number": 13,
+   "title": "آخرین خنده‌ی دو تا خفن",
+   "author": "جوری جان، مک بارنت",
+   "translator": "امیرحسین دانشور کیان",
+   "publisher": "پرتقال"
+  },
+  {
+   "id": "LIB-0009",
+   "number": 14,
+   "title": "خانه درختی هفتاد و هشت طبقه",
+   "author": "اندی گریفیتس، تری دنتون",
+   "translator": "آناهیتا یارمحمدی",
+   "publisher": "هوپا"
+  },
+  {
+   "id": "LIB-0010",
+   "number": 16,
+   "title": "خاطرات یک بچه چلمن",
+   "author": "جف کینی",
+   "translator": "سارا اسفندیارپور، آناهیتا یارمحمدی",
+   "publisher": null
+  },
+  {
+   "id": "LIB-0011",
+   "number": 17,
+   "title": "لمونی اسنیکت: همهٔ پرسش‌های اشتباه ۳ — الان نباید مدرسه باشی",
+   "author": null,
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0012",
+   "number": 19,
+   "title": "هنر در لحظه زندگی کردن",
+   "author": "شانانیکوئست",
+   "translator": null,
+   "publisher": "میلکان"
+  },
+  {
+   "id": "LIB-0013",
+   "number": 20,
+   "title": "Simple as a Verse",
+   "author": "Mina Lotfi",
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0014",
+   "number": 21,
+   "title": "مجموعه شعر کوچه‌های خاکی",
+   "author": "مبینا لطفی",
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0015",
+   "number": 22,
+   "title": "اطاق آبی",
+   "author": "سهراب سپهری",
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0016",
+   "number": 27,
+   "title": "کیمیاگر",
+   "author": "پائولو کوئیلو",
+   "translator": "آرش حجازی",
+   "publisher": null
+  },
+  {
+   "id": "LIB-0017",
+   "number": 28,
+   "title": "خواننده",
+   "author": "عبدالرحیم ثابت",
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0018",
+   "number": 29,
+   "title": "از اینجا و آنجا",
+   "author": "علی‌اکبر ستارینیا",
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0019",
+   "number": 30,
+   "title": "آدم‌خواران",
+   "author": "ژان توله",
+   "translator": null,
+   "publisher": "چشمه"
+  },
+  {
+   "id": "LIB-0020",
+   "number": 31,
+   "title": "دریاب جوانی را",
+   "author": "علی‌اصغر ظهیری",
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0021",
+   "number": 32,
+   "title": "مشهدی صفر گربه‌ای داشت",
+   "author": "حمید عاملی",
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0022",
+   "number": 33,
+   "title": "کشور من و جهان",
+   "author": "آندری ساخاروف",
+   "translator": "ابوالفضل خدابخش",
+   "publisher": null
+  },
+  {
+   "id": "LIB-0023",
+   "number": 34,
+   "title": "حضرت خدیجه، سه همسر پیامبر",
+   "author": "محمدمهدی اشتهاردی",
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0024",
+   "number": 35,
+   "title": "اصول شهروندی در فرهنگ ایرانی",
+   "author": null,
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0025",
+   "number": 37,
+   "title": "منشور حقوق بشر کوروش",
+   "author": "سرهنگ حمید هاشمی",
+   "translator": null,
+   "publisher": "فرهنگ و قلم"
+  },
+  {
+   "id": "LIB-0026",
+   "number": 38,
+   "title": "شاه‌عباس عظیم‌ور؛ مجموعه طنز تاریخی، شماره یک",
+   "author": "احمد عربلو",
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0027",
+   "number": 39,
+   "title": "فرهنگ کلمات",
+   "author": "مرتضی کفایتی",
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0028",
+   "number": 40,
+   "title": "سبز انگشت",
+   "author": "کارولین هیوود",
+   "translator": "کمال پولادی",
+   "publisher": null
+  },
+  {
+   "id": "LIB-0029",
+   "number": 41,
+   "title": "مغازه خودکشی",
+   "author": "ژان توله",
+   "translator": "احسان کرم‌ویسی",
+   "publisher": "چشمه"
+  },
+  {
+   "id": "LIB-0030",
+   "number": 42,
+   "title": "پس‌کوچه‌های فرهنگ: جامع‌ترین فرهنگ لغات شفاهی زبان فارسی؛ پانزده هزار اصطلاح و کنایه و تیکه‌کلام عامیانه",
+   "author": null,
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0031",
+   "number": 44,
+   "title": "جشن‌های ایرانی",
+   "author": "دکتر پرویز رجبی",
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0032",
+   "number": 44,
+   "title": "طنز کمال",
+   "author": "علی دهستانی",
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0033",
+   "number": 45,
+   "title": "رستم‌نامه",
+   "author": "محمدعلی رضایی‌پور",
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0034",
+   "number": 46,
+   "title": "سفر به شهر اعداد",
+   "author": "محمد قاسمی",
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0035",
+   "number": 47,
+   "title": "قصه‌های خوب برای بچه‌های خوب",
+   "author": "مهدی آذریزدی",
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0036",
+   "number": 48,
+   "title": "نسل بربادرفته",
+   "author": "یوزف روت",
+   "translator": "دکتر سعید فیروزآبادی",
+   "publisher": null
+  },
+  {
+   "id": "LIB-0037",
+   "number": 49,
+   "title": "معجزه",
+   "author": "راندا برن",
+   "translator": "دکتر فرزام حبیبی اصفهانی",
+   "publisher": null
+  },
+  {
+   "id": "LIB-0038",
+   "number": 50,
+   "title": "زمستان سبز",
+   "author": "نورا حق‌پرست",
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0039",
+   "number": 51,
+   "title": "طرح جامع بهینه‌سازی مصرف انرژی در بخش‌های مختلف مصرف، حمل‌ونقل، صنعت ساختمان",
+   "author": null,
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0040",
+   "number": 52,
+   "title": "آویژگان ادبیات فارسی دوم راهنمایی (هشتم)",
+   "author": null,
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0041",
+   "number": 53,
+   "title": "دانستنی‌های تغذیه",
+   "author": null,
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0042",
+   "number": 54,
+   "title": "زیبا نوشتن",
+   "author": "میرمحمد مرسلی",
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0043",
+   "number": 56,
+   "title": "مشکلات روحی و عاطفی کودکان و نوجوانان",
+   "author": "لیندا وینلکی",
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0044",
+   "number": 57,
+   "title": "پنجره‌های آسمان",
+   "author": null,
+   "translator": null,
+   "publisher": "افق"
+  },
+  {
+   "id": "LIB-0045",
+   "number": 58,
+   "title": "جینی، قورباغه خوبی باش",
+   "author": null,
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0046",
+   "number": 59,
+   "title": "شرجه",
+   "author": "محمد محمدیان",
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0047",
+   "number": 60,
+   "title": "سرگذشت انرژی هسته‌ای",
+   "author": null,
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0048",
+   "number": 61,
+   "title": "فایلو فارنزورث و اختراع تلویزیون",
+   "author": null,
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0049",
+   "number": 62,
+   "title": "مارتین لوتر کینگ، رهبر بزرگ جنبش مدنی سیاهان",
+   "author": null,
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0050",
+   "number": 63,
+   "title": "از کجا آمده‌ای؟ آمدنت بهر چیست؟",
+   "author": null,
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0051",
+   "number": 64,
+   "title": "ایزاک نیوتن و قوانین حرکت",
+   "author": null,
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0052",
+   "number": 66,
+   "title": "شهر شناور",
+   "author": null,
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0053",
+   "number": 68,
+   "title": "همراه با سیاحان و جهانگردان",
+   "author": "محمود حکیمی",
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0054",
+   "number": 70,
+   "title": "حیوانات و گیاهان در گذشته‌های دور",
+   "author": null,
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0055",
+   "number": 71,
+   "title": "راهنمای آسمان شب",
+   "author": "ایزاک آسیموف",
+   "translator": "محمدرضا غفوری",
+   "publisher": null
+  },
+  {
+   "id": "LIB-0056",
+   "number": 74,
+   "title": "باید بدانیم درباره خزندگان",
+   "author": null,
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0057",
+   "number": 75,
+   "title": "عدالت در گرداب: جریان‌شناسی تحلیلی حکومت علوی",
+   "author": null,
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0058",
+   "number": 75,
+   "title": "زهره: رازی سربه‌مهر",
+   "author": "ایزاک آسیموف",
+   "translator": "محمدرضا غفوری",
+   "publisher": null
+  },
+  {
+   "id": "LIB-0059",
+   "number": 76,
+   "title": "نپتون: دورترین غول",
+   "author": "ایزاک آسیموف",
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0060",
+   "number": 77,
+   "title": "سیارک‌ها",
+   "author": "ایزاک آسیموف",
+   "translator": "عادل ارشقی",
+   "publisher": null
+  },
+  {
+   "id": "LIB-0061",
+   "number": 78,
+   "title": "اساطیر و جهان",
+   "author": "ایزاک آسیموف",
+   "translator": "محمدرضا غفوری",
+   "publisher": null
+  },
+  {
+   "id": "LIB-0062",
+   "number": 79,
+   "title": "پلوتون، سیاره‌ی دوگانه",
+   "author": null,
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0063",
+   "number": 80,
+   "title": "داریوش بزرگ",
+   "author": null,
+   "translator": null,
+   "publisher": "آپشن"
+  },
+  {
+   "id": "LIB-0064",
+   "number": 80,
+   "title": "زحل، سیاره‌ای با حلقه‌های زیبا",
+   "author": "ایزاک آسیموف",
+   "translator": "محمدرضا غفوری",
+   "publisher": null
+  },
+  {
+   "id": "LIB-0065",
+   "number": 81,
+   "title": "اورانوس، سیاره‌ای که به پهلو خوابیده",
+   "author": "ایزاک آسیموف",
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0066",
+   "number": 82,
+   "title": "منظومه شمسی ما",
+   "author": "ایزاک آسیموف",
+   "translator": "محمدرضا غفوری",
+   "publisher": null
+  },
+  {
+   "id": "LIB-0067",
+   "number": 83,
+   "title": "نخستین انسان در ماه",
+   "author": null,
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0068",
+   "number": 84,
+   "title": "مناطق تحت مدیریت اداره کل حفاظت محیط زیست استان گلستان",
+   "author": null,
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0069",
+   "number": 88,
+   "title": "عفت و اعمال منافی با عفت در روایات",
+   "author": null,
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0070",
+   "number": 89,
+   "title": "حضرت فاطمه زهرا",
+   "author": null,
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0071",
+   "number": 90,
+   "title": "بررسی فلسفه حجاب",
+   "author": "محمدعلی محمدیان",
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0072",
+   "number": 91,
+   "title": "داروخانه معنوی",
+   "author": "رضا جاهِد",
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0073",
+   "number": 92,
+   "title": "علی علیه‌السلام در قرآن",
+   "author": null,
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0074",
+   "number": 93,
+   "title": "مداومت بر اعمال",
+   "author": null,
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0075",
+   "number": 95,
+   "title": "قانون در طب",
+   "author": null,
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0076",
+   "number": 96,
+   "title": "حضرت محمد (ص)",
+   "author": null,
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0077",
+   "number": 97,
+   "title": "داستان مردانگی حروزهیر",
+   "author": null,
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0078",
+   "number": 98,
+   "title": "تاریخ و تحلیل زندگانی حضرت زهرا (س)",
+   "author": null,
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0079",
+   "number": 99,
+   "title": "عوامل سیاسی حضور امام رضا در خراسان",
+   "author": null,
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0080",
+   "number": 102,
+   "title": "مجموعه شاهان هخامنشی",
+   "author": null,
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0081",
+   "number": 104,
+   "title": "خیلی دور، همین نزدیک",
+   "author": null,
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0083",
+   "number": 105,
+   "title": "جاناتان مرغ دریایی",
+   "author": "ریچارد باخ",
+   "translator": "نسیم امیرعظیمی",
+   "publisher": "ثالث"
+  },
+  {
+   "id": "LIB-0084",
+   "number": 106,
+   "title": "مکالمات روزمره آلمانی با تلفظ کلمات",
+   "author": null,
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0082",
+   "number": 110,
+   "title": "خانه درختی صد و چهار طبقه",
+   "author": "اندی گریفیتس، تری دنتون",
+   "translator": "آناهیتا یارمحمدی",
+   "publisher": "هوپا"
+  },
+  {
+   "id": "LIB-0085",
+   "number": 113,
+   "title": "خلوتگاه راز",
+   "author": null,
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0086",
+   "number": 114,
+   "title": "مادام پیلینسکا و راز شوپن",
+   "author": "اریک امانوئل اشمیت",
+   "translator": "عاطفه حبیبی",
+   "publisher": "چترنگ"
+  },
+  {
+   "id": "LIB-0087",
+   "number": 115,
+   "title": "نگاهی تازه به کلیله و دمنه",
+   "author": null,
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0088",
+   "number": 116,
+   "title": "مجموعه شعر سپید",
+   "author": "مبینا لطفی",
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0089",
+   "number": 117,
+   "title": "آفرینش و انسان",
+   "author": "محمدتقی جعفری",
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0090",
+   "number": 118,
+   "title": "برگزاری اردو و بازدید",
+   "author": "محمدحسین صباغ",
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0091",
+   "number": 119,
+   "title": "راهنمای زندگی برای نوجوانان",
+   "author": null,
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0092",
+   "number": 120,
+   "title": "زندگانی حضرت مهدی",
+   "author": "جواد فاضل",
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0093",
+   "number": 122,
+   "title": "هنر نه گفتن",
+   "author": "دیمون زاهاریادس",
+   "translator": "زهرا ابراهیمی",
+   "publisher": null
+  },
+  {
+   "id": "LIB-0094",
+   "number": 125,
+   "title": "فرهنگ شفاهی سخن",
+   "author": null,
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0095",
+   "number": 126,
+   "title": "فرهنگ دانش‌آموز سخن",
+   "author": "حسن انوری",
+   "translator": null,
+   "publisher": "سخن"
+  },
+  {
+   "id": "LIB-0096",
+   "number": 127,
+   "title": "جورج ایستمن و دوربین کداک",
+   "author": null,
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0097",
+   "number": 128,
+   "title": "آپولو سیزده",
+   "author": null,
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0098",
+   "number": 129,
+   "title": "آش سنگ",
+   "author": "روبرت ژیرو",
+   "translator": "مصطفی سلیمی",
+   "publisher": null
+  },
+  {
+   "id": "LIB-0099",
+   "number": 131,
+   "title": "هزار و یک سؤال و جواب علمی",
+   "author": null,
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0100",
+   "number": 132,
+   "title": "فرهنگ توصیفی تعزیه و نمایش‌های آیینی",
+   "author": "عبدالصمد فهمند رشعدی",
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0101",
+   "number": 137,
+   "title": "روش تجزیه و تحلیل آثار نقاشی",
+   "author": "مرتضی گودرزی",
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0102",
+   "number": 143,
+   "title": "سیری در سیره معصومین؛ خلاصه آثار شهید مرتضی مطهری",
+   "author": null,
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0103",
+   "number": 150,
+   "title": "سبوی کربلا",
+   "author": "حسین ترکمانیان",
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0104",
+   "number": 151,
+   "title": "فرهنگ آکسفورد المنتری",
+   "author": null,
+   "translator": null,
+   "publisher": null
+  },
+  {
+   "id": "LIB-0105",
+   "number": 157,
+   "title": "قصه‌های شاهنامه",
+   "author": null,
+   "translator": null,
+   "publisher": null
+  }
+ ]
+}
