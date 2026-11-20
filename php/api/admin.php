@@ -8,11 +8,7 @@ require_once __DIR__ . '/_lib/bootstrap.php';
 const SESSION_SEC = 8 * 3600;
 const STATUSES = ['new', 'called', 'interview', 'accepted', 'rejected'];
 
-session_name('afarinesh_admin');
-session_set_cookie_params(['lifetime' => SESSION_SEC, 'path' => '/', 'secure' => true, 'httponly' => true, 'samesite' => 'Strict']);
-ini_set('session.gc_maxlifetime', (string)SESSION_SEC);
-ini_set('session.use_strict_mode', '1');
-session_start();
+admin_session();
 
 /** Hash format "pbkdf2_sha256$iterations$salt_b64$hash_b64", written by scripts/hash-admin-password.mjs. */
 function verify_password(string $password, string $encoded): bool {

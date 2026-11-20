@@ -116,4 +116,20 @@ function notify_staff(string $text): bool {
   return $ok;
 }
 
+/**
+ * The vice-principal's sign-in, shared by /admin and the library. Sessions live in their own folder outside the
+ * web root: in the host's shared folder, other sites' PHP clears them after 24 minutes and signs the panel out.
+ */
+function admin_session(): void {
+  if (session_status() === PHP_SESSION_ACTIVE) return;
+  $dir = '/home/mqcmfbjf/admin-sessions';
+  if (!is_dir($dir)) @mkdir($dir, 0700, true);
+  if (is_dir($dir)) session_save_path($dir);
+  ini_set('session.gc_maxlifetime', (string)(8 * 3600));
+  ini_set('session.use_strict_mode', '1');
+  session_name('afarinesh_admin');
+  session_set_cookie_params(['lifetime' => 8 * 3600, 'path' => '/', 'secure' => true, 'httponly' => true, 'samesite' => 'Strict']);
+  session_start();
+}
+
 function admin_record_url(string $id): string { return SITE_URL . '/admin?record=' . rawurlencode($id); }

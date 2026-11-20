@@ -41,14 +41,7 @@ function catalog_write(array $data, ?string $version): ?string {
   }
 }
 
-/** The vice-principal's session, shared with the main admin panel (/admin). */
-function admin_session(): void {
-  if (session_status() === PHP_SESSION_ACTIVE) return;
-  session_name('afarinesh_admin');
-  session_set_cookie_params(['lifetime' => 8 * 3600, 'path' => '/', 'secure' => true, 'httponly' => true, 'samesite' => 'Strict']);
-  ini_set('session.use_strict_mode', '1');
-  session_start();
-}
+/** The vice-principal's session (admin_session() in the main bootstrap) is shared with the main admin panel. */
 function is_admin(): bool { admin_session(); return ($_SESSION['admin_until'] ?? 0) > time(); }
 
 function lib_verify_password(string $password): bool {
