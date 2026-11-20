@@ -2,6 +2,7 @@
 // Shared by every endpoint: settings, JSON replies, the MySQL connection and tables, rate limits, the staff
 // notification. Settings and passwords live in CONFIG_FILE, outside the web root and outside Git.
 declare(strict_types=1);
+ini_set('display_errors', '0');
 
 const CONFIG_FILE = '/home/mqcmfbjf/afarinesh-config.php';
 const SITE_URL = 'https://afarineshshiraz.ir';

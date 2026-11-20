@@ -57,4 +57,6 @@ copy_tree("$top/public", WEB_ROOT, $copied);
 copy_tree("$top/php", WEB_ROOT, $copied);
 copy_tree("$top/library-php", WEB_ROOT . '/library', $copied);
 remove_tree($tmp);
+// PHP keeps compiled scripts in memory; without this, a changed file can run next to an old copy of another
+if (function_exists('opcache_reset')) opcache_reset();
 out(200, ['ok' => true, 'files' => $copied, 'commit' => $event['after'] ?? null]);
