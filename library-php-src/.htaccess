@@ -1,0 +1,12 @@
+# The library at /library (generated into library-php/ by scripts/build-library.mjs).
+DirectoryIndex index.php
+ErrorDocument 404 /library/404.html
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /library/
+  RewriteRule ^api/_lib/ - [F,L]
+  RewriteRule ^home\.html$ - [F,L]
+  RewriteRule ^api/admin/([a-z-]+)/?$ api/admin/$1.php [L,QSA]
+  RewriteRule ^api/([a-z-]+)/?$ api/$1.php [L,QSA]
+  RewriteRule ^index\.html$ / [R=301,L]
+</IfModule>

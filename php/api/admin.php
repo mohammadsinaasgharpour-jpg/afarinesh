@@ -77,7 +77,7 @@ $kind = (string)($_GET['kind'] ?? '');
 $where = [];
 $args = [];
 if (isset($_GET['id']) && $_GET['id'] !== '') { $where[] = 'id = ?'; $args[] = (string)$_GET['id']; }
-if (in_array($kind, ['inquiry', 'preRegistration', 'career'], true)) { $where[] = 'kind = ?'; $args[] = $kind; }
+if (in_array($kind, ['inquiry', 'preRegistration', 'career', 'library'], true)) { $where[] = 'kind = ?'; $args[] = $kind; }
 $sql = 'SELECT * FROM submissions' . ($where ? ' WHERE ' . implode(' AND ', $where) : '') . ' ORDER BY created_at DESC LIMIT 2000';
 $q = $pdo->prepare($sql);
 $q->execute($args);

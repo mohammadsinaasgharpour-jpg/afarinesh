@@ -9,14 +9,16 @@ const LABELS = {
   fatherName: "نام پدر", fatherEducation: "تحصیلات پدر", fatherJob: "شغل پدر", fatherMobile: "همراه پدر",
   currentSchool: "مدرسه‌ی فعلی", grade: "پایه", gpa: "معدل / نمره", gpaDescriptive: "نمره‌ی توصیفی", discipline: "انضباط", referral: "نحوه‌ی آشنایی",
   parentName: "نام ولی", phone: "شماره تماس", message: "پیام", field: "رشته", degree: "مقطع", experience: "سابقه‌ی تدریس",
+  name: "نام دانش‌آموز", className: "کلاس", days: "مدت امانت (روز)", bookId: "شناسه‌ی کتاب", bookNumber: "شماره‌ی کتاب", bookTitle: "کتاب", dueDate: "تاریخ بازگشت",
 };
 const GRADE = { 7: "هفتم", 8: "هشتم", 9: "نهم" };
 const STATUS = { new: "جدید", called: "تماس گرفته شد", interview: "مصاحبه", accepted: "پذیرفته", rejected: "رد شد" };
-const KIND = { preRegistration: "پیش‌ثبت‌نام", inquiry: "درخواست تماس", career: "همکاری" };
+const KIND = { preRegistration: "پیش‌ثبت‌نام", inquiry: "درخواست تماس", career: "همکاری", library: "امانت کتاب" };
 const COLUMNS = {
   preRegistration: [["fullName"], ["grade"], ["fatherMobile"], ["motherMobile"], ["currentSchool"]],
   inquiry: [["parentName"], ["phone"], ["grade"], ["message"]],
   career: [["fullName"], ["field"], ["degree"], ["phone"]],
+  library: [["name"], ["bookTitle"], ["grade"], ["className"], ["dueDate"]],
 };
 
 let all = [];

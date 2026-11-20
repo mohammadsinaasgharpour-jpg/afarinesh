@@ -1,0 +1,8 @@
+# کتابخانه مدرسه آفرینش
+User-agent: *
+Allow: /
+# admin endpoints are useless to search engines; the admin page itself carries noindex
+Disallow: /api/admin/
+Disallow: /api/session
+
+Sitemap: https://library.afarineshshiraz.ir/sitemap.xml
