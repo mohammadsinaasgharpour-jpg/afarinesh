@@ -81,6 +81,15 @@ function openRecord(r) {
       render();
     } catch { $("#detail-saved").textContent = "ذخیره نشد؛ دوباره امتحان کنید."; }
   };
+  $("#detail-delete").onclick = async () => {
+    if (!confirm("این رکورد برای همیشه حذف شود؟ (برای فرم‌های آزمایشی یا اسپم)")) return;
+    try {
+      await api("/api/admin?action=delete", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: r.id }) });
+      all = all.filter((x) => x !== r);
+      $("#detail").close();
+      render();
+    } catch { $("#detail-saved").textContent = "حذف نشد؛ دوباره امتحان کنید."; }
+  };
   $("#detail").showModal();
 }
 

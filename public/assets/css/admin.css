@@ -47,4 +47,5 @@ dd { margin: 0; overflow-wrap: anywhere; }
 dd a { color: var(--sky); font-weight: 700; }
 .detail-edit { padding: 0 20px 20px; }
 .detail-edit button { margin-top: 12px; }
+.danger { color: var(--brick); border-color: color-mix(in srgb, var(--brick) 40%, transparent); }
 @media (max-width: 560px) { dl { grid-template-columns: 1fr; } dt { margin-top: 6px; } }

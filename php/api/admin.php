@@ -64,6 +64,13 @@ if ($method === 'POST' && $action === 'update') {
   $pdo->prepare("UPDATE submissions SET status = ?, note = ? WHERE id = ?")->execute([$status, $note, $id]);
   out(200, ['ok' => true]);
 }
+if ($method === 'POST' && $action === 'delete') {
+  $body = read_json(1024);
+  $id = (string)($body['id'] ?? '');
+  if (!preg_match('/^[0-9a-f-]{36}$/', $id)) out(422, ['error' => 'invalid']);
+  $pdo->prepare("DELETE FROM submissions WHERE id = ?")->execute([$id]);
+  out(200, ['ok' => true]);
+}
 if ($method !== 'GET') out(405, ['error' => 'method_not_allowed'], ['Allow' => 'GET, POST']);
 
 $kind = (string)($_GET['kind'] ?? '');
