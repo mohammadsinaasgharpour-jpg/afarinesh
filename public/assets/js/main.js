@@ -138,60 +138,91 @@ whenIdle(() => {
     $("[data-team-now]").textContent = toPersianDigits(i + 1);
     $("[data-team-progress]").style.setProperty("--p", String((i + 1) / cards.length));
   };
-  const goTo = (i) => { if (inSwipe()) setIndex(Math.max(0, Math.min(cards.length - 1, i))); };
-  let touch = null;
-  team.addEventListener("touchstart", (e) => {
-    if (!inSwipe() || e.touches.length !== 1) return;
-    touch = { x: e.touches[0].clientX, y: e.touches[0].clientY, sideways: null };
-  }, { passive: true });
-  team.addEventListener("touchmove", (e) => {
-    if (!touch) return;
-    const dx = e.touches[0].clientX - touch.x, dy = e.touches[0].clientY - touch.y;
-    touch.sideways ??= Math.abs(dx) > 8 || Math.abs(dy) > 8 ? Math.abs(dx) > Math.abs(dy) : null;
-    if (!touch.sideways) return;
-    // the card follows the finger a little, so the swipe feels attached
-    const card = cards[index];
-    card.classList.add("is-dragging");
-    card.style.transform = `translateX(${dx * 0.4}px)`;
-  }, { passive: true });
-  team.addEventListener("touchend", (e) => {
-    if (!touch) return;
-    const dx = e.changedTouches[0].clientX - touch.x;
-    const card = cards[index];
-    card.classList.remove("is-dragging");
-    card.style.transform = "";
-    // dragging to the right brings the next card (it waits on the left in this right-to-left page)
-    if (touch.sideways && Math.abs(dx) > 40) goTo(index + (dx > 0 ? 1 : -1));
-    touch = null;
-  }, { passive: true });
-  team.addEventListener("touchcancel", () => { if (touch) { cards[index].classList.remove("is-dragging"); cards[index].style.transform = ""; } touch = null; });
-
-  // Desktop users get the same gesture with a mouse: press, drag horizontally, release.
-  let mouse = null;
-  team.addEventListener("mousedown", (e) => {
-    if (!inSwipe() || e.button !== 0 || e.target.closest("button, a, input, textarea, select")) return;
-    mouse = { x: e.clientX, sideways: false };
-    team.classList.add("is-mouse-dragging");
-    cards[index].classList.add("is-dragging");
-  });
-  addEventListener("mousemove", (e) => {
-    if (!mouse) return;
-    const dx = e.clientX - mouse.x;
-    if (Math.abs(dx) > 8) mouse.sideways = true;
-    if (mouse.sideways) cards[index].style.transform = `translateX(${dx * 0.4}px)`;
-  });
-  const endMouse = (e) => {
-    if (!mouse) return;
-    const dx = e.clientX - mouse.x;
-    cards[index].classList.remove("is-dragging");
-    cards[index].style.transform = "";
-    team.classList.remove("is-mouse-dragging");
-    if (mouse.sideways && Math.abs(dx) > 40) goTo(index + (dx > 0 ? 1 : -1));
-    mouse = null;
+  // Turning a page: the sheet that moves turns over around its right edge (a Persian book opens to the right),
+  // to -180 degrees for the next teacher; for the previous one the earlier sheet comes back over the stack.
+  // Past 90 degrees its back is hidden, so the sheet underneath shows through.
+  const ANGLE = 180;
+  let turning = false;
+  let drag = null;
+  let target = 0; // where quick repeated clicks are heading; the pages turn one after another until there
+  const pageFor = (forward, to) => (forward ? cards[index] : cards[to]);
+  const underFor = (forward, to) => (forward ? cards[to] : cards[index]);
+  const pose = (page, p) => { page.style.transform = `rotateY(${-p * ANGLE}deg)`; page.style.filter = `brightness(${1 - 0.16 * Math.sin(p * Math.PI)})`; };
+  const clear = (...els) => els.forEach((el) => { el.classList.remove("is-turning", "is-under-now", "is-dragging"); el.style.transform = ""; el.style.filter = ""; });
+  /** Turn to card `to`, starting from progress `from` (0 = flat, 1 = fully turned) when a drag hands over. */
+  const turn = (to, from) => {
+    if (turning || to < 0 || to >= cards.length || to === index) return;
+    if (reduceMotion.matches) { setIndex(to); if (target !== index) turn(index + Math.sign(target - index)); return; }
+    const forward = to > index;
+    const page = pageFor(forward, to), under = underFor(forward, to);
+    const start = from ?? (forward ? 0 : 1), end = forward ? 1 : 0;
+    turning = true;
+    page.classList.add("is-turning");
+    under.classList.add("is-under-now");
+    const frames = [start, (start + end) / 2, end].map((p) => ({ transform: `rotateY(${-p * ANGLE}deg)`, filter: `brightness(${1 - 0.16 * Math.sin(p * Math.PI)})` }));
+    const queued = Math.abs(target - to);
+    const anim = page.animate(frames, { duration: (420 + 380 * Math.abs(end - start)) / (queued ? 2 : 1), easing: "cubic-bezier(.3,.6,.2,1)" });
+    anim.finished.catch(() => {}).then(() => {
+      clear(page, under); setIndex(to); turning = false;
+      if (target !== index) turn(index + Math.sign(target - index));
+    });
   };
-  addEventListener("mouseup", endMouse);
-  addEventListener("blur", () => { if (mouse) endMouse({ clientX: mouse.x }); });
+  const goTo = (i) => {
+    if (!inSwipe()) return;
+    target = Math.max(0, Math.min(cards.length - 1, i));
+    if (!turning && target !== index) turn(index + Math.sign(target - index));
+  };
+  const step = (d) => goTo((turning ? target : index) + d);
 
+  // Dragging (finger or mouse) turns the sheet as far as the pointer goes; letting go past a quarter of the
+  // width finishes the turn, otherwise the sheet falls back. Dragging right brings the next teacher.
+  const dragStart = (x, y) => { if (inSwipe() && !turning) drag = { x, y, sideways: null, forward: null, p: 0 }; };
+  const dragMove = (x, y) => {
+    if (!drag) return;
+    const dx = x - drag.x, dy = y - drag.y;
+    drag.sideways ??= Math.abs(dx) > 8 || Math.abs(dy) > 8 ? Math.abs(dx) > Math.abs(dy) : null;
+    if (!drag.sideways) return;
+    const forward = dx > 0;
+    const to = index + (forward ? 1 : -1);
+    if (to < 0 || to >= cards.length) return;
+    if (drag.forward !== forward) {
+      if (drag.forward !== null) clear(pageFor(drag.forward, drag.to), underFor(drag.forward, drag.to));
+      drag.forward = forward; drag.to = to;
+      pageFor(forward, to).classList.add("is-turning", "is-dragging");
+      underFor(forward, to).classList.add("is-under-now");
+    }
+    const p = Math.min(1, Math.abs(dx) / (team.clientWidth * 0.9));
+    drag.p = p;
+    pose(pageFor(forward, to), forward ? p : 1 - p);
+  };
+  const dragEnd = () => {
+    if (!drag) return;
+    const d = drag;
+    drag = null;
+    if (d.forward === null) return;
+    const page = pageFor(d.forward, d.to), under = underFor(d.forward, d.to);
+    page.classList.remove("is-dragging");
+    if (d.p > 0.25) { clear(page, under); target = d.to; turn(d.to, d.forward ? d.p : 1 - d.p); return; }
+    // not far enough: the sheet falls back to where it was
+    const now = d.forward ? d.p : 1 - d.p, rest = d.forward ? 0 : 1;
+    turning = true;
+    page.animate([{ transform: `rotateY(${-now * ANGLE}deg)` }, { transform: `rotateY(${-rest * ANGLE}deg)` }], { duration: 260, easing: "ease-out" })
+      .finished.catch(() => {}).then(() => { clear(page, under); turning = false; });
+  };
+  team.addEventListener("touchstart", (e) => { if (e.touches.length === 1) dragStart(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
+  team.addEventListener("touchmove", (e) => dragMove(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
+  team.addEventListener("touchend", dragEnd, { passive: true });
+  team.addEventListener("touchcancel", dragEnd);
+  team.addEventListener("mousedown", (e) => {
+    if (e.button !== 0 || e.target.closest("button, a, input, textarea, select")) return;
+    e.preventDefault(); // no text selection while dragging the page
+    dragStart(e.clientX, e.clientY);
+    team.classList.add("is-mouse-dragging");
+  });
+  addEventListener("mousemove", (e) => dragMove(e.clientX, e.clientY));
+  const endMouse = () => { team.classList.remove("is-mouse-dragging"); dragEnd(); };
+  addEventListener("mouseup", endMouse);
+  addEventListener("blur", endMouse);
   // on: one at a time; off: the plain list
   const setDeck = (on) => {
     if (on === inSwipe()) return;
@@ -202,12 +233,13 @@ whenIdle(() => {
     allBtn.textContent = on ? "نمایش همه" : "نمایش یکی‌یکی";
     index = -1;
     delete track.dataset.dir;
+    target = 0;
     if (on) setIndex(0);
     else cards.forEach((c) => c.classList.remove("is-current"));
   };
   $("[data-team-total]").textContent = toPersianDigits(cards.length);
-  $("[data-team-prev]").addEventListener("click", () => goTo(index - 1));
-  $("[data-team-next]").addEventListener("click", () => goTo(index + 1));
+  $("[data-team-prev]").addEventListener("click", () => step(-1));
+  $("[data-team-next]").addEventListener("click", () => step(1));
   allBtn.addEventListener("click", () => {
     wantsDeck = !inSwipe();
     setDeck(wantsDeck);
@@ -219,7 +251,7 @@ whenIdle(() => {
     const dir = { ArrowLeft: 1, ArrowRight: -1 }[e.key];
     if (!dir) return;
     e.preventDefault();
-    goTo(index + dir);
+    step(dir);
   });
   setDeck(wantsDeck);
 
@@ -256,6 +288,40 @@ whenIdle(() => {
     applyTeamSearch();
     search.focus();
   });
+
+  /* campus photos: a tap opens the photo large; arrows, swipe or the keyboard move through them */
+  const shots = $$(".campus-grid figure");
+  if (shots.length) {
+    const box = document.createElement("dialog");
+    box.className = "lightbox";
+    box.setAttribute("aria-label", "عکس‌های مدرسه");
+    box.innerHTML = '<figure><img alt=""><figcaption></figcaption></figure><button type="button" class="lb-close" aria-label="بستن">✕</button><button type="button" class="lb-prev" aria-label="عکس قبلی">›</button><button type="button" class="lb-next" aria-label="عکس بعدی">‹</button>';
+    document.body.append(box);
+    const big = $("img", box), cap = $("figcaption", box);
+    let at = 0;
+    const showShot = (i) => {
+      at = (i + shots.length) % shots.length;
+      const img = $("img", shots[at]);
+      big.src = img.currentSrc.replace("-640.webp", "-1280.webp");
+      big.alt = img.alt;
+      cap.textContent = $("figcaption", shots[at]).textContent;
+    };
+    shots.forEach((f, i) => {
+      f.tabIndex = 0;
+      f.setAttribute("role", "button");
+      const open = () => { showShot(i); box.showModal(); };
+      f.addEventListener("click", open);
+      f.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); } });
+    });
+    $(".lb-close", box).addEventListener("click", () => box.close());
+    $(".lb-prev", box).addEventListener("click", () => showShot(at - 1));
+    $(".lb-next", box).addEventListener("click", () => showShot(at + 1));
+    box.addEventListener("click", (e) => { if (e.target === box || e.target.tagName === "FIGURE") box.close(); });
+    box.addEventListener("keydown", (e) => { if (e.key === "ArrowLeft") showShot(at + 1); if (e.key === "ArrowRight") showShot(at - 1); });
+    let sx = null;
+    box.addEventListener("touchstart", (e) => { sx = e.touches[0].clientX; }, { passive: true });
+    box.addEventListener("touchend", (e) => { if (sx === null) return; const dx = e.changedTouches[0].clientX - sx; if (Math.abs(dx) > 40) showShot(at + (dx > 0 ? 1 : -1)); sx = null; }, { passive: true });
+  }
 
   /* callback request */
   createFormController({

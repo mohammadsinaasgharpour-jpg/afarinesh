@@ -110,8 +110,10 @@ def main(src_dir: str, out_dir: str):
     )
     gate = gate.filter(ImageFilter.MedianFilter(3))
     gate = gate.filter(ImageFilter.UnsharpMask(radius=1.4, percent=70, threshold=2))
-    save_widths(gate, out, "wall-gate", [720, 860], quality=60)
-    save_widths(gate, out, "wall-gate", [1080, 1440], quality=74)
+    # phones: the sign and the gate only, without the sky above and the empty wall on the right
+    gate = gate.crop((0, int(gate.height * 0.28), int(gate.width * 0.78), gate.height))
+    save_widths(gate, out, "gate-crop", [720, 860, 1080], quality=82)
+    save_widths(gate, out, "gate-crop", [1440], quality=82)
     for name, (f, widths) in PHOTOS.items():
         save_widths(Image.open(src / f).convert("RGB"), out, name, widths)
     Image.open(src / HERO["wall"][0]).convert("RGB").resize((1200, 640), Image.LANCZOS).save(
