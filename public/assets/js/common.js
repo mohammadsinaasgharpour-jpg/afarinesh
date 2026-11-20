@@ -38,6 +38,24 @@ export function toast(text, kind = "ok", ms = 5200) {
 
 export function initChrome() {
   document.documentElement.classList.add("js");
+  const contextBack = $("[data-context-back]");
+  if (contextBack) {
+    const from = new URLSearchParams(location.search).get("from");
+    const named = {
+      "pre-registration": ["/pre-registration", "بازگشت به فرم پیش‌ثبت‌نام"],
+      careers: ["/careers", "بازگشت به فرم دعوت به همکاری"],
+    }[from];
+    let target = named;
+    if (!target && document.referrer) {
+      try {
+        const ref = new URL(document.referrer);
+        if (ref.origin === location.origin && ref.pathname !== location.pathname) target = [ref.pathname + ref.hash, "بازگشت به صفحه قبل"];
+      } catch {}
+    }
+    target ??= ["/", "بازگشت به صفحه اصلی"];
+    contextBack.href = target[0];
+    $("span", contextBack).textContent = target[1];
+  }
   // alignment guides for checking the layout; loaded only when the address asks for them (?guides)
   if (new URLSearchParams(location.search).has("guides")) import("./guides.js").then((m) => m.initGuides(), () => {});
 

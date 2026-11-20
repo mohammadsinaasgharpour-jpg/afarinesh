@@ -12,7 +12,7 @@ from PIL import Image, ImageFilter, ImageOps
 
 # output name -> (source file, widths)
 # the hero sits under a dark gradient, so it tolerates stronger compression
-HERO = {"wall": ("PXL_20251209_025859000.NIGHT_-scaled.jpg", [640, 960, 1280, 1920])}
+HERO = {"wall": ("school-front-2026.jpg", [640, 960, 1280, 1920])}
 HERO_QUALITY = 52
 PHOTOS = {}
 TEACHERS = {
@@ -100,9 +100,15 @@ def main(src_dir: str, out_dir: str):
         # a light denoise removes night-shot sensor grain, which otherwise dominates the file size
         img = Image.open(src / f).convert("RGB").filter(ImageFilter.MedianFilter(3))
         save_widths(img, out, name, widths, quality=HERO_QUALITY)
-    # phones get their own crop centred on the gate and the lit sign, upscaled 2x
-    gate = Image.open(src / HERO["wall"][0]).convert("RGB").crop((1740, 400, 2460, 1330))
-    gate = gate.filter(ImageFilter.MedianFilter(3)).resize((1440, 1860), Image.LANCZOS)
+    # phones get a portrait crop centred on the school sign and entrance.
+    # ImageOps.fit keeps this robust when a new source photo has a different size.
+    gate = ImageOps.fit(
+        Image.open(src / HERO["wall"][0]).convert("RGB"),
+        (1440, 1860),
+        Image.LANCZOS,
+        centering=(0.5, 0.47),
+    )
+    gate = gate.filter(ImageFilter.MedianFilter(3))
     gate = gate.filter(ImageFilter.UnsharpMask(radius=1.4, percent=70, threshold=2))
     save_widths(gate, out, "wall-gate", [720, 860], quality=60)
     save_widths(gate, out, "wall-gate", [1080, 1440], quality=74)

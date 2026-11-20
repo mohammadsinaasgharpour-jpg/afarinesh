@@ -123,6 +123,9 @@ button, input, textarea { font: inherit; color: inherit; }
 .muted { color: var(--ink-2); }
 .skip { position: fixed; inset-inline-start: 16px; top: -60px; z-index: 100; background: var(--ink); color: var(--paper); padding: var(--s2) var(--s4); border-radius: var(--r-sm); }
 .skip:focus { top: 12px; }
+.context-back { display: inline-flex; align-items: center; gap: var(--s2); margin-top: var(--s3); color: var(--sky-text); font-weight: 700; text-decoration: none; }
+.context-back:hover { text-decoration: underline; }
+.context-back .ic { width: 1.1em; height: 1.1em; }
 .btn {
 --bg: var(--surface); --fg: var(--ink); --bd: var(--line);
 display: inline-flex; align-items: center; justify-content: center; gap: var(--s2);
@@ -181,6 +184,7 @@ transform: scaleX(0); transform-origin: right; transition: transform var(--dur-f
 }
 .nav a[aria-current="true"]::after { transform: scaleX(1); }
 .header-actions { display: flex; align-items: center; gap: var(--s2); }
+.mobile-enrol { display: none; }
 .ic-sun, .ic-shut, .menu-btn { display: none; }
 :root[data-theme="dark"] .ic-moon { display: none; }
 :root[data-theme="dark"] .ic-sun { display: block; }
@@ -462,6 +466,8 @@ grid-template-columns: minmax(0, 1fr); min-width: 0; justify-items: center; alig
 .is-swipe .teacher[hidden] { display: none; }
 .is-swipe .teacher.is-current { visibility: visible; }
 .is-swipe .teacher.is-dragging { transition: none; }
+.is-swipe.is-mouse-dragging { cursor: grabbing; }
+@media (pointer: fine) { .is-swipe .teacher { cursor: grab; } .is-swipe.is-mouse-dragging .teacher { cursor: grabbing; } }
 .team.is-flipping .teacher { transition: none !important; }
 .is-swipe .teacher.is-settling { transition: transform .25s var(--ease); }
 .is-swipe[data-dir="next"] .teacher.is-current { animation: card-from-left .42s var(--ease) both; }
@@ -662,6 +668,9 @@ background: var(--paper); color: var(--ink); font: inherit; font-weight: 600; cu
 .check input { width: 22px; height: 22px; min-height: 0; margin-top: 4px; flex: none; accent-color: #16789c; }
 .privacy-note { margin: 0; font-size: var(--t-sm); color: var(--ink-2); text-align: center; }
 .privacy-note a, .prose a { font-weight: 700; }
+.voice-btn { display: inline-flex; align-items: center; gap: var(--s2); min-height: 42px; margin-top: var(--s2); padding: 0 var(--s3); border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--surface); color: var(--sky-text); cursor: pointer; font-weight: 700; }
+.voice-btn:hover, .voice-btn.is-listening { background: color-mix(in srgb, var(--sky) 14%, var(--surface)); }
+.voice-note { margin: var(--s1) 0 0; color: var(--ink-2); font-size: var(--t-xs); }
 .prose { display: grid; gap: var(--s5); }
 .prose section { padding: var(--s5) var(--s6); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
 .prose h2 { font-size: var(--t-md); font-weight: 800; margin-bottom: var(--s2); }
@@ -711,6 +720,11 @@ background: var(--surface); color: var(--ink); box-shadow: 0 30px 80px rgba(4, 1
 @media (prefers-reduced-motion: no-preference) {
 .dialog[open] { animation: pop var(--dur-fast) var(--ease); }
 .dialog[open]::backdrop { animation: fade var(--dur-fast); }
+}
+@media (max-width: 860px) {
+.mobile-enrol { display: inline-flex; position: fixed; z-index: 35; inset-inline: 16px; bottom: 16px; min-height: 50px; box-shadow: 0 8px 24px rgba(4, 17, 27, .22); }
+body:has(#pre-registration) .mobile-enrol { display: none; }
+body:has(.toasts:not(:empty)) .mobile-enrol { bottom: 92px; }
 }
 @keyframes pop { from { opacity: 0; transform: scale(.96); } }
 @keyframes fade { from { opacity: 0; } }
@@ -816,6 +830,8 @@ html.lenis, html.lenis body { height: auto; }
     <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
     <symbol id="i-swipe" viewBox="0 0 24 24"><path d="M20 12H4M9 7l-5 5 5 5M15 7l5 5-5 5"/></symbol>
     <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></symbol>
+    <symbol id="i-mic" viewBox="0 0 24 24"><rect x="8" y="3" width="8" height="13" rx="4"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/></symbol>
     <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
     <symbol id="i-external" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/></symbol>
     <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
@@ -853,6 +869,7 @@ html.lenis, html.lenis body { height: auto; }
   <section class="page-hero">
     <div class="wrap narrow">
       <nav class="crumbs" aria-label="مسیر صفحه"><a href="/">صفحه اصلی</a><span aria-hidden="true">‹</span><span aria-current="page">دعوت به همکاری</span></nav>
+      <a class="context-back" data-context-back href="/"><svg class="ic" aria-hidden="true"><use href="#i-back"/></svg><span>بازگشت به صفحه اصلی</span></a>
       <h1 class="h1">دعوت به همکاری</h1>
       <p class="lede">همکار گرامی، لطفاً این فرم را تکمیل کنید تا همکاران ما در اولین فرصت با شما تماس بگیرند.</p>
     </div>
@@ -907,7 +924,7 @@ html.lenis, html.lenis body { height: auto; }
             <p class="hint" data-error></p>
           </div>
           <div class="field consent">
-            <label class="check"><input type="checkbox" name="consent" required><span>موافقم این اطلاعات برای بررسی همکاری و تماس با من در اختیار دفتر مدرسه قرار بگیرد. <a href="/privacy" target="_blank" rel="noopener">حریم خصوصی</a></span></label>
+            <label class="check"><input type="checkbox" name="consent" required><span>موافقم این اطلاعات برای بررسی همکاری و تماس با من در اختیار دفتر مدرسه قرار بگیرد. <a href="/privacy?from=careers" target="_blank" rel="noopener">حریم خصوصی</a></span></label>
             <p class="hint" data-error></p>
           </div>
         </div>

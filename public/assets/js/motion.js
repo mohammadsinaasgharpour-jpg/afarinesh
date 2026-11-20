@@ -7,7 +7,7 @@
 // - transform and opacity only; reads (positions) happen before writes; one shared trigger per group.
 // - One timing scale, mirrored from main.css (--ease, --dur-*), so CSS and GSAP motion feel the same.
 // - Right-to-left: a sequence reads from the right, so its steps arrive from the right (positive x).
-// - Wide screens get the full set; phones skip the scroll-linked parts (parallax, scrubbing).
+// - Wide screens get the full set; phones keep lighter scroll-linked effects.
 // - Every tween is made inside gsap.matchMedia(), so switching breakpoint or turning on reduced motion
 //   reverts it cleanly (inline styles removed, triggers killed).
 import { toPersianDigits } from "./validate.js";
@@ -25,8 +25,7 @@ export const MOTION = {
 const WIDE = "(min-width: 861px)";
 const NARROW = "(max-width: 860px)";
 const STILL = "(prefers-reduced-motion: reduce)";
-// smooth wheel scrolling and magnetic buttons: wide screens driven by a mouse or trackpad only. Touch
-// screens keep the browser's own scrolling, which is already smooth and must never feel held back.
+// Smooth scrolling is shared by touch, mouse and trackpad. Magnetic buttons remain pointer-only.
 const DESK = "(min-width: 861px) and (hover: hover) and (pointer: fine)";
 const VENDOR = "/assets/js/vendor/";
 
@@ -42,7 +41,7 @@ function loadGsap() {
     document.head.append(s);
   });
   const files = ["gsap.min.js", "ScrollTrigger.min.js", "Flip.min.js"];
-  if (matchMedia(DESK).matches) files.push("lenis.min.js");
+  files.push("lenis.min.js");
   return (loading ??= Promise.all(files.map(load)).then(() => {
     const { gsap, ScrollTrigger, Flip } = window;
     gsap.registerPlugin(ScrollTrigger, Flip);
@@ -169,7 +168,7 @@ function heroDepth(gsap) {
 function smoothScroll(gsap, ScrollTrigger) {
   const Lenis = window.Lenis;
   if (!Lenis) return undefined;
-  const lenis = new Lenis({ lerp: 0.14, wheelMultiplier: 1, allowNestedScroll: true, autoRaf: false, stopInertiaOnNavigate: true });
+  const lenis = new Lenis({ lerp: 0.14, wheelMultiplier: 1, syncTouch: true, syncTouchLerp: 0.1, touchInertiaMultiplier: 35, allowNestedScroll: true, autoRaf: false, stopInertiaOnNavigate: true });
   lenis.on("scroll", ScrollTrigger.update);
   // in-page links glide to their section instead of jumping. Sections further down are laid out only as
   // they come near (content-visibility), so the target can move while the page travels: on arrival the
@@ -196,13 +195,19 @@ function smoothScroll(gsap, ScrollTrigger) {
     to: (y, smooth = true) => lenis.scrollTo(y, { immediate: !smooth, force: true }),
     by: (dy, smooth = true) => lenis.scrollTo((smooth ? lenis.targetScroll : lenis.animatedScroll) + dy, { immediate: !smooth, force: true }),
   };
-  return () => {
+  let stopped = false;
+  const cleanup = () => {
+    if (stopped) return;
+    stopped = true;
     document.removeEventListener("click", onLink);
+    removeEventListener("pagehide", cleanup);
     scroller.engine = null;
     gsap.ticker.remove(raf);
     gsap.ticker.lagSmoothing(500, 33);
     lenis.destroy();
   };
+  addEventListener("pagehide", cleanup, { once: true });
+  return cleanup;
 }
 
 /** The main calls to action lean a few pixels toward the pointer (desktops only); a click is never moved off. */
@@ -300,10 +305,10 @@ export async function initMotion() {
     if (wide) heroDepth(gsap);
     return undoCount;
   });
-  // desktops: smooth scrolling and magnetic buttons; undone when the window narrows or motion is reduced
-  mm.add(`${DESK} and (prefers-reduced-motion: no-preference)`, () => {
+  // all devices: Lenis smooth scrolling; magnetic buttons still only run where a precise pointer exists
+  mm.add("(prefers-reduced-motion: no-preference)", () => {
     const undoScroll = smoothScroll(gsap, ScrollTrigger);
-    const undoMagnet = magnetic(gsap);
+    const undoMagnet = matchMedia(DESK).matches ? magnetic(gsap) : () => {};
     return () => { undoMagnet(); undoScroll?.(); };
   });
   followLayout(ScrollTrigger);

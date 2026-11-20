@@ -461,7 +461,7 @@ test("the privacy page exists and every form links to it", async ({ page }) => {
   await expect(page.locator("main")).toContainText("۱۲ ماه");
   for (const path of ["/", "/pre-registration", "/careers"]) {
     await page.goto(path);
-    await expect(page.locator('form a[href="/privacy"]').first()).toBeAttached();
+    await expect(page.locator('form a[href^="/privacy"]').first()).toBeAttached();
   }
 });
 

@@ -6,6 +6,38 @@ initChrome();
 const form = $("[data-form]");
 const fa = (v) => (v ? toPersianDigits(v) : "");
 
+function initVoiceInput() {
+  const button = $("[data-voice-for]");
+  if (!button) return;
+  const target = document.getElementById(button.dataset.voiceFor);
+  const note = document.getElementById(`${button.dataset.voiceFor}-voice-note`);
+  const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!target || !Recognition) { button.hidden = true; return; }
+  let recognition;
+  button.addEventListener("click", () => {
+    if (recognition) { recognition.stop(); return; }
+    recognition = new Recognition();
+    recognition.lang = "fa-IR";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    button.classList.add("is-listening");
+    button.querySelector("span").textContent = "در حال شنیدن… دوباره بزنید برای توقف";
+    if (note) note.textContent = "نشانی را واضح بگویید؛ پس از پایان، متن را بررسی کنید.";
+    recognition.onresult = (event) => {
+      const spoken = event.results[0]?.[0]?.transcript?.trim();
+      if (spoken) target.value = `${target.value.trim()}${target.value.trim() ? "، " : ""}${spoken}`.slice(0, 250);
+      target.dispatchEvent(new Event("input", { bubbles: true }));
+    };
+    recognition.onerror = () => { if (note) note.textContent = "تبدیل صدا انجام نشد؛ نشانی را دستی بنویسید."; };
+    recognition.onend = () => {
+      recognition = null;
+      button.classList.remove("is-listening");
+      button.querySelector("span").textContent = "گفتن نشانی با صدا";
+    };
+    recognition.start();
+  });
+}
+
 const PAGES = {
   preRegistration: {
     validate: validatePreRegistration,
@@ -29,6 +61,7 @@ const PAGES = {
 
 // personal identifiers (national ID, address) are never kept as a browser draft
 createFormController({ form, ...PAGES[form.dataset.form] });
+initVoiceInput();
 
 // pre-registration: the report card asked for depends on the grade applied for
 // (grade 7 comes from primary school, whose report card is descriptive only)

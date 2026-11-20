@@ -166,6 +166,32 @@ whenIdle(() => {
   }, { passive: true });
   team.addEventListener("touchcancel", () => { if (touch) { cards[index].classList.remove("is-dragging"); cards[index].style.transform = ""; } touch = null; });
 
+  // Desktop users get the same gesture with a mouse: press, drag horizontally, release.
+  let mouse = null;
+  team.addEventListener("mousedown", (e) => {
+    if (!inSwipe() || e.button !== 0 || e.target.closest("button, a, input, textarea, select")) return;
+    mouse = { x: e.clientX, sideways: false };
+    team.classList.add("is-mouse-dragging");
+    cards[index].classList.add("is-dragging");
+  });
+  addEventListener("mousemove", (e) => {
+    if (!mouse) return;
+    const dx = e.clientX - mouse.x;
+    if (Math.abs(dx) > 8) mouse.sideways = true;
+    if (mouse.sideways) cards[index].style.transform = `translateX(${dx * 0.4}px)`;
+  });
+  const endMouse = (e) => {
+    if (!mouse) return;
+    const dx = e.clientX - mouse.x;
+    cards[index].classList.remove("is-dragging");
+    cards[index].style.transform = "";
+    team.classList.remove("is-mouse-dragging");
+    if (mouse.sideways && Math.abs(dx) > 40) goTo(index + (dx > 0 ? 1 : -1));
+    mouse = null;
+  };
+  addEventListener("mouseup", endMouse);
+  addEventListener("blur", () => { if (mouse) endMouse({ clientX: mouse.x }); });
+
   // on: one at a time; off: the plain list
   const setDeck = (on) => {
     if (on === inSwipe()) return;

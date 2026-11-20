@@ -111,6 +111,9 @@ button, input, textarea { font: inherit; color: inherit; }
 
 .skip { position: fixed; inset-inline-start: 16px; top: -60px; z-index: 100; background: var(--ink); color: var(--paper); padding: var(--s2) var(--s4); border-radius: var(--r-sm); }
 .skip:focus { top: 12px; }
+.context-back { display: inline-flex; align-items: center; gap: var(--s2); margin-top: var(--s3); color: var(--sky-text); font-weight: 700; text-decoration: none; }
+.context-back:hover { text-decoration: underline; }
+.context-back .ic { width: 1.1em; height: 1.1em; }
 
 /* buttons */
 .btn {
@@ -176,6 +179,7 @@ button, input, textarea { font: inherit; color: inherit; }
 }
 .nav a[aria-current="true"]::after { transform: scaleX(1); }
 .header-actions { display: flex; align-items: center; gap: var(--s2); }
+.mobile-enrol { display: none; }
 .ic-sun, .ic-shut, .menu-btn { display: none; }
 :root[data-theme="dark"] .ic-moon { display: none; }
 :root[data-theme="dark"] .ic-sun { display: block; }
@@ -494,6 +498,8 @@ button, input, textarea { font: inherit; color: inherit; }
 .is-swipe .teacher[hidden] { display: none; }
 .is-swipe .teacher.is-current { visibility: visible; }
 .is-swipe .teacher.is-dragging { transition: none; }
+.is-swipe.is-mouse-dragging { cursor: grabbing; }
+@media (pointer: fine) { .is-swipe .teacher { cursor: grab; } .is-swipe.is-mouse-dragging .teacher { cursor: grabbing; } }
 /* while search results glide to their places (GSAP Flip), the cards' own CSS transitions stand aside */
 .team.is-flipping .teacher { transition: none !important; }
 .is-swipe .teacher.is-settling { transition: transform .25s var(--ease); }
@@ -525,7 +531,6 @@ button, input, textarea { font: inherit; color: inherit; }
   .is-swipe .teacher-edu { justify-items: start; }
   .is-swipe .teacher-name { font-size: clamp(1.8rem, 1.2rem + 1.6vw, 2.5rem); }
 }
-/* a mouse cannot drag the card; the buttons and arrow keys are the way */
 @media (pointer: fine) { .is-swipe .swipe-hint { display: none; } }
 
 /* faq: question and answer in distinct colours */
@@ -714,6 +719,9 @@ html:not(.js) .stepper { display: none; }
 .check input { width: 22px; height: 22px; min-height: 0; margin-top: 4px; flex: none; accent-color: #16789c; }
 .privacy-note { margin: 0; font-size: var(--t-sm); color: var(--ink-2); text-align: center; }
 .privacy-note a, .prose a { font-weight: 700; }
+.voice-btn { display: inline-flex; align-items: center; gap: var(--s2); min-height: 42px; margin-top: var(--s2); padding: 0 var(--s3); border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--surface); color: var(--sky-text); cursor: pointer; font-weight: 700; }
+.voice-btn:hover, .voice-btn.is-listening { background: color-mix(in srgb, var(--sky) 14%, var(--surface)); }
+.voice-note { margin: var(--s1) 0 0; color: var(--ink-2); font-size: var(--t-xs); }
 .prose { display: grid; gap: var(--s5); }
 .prose section { padding: var(--s5) var(--s6); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
 .prose h2 { font-size: var(--t-md); font-weight: 800; margin-bottom: var(--s2); }
@@ -770,6 +778,12 @@ html:not(.js) .stepper { display: none; }
 @media (prefers-reduced-motion: no-preference) {
   .dialog[open] { animation: pop var(--dur-fast) var(--ease); }
   .dialog[open]::backdrop { animation: fade var(--dur-fast); }
+}
+
+@media (max-width: 860px) {
+  .mobile-enrol { display: inline-flex; position: fixed; z-index: 35; inset-inline: 16px; bottom: 16px; min-height: 50px; box-shadow: 0 8px 24px rgba(4, 17, 27, .22); }
+  body:has(#pre-registration) .mobile-enrol { display: none; }
+  body:has(.toasts:not(:empty)) .mobile-enrol { bottom: 92px; }
 }
 @keyframes pop { from { opacity: 0; transform: scale(.96); } }
 @keyframes fade { from { opacity: 0; } }
@@ -841,7 +855,7 @@ html:not(.js) .stepper { display: none; }
 .guides-readout { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); padding: 6px 10px; border-radius: 6px; background: rgba(15, 23, 42, .88); color: #fff; white-space: nowrap; }
 @media print { .guides { display: none; } }
 
-/* smooth wheel scrolling (Lenis, desktops): it moves the page itself, so the browser's own smoothing stands aside */
+/* smooth scrolling (Lenis on every pointer type): it moves the page itself, so browser smoothing stands aside */
 html.lenis, html.lenis body { height: auto; }
 .lenis.lenis-smooth { scroll-behavior: auto !important; }
 .lenis.lenis-stopped { overflow: clip; }

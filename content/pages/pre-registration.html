@@ -43,6 +43,7 @@
   <section class="page-hero">
     <div class="wrap narrow">
       <nav class="crumbs" aria-label="مسیر صفحه"><a href="/">صفحه اصلی</a><span aria-hidden="true">‹</span><span aria-current="page">پیش‌ثبت‌نام</span></nav>
+      <a class="context-back" data-context-back href="/"><svg class="ic" aria-hidden="true"><use href="#i-back"/></svg><span>بازگشت به صفحه اصلی</span></a>
       <h1 class="h1">پیش‌ثبت‌نام سال تحصیلی ۱۴۰۶-۱۴۰۷</h1>
       <p class="lede">پایه‌های هفتم، هشتم و نهم، دوره اول متوسطه پسرانه. پس از ثبت فرم، معاونان مدرسه برای هماهنگی بازدید و مصاحبه‌ی حضوری با شما تماس می‌گیرند.</p>
       <div class="conditions">
@@ -119,6 +120,8 @@
           <div class="field">
             <label for="p-address">نشانی محل سکونت <span class="req" aria-hidden="true">*</span></label>
             <textarea id="p-address" name="address" rows="3" autocomplete="street-address" required maxlength="250" lang="fa"></textarea>
+            <button class="voice-btn" type="button" data-voice-for="p-address" aria-describedby="p-address-voice-note"><svg class="ic" aria-hidden="true"><use href="#i-mic"/></svg><span>گفتن نشانی با صدا</span></button>
+            <p class="voice-note" id="p-address-voice-note">صدای شما در سایت ذخیره نمی‌شود؛ مرورگر آن را به متن تبدیل می‌کند.</p>
             <p class="example">به این ترتیب بنویسید: شهر، خیابان، کوچه، پلاک، واحد. مثلاً: شیراز، خیابان زند، کوچه‌ی ۸، پلاک ۲۴، واحد ۲</p>
             <p class="hint" data-error></p>
           </div>
@@ -235,7 +238,7 @@
 
         <div class="step" data-step>
           <div class="field consent">
-            <label class="check"><input type="checkbox" name="consent" required><span>ولیِ دانش‌آموز هستم و موافقم اطلاعات این فرم فقط برای بررسی پیش‌ثبت‌نام و تماس با خانواده در اختیار دفتر مدرسه قرار بگیرد. <a href="/privacy" target="_blank" rel="noopener">حریم خصوصی و شرایط استفاده</a> را خوانده‌ام.</span></label>
+            <label class="check"><input type="checkbox" name="consent" required><span>ولیِ دانش‌آموز هستم و موافقم اطلاعات این فرم فقط برای بررسی پیش‌ثبت‌نام و تماس با خانواده در اختیار دفتر مدرسه قرار بگیرد. <a href="/privacy?from=pre-registration" target="_blank" rel="noopener">حریم خصوصی و شرایط استفاده</a> را خوانده‌ام.</span></label>
             <p class="hint" data-error></p>
           </div>
         </div>
