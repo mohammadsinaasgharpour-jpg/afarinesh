@@ -1,0 +1,3 @@
+/* loaded only when JavaScript is off: show every book (the "show more" button needs JavaScript) */
+.books > li[hidden] { display: block !important; }
+#more, .request-btn, .toolbar .search, .toolbar .sort, .shelf-wrap, #jump { display: none !important; }

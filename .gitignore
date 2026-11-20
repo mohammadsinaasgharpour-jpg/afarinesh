@@ -1,6 +1,9 @@
 
 .env*
 !.env.example
+!library/.env.example
+!library/data/
+!library/data/books.json
 .env*
 .vercel
 .vercel/

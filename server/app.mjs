@@ -7,6 +7,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { createFormHandler, createTelegramSender, send } from "./forms.mjs";
 import { createAdminHandler } from "./admin.mjs";
+import { createLibraryHandler } from "./library.mjs";
 
 export { createRateLimiter } from "./forms.mjs";
 
@@ -79,10 +80,12 @@ export function createApp({ publicDir, dataDir, logger = console, rateLimit, tru
     "/api/careers": createFormHandler("career", { logger, save, trustProxy }),
   };
   const admin = createAdminHandler({ dataDir, logger });
+  const library = createLibraryHandler({ libraryDir: join(root, "..", "library"), dataDir, logger });
 
   async function api(req, res, path) {
     if (path === "/api/health") return send(res, 200, { ok: true });
     if (path === "/api/admin") return admin(req, res);
+    if (path.startsWith("/library/api/")) return library(req, res, path);
     if (forms[path]) return forms[path](req, res);
     return send(res, 404, { error: "not_found" });
   }
@@ -137,6 +140,7 @@ export function createApp({ publicDir, dataDir, logger = console, rateLimit, tru
     try { path = new URL(req.url, "http://x").pathname; } catch { return send(res, 400, "Bad Request"); }
     try {
       if (path.startsWith("/api/")) return await api(req, res, path);
+      if (path === "/library" || path.startsWith("/library/")) return await library(req, res, path);
       return await serveStatic(req, res, path);
     } catch (err) {
       if (err.status) return send(res, err.status, { error: err.message });
