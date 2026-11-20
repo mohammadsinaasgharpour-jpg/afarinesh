@@ -16,3 +16,8 @@ test-results/
 !library/.env.example
 !library/data/
 !library/data/books.json
+
+# local only: editor tool config, release archives, internal security reports
+.mcp.json
+release/
+threat-model/
