@@ -1,0 +1,9 @@
+---
+# cPanel Git deployment: cPanel > Git Version Control > Manage > Pull or Deploy > "Deploy HEAD Commit".
+# The built site (public/) and the PHP back end (php/) are copied into the web root. Settings and the
+# database password live in /home/mqcmfbjf/afarinesh-config.php, outside the web root and outside Git.
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/mqcmfbjf/public_html/
+    - /bin/cp -R public/. $DEPLOYPATH
+    - /bin/cp -R php/. $DEPLOYPATH
