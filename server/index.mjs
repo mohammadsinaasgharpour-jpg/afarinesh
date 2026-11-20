@@ -4,7 +4,7 @@ import { createApp } from "./app.mjs";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const port = Number(process.env.PORT) || 8080;
-const host = process.env.HOST || "127.0.0.1";
+const host = process.env.HOST || "0.0.0.0";
 
 const server = createServer(createApp({
   publicDir: process.env.PUBLIC_DIR || `${root}public`,
