@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>پنل مدیر | دبیرستان آفرینش</title>
+  <link rel="stylesheet" href="/assets/css/admin.css">
+</head>
+<body>
+  <main>
+    <section class="card" id="login-card">
+      <h1>ورود به پنل مدیر</h1>
+      <p class="muted">این بخش فقط برای معاون یا مدیر مجاز مدرسه است.</p>
+      <form id="login-form">
+        <label for="password">رمز پنل</label>
+        <input id="password" name="password" type="password" minlength="8" autocomplete="current-password" required>
+        <button type="submit">ورود امن</button>
+        <p class="error" id="login-error" role="alert"></p>
+      </form>
+    </section>
+    <section class="card hidden" id="records-card">
+      <div class="toolbar"><div><h1>صندوق ثبت‌نام‌ها</h1><p class="muted">اطلاعات فقط پس از ورود مدیر نمایش داده می‌شود.</p></div><button class="secondary" id="logout" type="button">خروج</button></div>
+      <p class="error" id="records-error" role="alert"></p>
+      <div class="records" id="records"></div>
+    </section>
+  </main>
+  <script src="/assets/js/admin.js" defer></script>
+</body>
+</html>

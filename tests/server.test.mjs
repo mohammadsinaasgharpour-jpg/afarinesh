@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createApp, createRateLimiter, inlineScriptHashes } from "../server/app.mjs";
+import { hashAdminPassword } from "../server/admin.mjs";
 
 const publicDir = fileURLToPath(new URL("../public", import.meta.url));
 let server, base, dataDir;
@@ -213,4 +214,26 @@ test("a national ID can be resubmitted a few times, repeats are flagged, then it
     assert.deepEqual(rows.map((r) => r.repeat), [undefined, 2, 3]);
     assert.equal(rows[0].consent, undefined);
   } finally { await app.close(); }
+});
+
+test("admin records require a session and can read local records", async () => {
+  const oldHash = process.env.ADMIN_PASSWORD_HASH;
+  const oldSecret = process.env.ADMIN_SESSION_SECRET;
+  process.env.ADMIN_PASSWORD_HASH = hashAdminPassword("A_secure_test_password_2026");
+  process.env.ADMIN_SESSION_SECRET = "test-only-session-secret";
+  const app = await startApp();
+  try {
+    const denied = await fetch(`${app.url}/api/admin`);
+    assert.equal(denied.status, 401);
+    const login = await fetch(`${app.url}/api/admin?action=login`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password: "A_secure_test_password_2026" }) });
+    assert.equal(login.status, 200);
+    const cookie = login.headers.get("set-cookie");
+    const listed = await fetch(`${app.url}/api/admin`, { headers: { Cookie: cookie } });
+    assert.equal(listed.status, 200);
+    assert.ok(Array.isArray((await listed.json()).records));
+  } finally {
+    await app.close();
+    if (oldHash === undefined) delete process.env.ADMIN_PASSWORD_HASH; else process.env.ADMIN_PASSWORD_HASH = oldHash;
+    if (oldSecret === undefined) delete process.env.ADMIN_SESSION_SECRET; else process.env.ADMIN_SESSION_SECRET = oldSecret;
+  }
 });

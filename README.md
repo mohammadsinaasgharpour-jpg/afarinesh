@@ -12,7 +12,7 @@ npm run build      # فهرست دبیران، صفحه‌های فرم (content
 npm run build:images   # تبدیل عکس‌های source-images/ به WebP (نیاز به Python + Pillow)
 ```
 
-متغیرهای محیطی: `PORT`، `HOST`، `PUBLIC_DIR`، `DATA_DIR`.
+متغیرهای محیطی: `PORT`، `HOST`، `PUBLIC_DIR`، `DATA_DIR`، `SUPABASE_URL`، `SUPABASE_SECRET_KEY`، `TELEGRAM_BOT_TOKEN`، `TELEGRAM_CHAT_ID`، `ADMIN_PASSWORD_HASH`، `ADMIN_SESSION_SECRET`، `ADMIN_PUBLIC_URL`.
 
 ## ساختار
 
@@ -59,6 +59,18 @@ npm run build:images   # تبدیل عکس‌های source-images/ به WebP (ن
 - `POST /api/inquiries` با JSON `{parentName, phone, grade, message}` → `201`، یا `422` با خطای هر فیلد، `503` وقتی صندوق تلگرام تنظیم نشده یا در دسترس نیست، `429` بعد از ۵ درخواست در ۱۰ دقیقه از یک IP، `413`/`415`/`403` برای بدنه‌ی بزرگ، نوع نادرست یا Origin دیگر. فرم‌هایی که کمتر از ۳ ثانیه بعد از باز شدن صفحه ارسال شوند (ربات) بی‌صدا نادیده گرفته می‌شوند.
 - `GET /api/health` → `{ok: true}`
 
+## پنل مدیر
+
+پنل در `/admin.html` است و فقط با نشست `HttpOnly + Secure + SameSite=Strict` باز می‌شود. رمز خام هرگز در کد یا Git قرار نمی‌گیرد؛ برای ساخت هش محلی اجرا کنید:
+
+```bash
+node scripts/hash-admin-password.mjs "یک رمز حداقل ۱۲ نویسه‌ای"
+```
+
+خروجی را به‌عنوان `ADMIN_PASSWORD_HASH` و یک مقدار تصادفی حداقل ۳۲ نویسه‌ای را به‌عنوان `ADMIN_SESSION_SECRET` در تنظیمات production قرار دهید. برای خواندن رکوردهای Supabase، `SUPABASE_SECRET_KEY` لازم است؛ این کلید فقط در تنظیمات سرور می‌ماند و به مرورگر فرستاده نمی‌شود. اگر روی هاست اختصاصی Node اجرا شود و کلید دیتابیس تنظیم نباشد، پنل فایل‌های `DATA_DIR` را فقط از همان سرور می‌خواند.
+
+`ADMIN_PUBLIC_URL=https://afarineshshiraz.ir` باعث می‌شود لینک امن رکورد در پایان پیام تلگرام ساخته شود. لینک به‌تنهایی دسترسی نمی‌دهد و بدون ورود مدیر پاسخ `401` می‌گیرد.
+
 ## امنیت
 
 محدودیت ۵ درخواست در ۱۰ دقیقه روی Vercel در حافظه‌ی هر نمونه‌ی تابع است و تضمین کامل نیست؛ برای محدودیت سراسری از Firewall داشبورد Vercel یک Rate Limit روی `/api/inquiries` بگذارید.
@@ -67,7 +79,7 @@ CSP سخت‌گیرانه (هش اسکریپت درون‌خطی هنگام شر
 
 ## استقرار
 
-**Vercel (فعلی):** `npx vercel deploy --prod` از ریشه‌ی پروژه؛ تنظیمات در `vercel.json` و فایل‌های ارسالی با `.vercelignore` محدود می‌شوند.
+**Vercel (پیشنهاد برای production این پروژه):** `npx vercel deploy --prod` از ریشه‌ی پروژه؛ تنظیمات در `vercel.json` و فایل‌های ارسالی با `.vercelignore` محدود می‌شوند. پس از انتشار، متغیرهای Supabase، تلگرام و مدیر را در Project Settings → Environment Variables برای Production قرار دهید و Redeploy کنید.
 
 **سرور خودتان:** پشت Nginx/Caddy با HTTPS معتبر (گواهی فعلی دامنه باطل شده و باید با Let's Encrypt تمدید شود). پوشه‌ی `public/assets/` را می‌توان از CDN سرو کرد. برای پایداری، `node server/index.mjs` را با systemd یا pm2 اجرا کنید و از `data/` نسخه‌ی پشتیبان بگیرید.
 

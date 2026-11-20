@@ -6,6 +6,7 @@ import { extname, join, normalize, resolve, sep } from "node:path";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { createFormHandler, createTelegramSender, send } from "./forms.mjs";
+import { createAdminHandler } from "./admin.mjs";
 
 export { createRateLimiter } from "./forms.mjs";
 
@@ -77,9 +78,11 @@ export function createApp({ publicDir, dataDir, logger = console, rateLimit, tru
     "/api/pre-registration": createFormHandler("preRegistration", { logger, save, trustProxy }),
     "/api/careers": createFormHandler("career", { logger, save, trustProxy }),
   };
+  const admin = createAdminHandler({ dataDir, logger });
 
   async function api(req, res, path) {
     if (path === "/api/health") return send(res, 200, { ok: true });
+    if (path === "/api/admin") return admin(req, res);
     if (forms[path]) return forms[path](req, res);
     return send(res, 404, { error: "not_found" });
   }

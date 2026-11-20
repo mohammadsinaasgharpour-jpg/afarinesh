@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import {
   validateInquiry, validatePreRegistration, validateCareer, GRADE_LABEL, toPersianDigits,
 } from "../public/assets/js/validate.js";
+import { adminRecordUrl } from "./admin.mjs";
 
 const MIN_FILL_MS = 3000;
 /** Accepted forms of one kind per hour; the database (submit_form) enforces the same number. */
@@ -89,7 +90,10 @@ export function formatRecord(record) {
     .filter((l) => l !== null).join("\n");
   // always the last line, even if a long message has to be shortened
   const usage = usageLine(record.quota);
-  return `${body.slice(0, 4000 - usage.length - 1)}\n${usage}`;
+  const link = adminRecordUrl(record.id);
+  const access = link ? `مشاهده‌ی امن رکورد در پنل مدیر: ${link}` : "لینک پنل مدیر پس از تنظیم ADMIN_PUBLIC_URL فعال می‌شود.";
+  const tail = `${access}\n${usage}`;
+  return `${body.slice(0, 4000 - tail.length - 1)}\n${tail}`;
 }
 
 /**

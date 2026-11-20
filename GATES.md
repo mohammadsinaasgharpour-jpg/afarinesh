@@ -24,3 +24,13 @@ Scope: Complete the requested site improvements that are safe to ship, verify th
 
 - [ ] G5: The hosting upload or deployment is confirmed by the hosting provider, or an explicit handoff identifies the exact remaining manual upload step.
   EVIDENCE: pending
+
+- [ ] G6: The administrator endpoint refuses unauthenticated access and accepts only a valid hashed-password session.
+  CHECK: npm test -- --test-name-pattern="admin records require a session"
+  EXPECT: admin records require a session and can read local records
+  EVIDENCE: pending
+
+- [ ] G7: The production release archive contains frontend, API, server, and admin assets without local secrets.
+  CHECK: node -e "const fs=require('fs'); const p='release/afarinesh-production-c312612.zip'; if(!fs.existsSync(p)||fs.statSync(p).size<100000) process.exit(1); console.log('RELEASE_ARCHIVE_PRESENT')"
+  EXPECT: RELEASE_ARCHIVE_PRESENT
+  EVIDENCE: pending
