@@ -81,7 +81,7 @@ CSP سخت‌گیرانه (هش اسکریپت درون‌خطی هنگام شر
 
 **cPanel/Node.js (مقصد production):** در cPanel برای دامنه‌ی اصلی یک Node.js App با startup file `server/index.mjs`، Node 20+، `PORT` اختصاصی و `HOST=0.0.0.0` بسازید. `public/`، `server/`، `api/`، `content/`، `scripts/` و `package*.json` را در ریشه‌ی app قرار دهید، `npm ci --omit=dev` را اجرا کنید و متغیرهای `.env.example` را فقط در تنظیمات محیطی app وارد کنید. دامنه‌ی اصلی باید به همین app متصل شود؛ فایل ZIP آماده‌ی cPanel در `release/afarinesh-main-cpanel-c312612.zip` است.
 
-**کتابخانه:** پروژه‌ی `C:\Users\MSA\Desktop\library\afarinash-library` یک Node.js App جداگانه برای `library.afarineshshiraz.ir` است. ZIP آماده‌ی آن `release/afarinesh-library-cpanel.zip` است؛ مسیر `LOCAL_STORE_DIR` باید بیرون از public root و قابل‌نوشتن باشد. اگر cPanel گزینه‌ی Setup Node.js App نداشته باشد، backend این دو پروژه روی آن هاست قابل اجرای کامل نیست و قبل از overwrite باید از پشتیبانی هاست Node/Passenger یا SSH فعال شود.
+**کتابخانه:** کتابخانه در همین release داخل مسیر `/library` mount شده و با `https://afarineshshiraz.ir/library` باز می‌شود؛ backend و پنل آن هم با همان Node.js App اجرا می‌شوند. مسیر داده‌ی آن `DATA_DIR/library` است و باید بیرون از public root و قابل‌نوشتن باشد. اگر cPanel گزینه‌ی Setup Node.js App نداشته باشد، backend کامل روی آن هاست قابل اجرا نیست و قبل از overwrite باید از پشتیبانی هاست Node/Passenger یا SSH فعال شود.
 
 **سرور خودتان:** پشت Nginx/Caddy با HTTPS معتبر (گواهی فعلی دامنه باطل شده و باید با Let's Encrypt تمدید شود). پوشه‌ی `public/assets/` را می‌توان از CDN سرو کرد. برای پایداری، `node server/index.mjs` را با systemd یا pm2 اجرا کنید و از `data/` نسخه‌ی پشتیبان بگیرید.
 
