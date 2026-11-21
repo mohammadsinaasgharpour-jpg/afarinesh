@@ -1,7 +1,7 @@
 <?php
 // POST /api/transcribe: a short recording of an address (sent by the form's microphone button) becomes Persian
 // text through Gemini. The browser's own speech recognition goes through Google servers that are blocked in
-// Iran; this host can reach Gemini. Keys are entered in the admin panel (settings) and tried in turn: when one
+// Iran, and Google refuses Gemini calls from Iranian servers, so calls go through the Vercel relay. Keys are entered in the admin panel (settings) and tried in turn: when one
 // runs out of quota or is refused, the next one is used. Nothing is stored.
 declare(strict_types=1);
 require_once __DIR__ . '/_lib/bootstrap.php';
@@ -23,9 +23,19 @@ $keys = secrets()['gemini_keys'] ?? [];
 if (!$keys) out(503, ['error' => 'voice_not_configured']);
 
 function gemini_call(string $path, string $key, ?array $body = null): array {
-  $ch = curl_init(GEMINI . '/' . $path);
-  $opts = [CURLOPT_RETURNTRANSFER => true, CURLOPT_CONNECTTIMEOUT => 8, CURLOPT_TIMEOUT => 30, CURLOPT_HTTPHEADER => ['x-goog-api-key: ' . $key, 'Content-Type: application/json']];
-  if ($body !== null) { $opts[CURLOPT_POST] = true; $opts[CURLOPT_POSTFIELDS] = json_encode($body); }
+  // Google refuses Gemini calls from Iranian servers, so they go through the Vercel relay (api/gemini.js)
+  $relay = preg_replace('#/relay$#', '/gemini', (string)cfg('relay_url'));
+  $secret = (string)cfg('relay_secret');
+  if ($relay && $secret) {
+    $payload = json_encode(['ts' => time(), 'path' => $path, 'key' => $key, 'body' => $body], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    $ch = curl_init($relay);
+    $opts = [CURLOPT_POST => true, CURLOPT_POSTFIELDS => $payload, CURLOPT_RETURNTRANSFER => true, CURLOPT_CONNECTTIMEOUT => 8, CURLOPT_TIMEOUT => 35,
+      CURLOPT_HTTPHEADER => ['Content-Type: application/json', 'X-Relay-Signature: ' . hash_hmac('sha256', $payload, $secret)]];
+  } else {
+    $ch = curl_init(GEMINI . '/' . $path);
+    $opts = [CURLOPT_RETURNTRANSFER => true, CURLOPT_CONNECTTIMEOUT => 8, CURLOPT_TIMEOUT => 30, CURLOPT_HTTPHEADER => ['x-goog-api-key: ' . $key, 'Content-Type: application/json']];
+    if ($body !== null) { $opts[CURLOPT_POST] = true; $opts[CURLOPT_POSTFIELDS] = json_encode($body); }
+  }
   curl_setopt_array($ch, $opts);
   $raw = curl_exec($ch);
   $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);

@@ -21,7 +21,9 @@ $tmp = sys_get_temp_dir() . '/afarinesh-deploy-' . bin2hex(random_bytes(4));
 @mkdir($tmp, 0700, true);
 $zipPath = "$tmp/repo.zip";
 $fh = fopen($zipPath, 'w');
-$ch = curl_init(REPO_ZIP);
+// the pushed commit itself: the branch zip can still be the previous commit for a few seconds after a push
+$sha = preg_match('/^[0-9a-f]{40}$/', (string)($event['after'] ?? '')) ? $event['after'] : '';
+$ch = curl_init($sha ? preg_replace('#refs/heads/main$#', $sha, REPO_ZIP) : REPO_ZIP);
 curl_setopt_array($ch, [CURLOPT_FILE => $fh, CURLOPT_FOLLOWLOCATION => true, CURLOPT_CONNECTTIMEOUT => 10, CURLOPT_TIMEOUT => 90]);
 curl_exec($ch);
 $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
