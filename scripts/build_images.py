@@ -96,24 +96,17 @@ def logo_mark(src: Path, out: Path):
 def main(src_dir: str, out_dir: str):
     src, out = Path(src_dir), Path(out_dir)
     (out / "team").mkdir(parents=True, exist_ok=True)
-    for name, (f, widths) in HERO.items():
-        # a light denoise removes night-shot sensor grain, which otherwise dominates the file size
-        img = Image.open(src / f).convert("RGB").filter(ImageFilter.MedianFilter(3))
-        save_widths(img, out, name, widths, quality=HERO_QUALITY)
-    # phones get a portrait crop centred on the school sign and entrance.
-    # ImageOps.fit keeps this robust when a new source photo has a different size.
-    gate = ImageOps.fit(
-        Image.open(src / HERO["wall"][0]).convert("RGB"),
-        (1440, 1860),
-        Image.LANCZOS,
-        centering=(0.5, 0.47),
-    )
-    gate = gate.filter(ImageFilter.MedianFilter(3))
-    gate = gate.filter(ImageFilter.UnsharpMask(radius=1.4, percent=70, threshold=2))
-    # phones: the sign and the gate only, without the sky above and the empty wall on the right
-    gate = gate.crop((0, int(gate.height * 0.28), int(gate.width * 0.78), gate.height))
-    save_widths(gate, out, "gate-crop", [720, 860, 1080], quality=82)
-    save_widths(gate, out, "gate-crop", [1440], quality=82)
+    # The hero keeps the photo's detail: never upscaled, lightly sharpened, quality 80 (wide) and 86 (phone crop).
+    # (A median filter and quality 52 used to smear it, and the phone crop was blown up ~2.5x from a 1280 px photo.)
+    hero = Image.open(src / HERO["wall"][0]).convert("RGB")
+    sharp = lambda im: im.filter(ImageFilter.UnsharpMask(radius=1.1, percent=60, threshold=2))
+    for w in (640, 960, 1280):
+        im = hero if hero.width <= w else hero.resize((w, round(hero.height * w / hero.width)), Image.LANCZOS)
+        sharp(im).save(out / f"hero-wide-{w}.webp", "WEBP", quality=80, method=6)
+    # phones: the sign and the gate at the photo's own resolution (box measured on the 1280 x 720 source)
+    k = hero.width / 1280
+    crop = hero.crop(tuple(round(v * k) for v in (330, 205, 840, 720)))
+    sharp(crop).save(out / "hero-gate-510.webp", "WEBP", quality=86, method=6)
     for name, (f, widths) in PHOTOS.items():
         save_widths(Image.open(src / f).convert("RGB"), out, name, widths)
     Image.open(src / HERO["wall"][0]).convert("RGB").resize((1200, 640), Image.LANCZOS).save(

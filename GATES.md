@@ -10,7 +10,7 @@ Scope: Complete the requested site improvements that are safe to ship, verify th
   EVIDENCE: pending
 
 - [ ] G2: The production asset set contains the selected school hero image in optimized WebP variants and no longer contains the removed legacy hero source.
-  CHECK: node -e "const fs=require('fs'); const ok=['public/assets/img/wall-640.webp','public/assets/img/wall-960.webp','public/assets/img/wall-1280.webp','public/assets/img/gate-crop-720.webp','public/assets/img/gate-crop-1440.webp'].every(fs.existsSync) && !fs.existsSync('source-images/PXL_20251209_025859000.NIGHT_-scaled.jpg'); if(!ok) process.exit(1); console.log('ASSETS_VERIFIED')"
+  CHECK: node -e "const fs=require('fs'); const ok=['public/assets/img/hero-wide-640.webp','public/assets/img/hero-wide-960.webp','public/assets/img/hero-wide-1280.webp','public/assets/img/hero-gate-510.webp'].every(fs.existsSync) && !fs.existsSync('source-images/PXL_20251209_025859000.NIGHT_-scaled.jpg'); if(!ok) process.exit(1); console.log('ASSETS_VERIFIED')"
   EXPECT: ASSETS_VERIFIED
   EVIDENCE: pending
 
