@@ -177,6 +177,7 @@ export function validatePreRegistration(input) {
     discipline: choice(input?.discipline, DISCIPLINE),
     grade: ["7", "8", "9"].includes(scalar(input?.grade)) ? scalar(input.grade) : "",
     referral: choice(input?.referral, REFERRAL),
+    noPlate: input?.noPlate === true || input?.noPlate === "on" || input?.noPlate === "true",
     consent: input?.consent === true || input?.consent === "on" || input?.consent === "true",
   };
 
@@ -187,7 +188,7 @@ export function validatePreRegistration(input) {
   else if (!isValidNationalId(v.nationalId)) e.nationalId = "این کد ملی معتبر نیست؛ رقم‌ها را از روی کارت ملی یا شناسنامه دوباره بررسی کنید.";
   e.birthDate = birthDateError(input?.birthDate, v.birthDate);
   if (!v.studentMobile) e.studentMobile = mobileError(input?.studentMobile, "دانش‌آموز");
-  e.address = addressError(v.address);
+  e.address = addressError(v.address, v.noPlate);
 
   for (const [name, job, mobile, label] of [["motherName", "motherJob", "motherMobile", "مادر"], ["fatherName", "fatherJob", "fatherMobile", "پدر"]]) {
     if (!v[name]) e[name] = `نام و نام خانوادگی ${label} را بنویسید.`;
@@ -297,7 +298,7 @@ function gradeAgeError(grade, birthDate) {
 const STREET = /(خیابان|خ\.|بلوار|بولوار|بزرگراه|اتوبان|میدان|جاده|شهرک|فلکه|چهارراه)/;
 const ALLEY = /(کوچه|ک\.|بن‌بست|بن بست|بنبست|کوی|نبش|فرعی)/;
 const PLATE = /(پلاک|پ\.)\s*[‌ی]?\s*[0-9۰-۹]/;
-function addressError(s) {
+function addressError(s, noPlate = false) {
   if (!s) return "نشانی محل سکونت را بنویسید.";
   if (s.length > LIMITS.addressMax) return `نشانی حداکثر ${toPersianDigits(LIMITS.addressMax)} حرف است.`;
   if (/[A-Za-z]/.test(s)) return "نشانی را به فارسی بنویسید، نه انگلیسی.";
@@ -308,7 +309,9 @@ function addressError(s) {
   if (!/^(شیراز|شهر شیراز|صدرا|شهر صدرا)/.test(plain)) return "نشانی را با نام شهر شروع کنید؛ مثلاً «شیراز، ...».";
   if (!STREET.test(s)) return "نام خیابان یا بلوار را بنویسید؛ مثلاً «خیابان زند».";
   if (!ALLEY.test(s)) return "کوچه را بنویسید؛ مثلاً «کوچه‌ی ۸» (اگر کوچه ندارد، «نبش» یا «بن‌بست» را بنویسید).";
-  if (!PLATE.test(s)) return "پلاک را با عدد بنویسید؛ مثلاً «پلاک ۲۴».";
+  // a building with no number: a landmark instead (the visitor ticks «ساختمان پلاک ندارد»)
+  if (noPlate) return LETTERS_ONLY(s).length < 20 ? "ساختمان پلاک ندارد؛ نشانه‌ای بنویسید که خانه را پیدا کنیم، مثلاً «روبه‌روی نانوایی، درِ سبز»." : "";
+  if (!PLATE.test(s)) return "پلاک را با عدد بنویسید؛ مثلاً «پلاک ۲۴» (اگر ساختمان پلاک ندارد، گزینه‌ی زیر را بزنید).";
   return "";
 }
 

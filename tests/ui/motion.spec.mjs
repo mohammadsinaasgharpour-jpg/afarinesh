@@ -51,17 +51,20 @@ test("figures count up once and end on exactly the text in the page", async ({ p
 });
 
 test.describe("reduced motion", () => {
-  test("GSAP is never loaded and every section is visible at once", async ({ page }) => {
+  test("motion still runs at the owner's request, and every section ends up visible", async ({ page }) => {
     // set on the page: the context option does not reach the system Chrome channel used here
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/");
     expect(await page.evaluate(() => matchMedia("(prefers-reduced-motion: reduce)").matches)).toBe(true);
     await startScripts(page);
     await page.waitForTimeout(1500);
-    expect(await page.evaluate(() => !!window.gsap)).toBe(false);
+    await expect.poll(() => page.evaluate(() => !!window.gsap)).toBe(true);
     await page.locator("#programs").scrollIntoViewIfNeeded();
-    for (const el of await page.locator(".mondrian > .cell, .features > li").all()) {
-      expect(await el.evaluate((n) => getComputedStyle(n).opacity)).toBe("1");
+    await page.waitForTimeout(1500);
+    for (let y = 0; y < 12; y++) { await page.mouse.wheel(0, 700); await page.waitForTimeout(150); }
+    await page.waitForTimeout(1200);
+    for (const el of await page.locator(".mondrian > .cell:visible, .features > li:visible").all()) {
+      await expect.poll(() => el.evaluate((n) => getComputedStyle(n).opacity)).toBe("1");
     }
   });
 });

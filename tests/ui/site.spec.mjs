@@ -18,7 +18,7 @@ test.describe("theme follows the clock", () => {
   test("the toggle overrides the clock for this visit", async ({ page }) => {
     await page.clock.setFixedTime(at(10));
     await page.goto("/");
-    await page.locator("[data-theme-toggle]").click();
+    await page.locator("[data-theme-toggle]:visible").first().click();
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
     await page.reload();
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
@@ -101,9 +101,9 @@ test("phones: teachers are swiped one at a time, starting with the founder, each
   await expect(current).toHaveText("فرشید فلاحی");
   await expect(page.locator("[data-team-now]")).toHaveText("۱");
   await expect(page.locator(".swipe-hint")).toBeVisible();
-  // no empty space under a short card: the row is as tall as the card on screen
+  // no empty space under a short card: only the 12px kept for the card's shadow under the curtain
   const gap = () => page.evaluate(() => document.querySelector("[data-team]").getBoundingClientRect().bottom - document.querySelector(".teacher.is-current").getBoundingClientRect().bottom);
-  await expect.poll(gap).toBeLessThan(6);
+  await expect.poll(gap).toBeLessThan(16);
   // the contact cards and the map sit inside the screen (a long e-mail address once pushed them off)
   const sticks = await page.evaluate(() => [...document.querySelectorAll(".contact > *")].map((el) => { const r = el.getBoundingClientRect(); return r.left >= 0 && r.right <= innerWidth; }));
   expect(sticks.every(Boolean)).toBe(true);
@@ -313,7 +313,7 @@ test("every part of the page follows the light/dark switch, even when toggled qu
     return [bg("body"), bg(".site-header"), bg(".teacher"), bg(".form"), bg(".search input"), bg(".programs"), fg("h2"), fg(".teacher-name")].join("|");
   });
   const light = await probe();
-  const btn = page.locator("[data-theme-toggle]");
+  const btn = page.locator("[data-theme-toggle]:visible").first();
   await btn.click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await page.waitForTimeout(700);
@@ -411,7 +411,7 @@ test("pre-registration goes step by step, validates each step, reviews and sends
   await next();
   await page.locator(".step.is-active .segmented label", { hasText: "عالی" }).click();
   await next();
-  await page.locator(".check input").check();
+  await page.locator('.check input[name="consent"]').check();
   await page.locator("[data-submit]").click();
   const dialog = page.locator("[data-confirm-dialog]");
   await expect(dialog).toBeVisible();
@@ -437,7 +437,7 @@ test("careers page sends a job application", async ({ page }) => {
   await page.locator(".segmented label", { hasText: "بالای ۵ سال" }).click();
   await next();
   await page.fill("#c-phone", "07132293194");
-  await page.locator(".check input").check();
+  await page.locator('.check input[name="consent"]').check();
   await page.locator("[data-submit]").click();
   await page.locator("[data-confirm-yes]").click();
   await expect(page.locator(".toast.ok")).toBeVisible();

@@ -20,7 +20,7 @@ const whenIdle = (fn) => {
 whenIdle(() => {
   /* motion (GSAP) loads in the background; until it is ready, or if it never is, everything works without it */
   let motion = null;
-  if (!reduceMotion.matches) import("./motion.js").then((m) => m.initMotion()).then((api) => { motion = api; }, () => {});
+  import("./motion.js").then((m) => m.initMotion()).then((api) => { motion = api; }, () => {});
 
   /* nav: highlight the section in view */
   const navLinks = $$('#nav a[href^="#"]');
@@ -71,7 +71,7 @@ whenIdle(() => {
     if (open) d.open = true;
     d.classList.toggle("is-open", open);
     const to = open ? d.offsetHeight : closedH;
-    if (reduceMotion.matches) { if (!open) d.open = false; return Promise.resolve(); }
+
     const a = d.animate({ height: [`${from}px`, `${to}px`] }, { duration: 320, easing: "cubic-bezier(.22,1,.36,1)" });
     faqAnim.set(d, a);
     return a.finished.then(() => { if (!open) d.open = false; }, () => {});
@@ -147,21 +147,29 @@ whenIdle(() => {
   let target = 0; // where quick repeated clicks are heading; the pages turn one after another until there
   const pageFor = (forward, to) => (forward ? cards[index] : cards[to]);
   const underFor = (forward, to) => (forward ? cards[to] : cards[index]);
-  const pose = (page, p) => { page.style.transform = `rotateY(${-p * ANGLE}deg)`; page.style.filter = `brightness(${1 - 0.16 * Math.sin(p * Math.PI)})`; };
-  const clear = (...els) => els.forEach((el) => { el.classList.remove("is-turning", "is-under-now", "is-dragging"); el.style.transform = ""; el.style.filter = ""; });
+  // Phones: a curtain. The top card slides aside with the finger (a slight tilt, a soft shadow) while the next
+  // one rises from behind it. Wider screens: the card turns over from its right edge like a book page.
+  const curtain = matchMedia("(max-width: 700px)");
+  const frame = (p) => curtain.matches
+    ? { page: { transform: `translateX(${p * 112}%) rotate(${p * 7}deg)`, opacity: String(1 - 0.35 * p) }, under: { transform: `scale(${0.92 + 0.08 * p})`, opacity: String(0.55 + 0.45 * p) } }
+    : { page: { transform: `rotateY(${-p * ANGLE}deg)`, filter: `brightness(${1 - 0.16 * Math.sin(p * Math.PI)})` }, under: { transform: "none", opacity: "1" } };
+  const pose = (page, under, p) => { Object.assign(page.style, frame(p).page); Object.assign(under.style, frame(p).under); };
+  const clear = (...els) => els.forEach((el) => { el.classList.remove("is-turning", "is-under-now", "is-dragging"); el.style.transform = ""; el.style.filter = ""; el.style.opacity = ""; });
   /** Turn to card `to`, starting from progress `from` (0 = flat, 1 = fully turned) when a drag hands over. */
   const turn = (to, from) => {
     if (turning || to < 0 || to >= cards.length || to === index) return;
-    if (reduceMotion.matches) { setIndex(to); if (target !== index) turn(index + Math.sign(target - index)); return; }
+    // the visitor starts this motion, so it plays even with reduced motion (shorter, see below)
     const forward = to > index;
     const page = pageFor(forward, to), under = underFor(forward, to);
     const start = from ?? (forward ? 0 : 1), end = forward ? 1 : 0;
     turning = true;
     page.classList.add("is-turning");
     under.classList.add("is-under-now");
-    const frames = [start, (start + end) / 2, end].map((p) => ({ transform: `rotateY(${-p * ANGLE}deg)`, filter: `brightness(${1 - 0.16 * Math.sin(p * Math.PI)})` }));
+    const ps = [start, (start + end) / 2, end];
     const queued = Math.abs(target - to);
-    const anim = page.animate(frames, { duration: (420 + 380 * Math.abs(end - start)) / (queued ? 2 : 1), easing: "cubic-bezier(.3,.6,.2,1)" });
+    const timing = { duration: (420 + 380 * Math.abs(end - start)) / (queued ? 2 : 1) * (reduceMotion.matches ? 0.5 : 1), easing: "cubic-bezier(.3,.6,.2,1)" };
+    under.animate(ps.map((p) => frame(p).under), timing);
+    const anim = page.animate(ps.map((p) => frame(p).page), timing);
     anim.finished.catch(() => {}).then(() => {
       clear(page, under); setIndex(to); turning = false;
       if (target !== index) turn(index + Math.sign(target - index));
@@ -193,7 +201,7 @@ whenIdle(() => {
     }
     const p = Math.min(1, Math.abs(dx) / (team.clientWidth * 0.9));
     drag.p = p;
-    pose(pageFor(forward, to), forward ? p : 1 - p);
+    pose(pageFor(forward, to), underFor(forward, to), forward ? p : 1 - p);
   };
   const dragEnd = () => {
     if (!drag) return;
@@ -206,11 +214,13 @@ whenIdle(() => {
     // not far enough: the sheet falls back to where it was
     const now = d.forward ? d.p : 1 - d.p, rest = d.forward ? 0 : 1;
     turning = true;
-    page.animate([{ transform: `rotateY(${-now * ANGLE}deg)` }, { transform: `rotateY(${-rest * ANGLE}deg)` }], { duration: 260, easing: "ease-out" })
+    under.animate([frame(now).under, frame(rest).under], { duration: 260, easing: "ease-out" });
+    page.animate([frame(now).page, frame(rest).page], { duration: 260, easing: "ease-out" })
       .finished.catch(() => {}).then(() => { clear(page, under); turning = false; });
   };
   team.addEventListener("touchstart", (e) => { if (e.touches.length === 1) dragStart(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
-  team.addEventListener("touchmove", (e) => dragMove(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
+  // once a swipe is clearly sideways the page itself stops scrolling, so a sudden finger move cannot jump it
+  team.addEventListener("touchmove", (e) => { dragMove(e.touches[0].clientX, e.touches[0].clientY); if (drag?.sideways) e.preventDefault(); }, { passive: false });
   team.addEventListener("touchend", dragEnd, { passive: true });
   team.addEventListener("touchcancel", dragEnd);
   team.addEventListener("mousedown", (e) => {

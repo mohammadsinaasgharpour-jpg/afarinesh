@@ -60,6 +60,16 @@ if ($method === 'POST' && $action === 'update') {
   $pdo->prepare("UPDATE submissions SET status = ?, note = ? WHERE id = ?")->execute([$status, $note, $id]);
   out(200, ['ok' => true]);
 }
+// settings: the Gemini keys for voice input. The panel only ever sees how many keys there are, never a key.
+if ($action === 'settings') {
+  if ($method === 'GET') out(200, ['ok' => true, 'geminiKeys' => count(secrets()['gemini_keys'] ?? [])]);
+  if ($method !== 'POST') out(405, ['error' => 'method_not_allowed']);
+  $body = read_json(16384);
+  $keys = array_values(array_unique(array_filter(array_map('trim', preg_split('/[\s,;]+/', (string)($body['geminiKeys'] ?? ''))), fn($k) => preg_match('/^[A-Za-z0-9_\-]{30,60}$/', $k))));
+  if (!$keys && empty($body['clear'])) out(422, ['error' => 'no_valid_keys']);
+  save_secrets(['gemini_keys' => $keys, 'gemini_next' => 0]);
+  out(200, ['ok' => true, 'geminiKeys' => count($keys)]);
+}
 if ($method === 'POST' && $action === 'delete') {
   $body = read_json(1024);
   $id = (string)($body['id'] ?? '');

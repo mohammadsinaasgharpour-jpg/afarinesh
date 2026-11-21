@@ -95,7 +95,21 @@ function openRecord(r) {
   $("#detail").showModal();
 }
 
+async function loadSettings() {
+  try { const s = await api("/api/admin?action=settings"); $("#keys-count").textContent = s.geminiKeys ? `(${fa(s.geminiKeys)} کلید ذخیره شده)` : "(هنوز کلیدی نیست)"; } catch {}
+}
+$("#save-keys").addEventListener("click", async () => {
+  const box = $("#gemini-keys");
+  try {
+    const s = await api("/api/admin?action=settings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ geminiKeys: box.value }) });
+    box.value = "";
+    $("#keys-saved").textContent = `${fa(s.geminiKeys)} کلید ذخیره شد.`;
+    loadSettings();
+  } catch { $("#keys-saved").textContent = "کلید معتبری پیدا نشد؛ کلیدها را دوباره بررسی کنید."; }
+});
+
 async function load() {
+  loadSettings();
   const body = await api("/api/admin");
   all = body.records || [];
   show("records");

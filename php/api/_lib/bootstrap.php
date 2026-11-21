@@ -133,4 +133,22 @@ function admin_session(): void {
   session_start();
 }
 
+/**
+ * Settings entered in the admin panel (for now the Gemini keys), kept in a JSON file outside the web root and
+ * outside Git. Keys are never sent back to any page; the panel only sees how many there are.
+ */
+const SECRETS_DIR = '/home/mqcmfbjf/afarinesh-secrets';
+function secrets(): array {
+  static $s = null;
+  if ($s === null) $s = is_file(SECRETS_DIR . '/settings.json') ? (json_decode((string)file_get_contents(SECRETS_DIR . '/settings.json'), true) ?: []) : [];
+  return $s;
+}
+function save_secrets(array $changes): void {
+  if (!is_dir(SECRETS_DIR)) @mkdir(SECRETS_DIR, 0700, true);
+  $all = array_merge(secrets(), $changes);
+  file_put_contents(SECRETS_DIR . '/settings.json.tmp', json_encode($all, JSON_UNESCAPED_UNICODE));
+  rename(SECRETS_DIR . '/settings.json.tmp', SECRETS_DIR . '/settings.json');
+  @chmod(SECRETS_DIR . '/settings.json', 0600);
+}
+
 function admin_record_url(string $id): string { return SITE_URL . '/admin?record=' . rawurlencode($id); }

@@ -77,6 +77,7 @@ function entrances(gsap, ScrollTrigger, rise) {
         once: true,
         onEnter: (batch) => {
           batch.forEach((el) => shown.add(el));
+          box.classList.add("is-seen"); // CSS draws the heading's underline
           gsap.to(batch, {
             opacity: 1, y: 0, duration: MOTION.dur.verySlow, stagger: MOTION.stagger,
             overwrite: true, clearProps: "opacity,transform,transition",
@@ -147,6 +148,23 @@ function sequences(gsap, wide) {
         : { trigger: list, start: "top 85%", once: true },
     });
   }
+}
+
+/** Campus photos open from inside their frame, one after another, with a slow zoom settling. */
+function gallery(gsap) {
+  const shots = [...document.querySelectorAll(".campus-grid li")].filter((li) => !shown.has(li) && belowScreen(li));
+  if (!shots.length) return;
+  shots.forEach((li) => shown.add(li));
+  gsap.set(shots, { clipPath: "inset(14% 14% 14% 14% round 14px)", opacity: 0 });
+  gsap.set(shots.map((li) => li.querySelector("img")), { scale: 1.18 });
+  ScrollTrigger.batch(shots, {
+    start: "top 90%",
+    once: true,
+    onEnter: (batch) => {
+      gsap.to(batch, { clipPath: "inset(0% 0% 0% 0% round 10px)", opacity: 1, duration: 0.9, stagger: 0.08, ease: "power3.out", clearProps: "clipPath,opacity" });
+      gsap.to(batch.map((li) => li.querySelector("img")), { scale: 1, duration: 1.4, stagger: 0.08, ease: "power2.out", clearProps: "transform" });
+    },
+  });
 }
 
 /** The hero photo drifts a little slower than the page (wide screens only, about 8% of its height). */
@@ -287,7 +305,6 @@ function makeFlip(gsap, Flip) {
 
 /** Starts the motion system; returns helpers for UI code, or null when motion is off or GSAP failed. */
 export async function initMotion() {
-  if (matchMedia(STILL).matches) return null;
   let lib;
   try { lib = await loadGsap(); } catch { return null; }
   const { gsap, ScrollTrigger, Flip } = lib;
@@ -295,25 +312,27 @@ export async function initMotion() {
   ScrollTrigger.config({ ignoreMobileResize: true });
 
   const mm = gsap.matchMedia();
+  // The school asked for motion everywhere, so entrances also run with the system's reduce-motion setting on;
+  // only the large effects (parallax, magnetic buttons) stay off there.
   mm.add({ wide: WIDE, narrow: NARROW, still: STILL }, (ctx) => {
     const { wide, still } = ctx.conditions;
-    if (still) return;
     entrances(gsap, ScrollTrigger, wide ? MOTION.rise.wide : MOTION.rise.narrow);
     pictures(gsap);
     const undoCount = counters(gsap);
     sequences(gsap, wide);
-    if (wide) heroDepth(gsap);
+    gallery(gsap);
+    if (wide && !still) heroDepth(gsap);
     return undoCount;
   });
   // all devices: Lenis smooth scrolling; magnetic buttons still only run where a precise pointer exists
-  mm.add("(prefers-reduced-motion: no-preference)", () => {
+  mm.add("all", () => {
     const undoScroll = smoothScroll(gsap, ScrollTrigger);
-    const undoMagnet = matchMedia(DESK).matches ? magnetic(gsap) : () => {};
+    const undoMagnet = matchMedia(DESK).matches && !matchMedia(STILL).matches ? magnetic(gsap) : () => {};
     return () => { undoMagnet(); undoScroll?.(); };
   });
   followLayout(ScrollTrigger);
 
-  const still = () => matchMedia(STILL).matches;
+  const still = () => false;
   const accordion = makeAccordion(gsap);
   const flip = makeFlip(gsap, Flip);
   return {

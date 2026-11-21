@@ -192,7 +192,7 @@ function grade_age_error(string $grade, string $birthDate): string {
   return '';
 }
 
-function address_error(string $s): string {
+function address_error(string $s, bool $noPlate = false): string {
   if ($s === '') return 'نشانی محل سکونت را بنویسید.';
   if (v_len($s) > LIMITS['addressMax']) return 'نشانی حداکثر ' . to_persian_digits(LIMITS['addressMax']) . ' حرف است.';
   if (preg_match('/[A-Za-z]/', $s)) return 'نشانی را به فارسی بنویسید، نه انگلیسی.';
@@ -203,7 +203,8 @@ function address_error(string $s): string {
   if (!preg_match('/^(شیراز|شهر شیراز|صدرا|شهر صدرا)/u', $plain)) return 'نشانی را با نام شهر شروع کنید؛ مثلاً «شیراز، ...».';
   if (!preg_match('/(خیابان|خ\.|بلوار|بولوار|بزرگراه|اتوبان|میدان|جاده|شهرک|فلکه|چهارراه)/u', $s)) return 'نام خیابان یا بلوار را بنویسید؛ مثلاً «خیابان زند».';
   if (!preg_match('/(کوچه|ک\.|بن‌بست|بن بست|بنبست|کوی|نبش|فرعی)/u', $s)) return 'کوچه را بنویسید؛ مثلاً «کوچه‌ی ۸» (اگر کوچه ندارد، «نبش» یا «بن‌بست» را بنویسید).';
-  if (!preg_match('/(پلاک|پ\.)\s*[‌ی]?\s*[0-9۰-۹]/u', $s)) return 'پلاک را با عدد بنویسید؛ مثلاً «پلاک ۲۴».';
+  if ($noPlate) return v_len(letters_only($s)) < 20 ? 'ساختمان پلاک ندارد؛ نشانه‌ای بنویسید که خانه را پیدا کنیم، مثلاً «روبه‌روی نانوایی، درِ سبز».' : '';
+  if (!preg_match('/(پلاک|پ\.)\s*[‌ی]?\s*[0-9۰-۹]/u', $s)) return 'پلاک را با عدد بنویسید؛ مثلاً «پلاک ۲۴» (اگر ساختمان پلاک ندارد، گزینه‌ی زیر را بزنید).';
   return '';
 }
 
@@ -251,6 +252,7 @@ function validate_pre_registration(array $in): array {
     'discipline' => v_choice($in['discipline'] ?? '', DISCIPLINE),
     'grade' => in_array($grade, ['7', '8', '9'], true) ? $grade : '',
     'referral' => v_choice($in['referral'] ?? '', REFERRAL),
+    'noPlate' => v_consent($in['noPlate'] ?? null),
     'consent' => v_consent($in['consent'] ?? null),
   ];
 
@@ -261,7 +263,7 @@ function validate_pre_registration(array $in): array {
   elseif (!is_valid_national_id($v['nationalId'])) $e['nationalId'] = 'این کد ملی معتبر نیست؛ رقم‌ها را از روی کارت ملی یا شناسنامه دوباره بررسی کنید.';
   $e['birthDate'] = birth_date_error($in['birthDate'] ?? '', $v['birthDate']);
   if ($v['studentMobile'] === '') $e['studentMobile'] = mobile_error($in['studentMobile'] ?? '', 'دانش‌آموز');
-  $e['address'] = address_error($v['address']);
+  $e['address'] = address_error($v['address'], $v['noPlate']);
 
   foreach ([['motherName', 'motherJob', 'motherMobile', 'مادر'], ['fatherName', 'fatherJob', 'fatherMobile', 'پدر']] as [$name, $job, $mobile, $label]) {
     if ($v[$name] === '') $e[$name] = "نام و نام خانوادگی {$label} را بنویسید.";

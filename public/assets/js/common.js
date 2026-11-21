@@ -233,6 +233,8 @@ export function createFormController({ form, validate, review, success, draftKey
       const els = controls(name);
       if (!els.length) continue;
       const msg = errors[name] || "";
+      // a helper checkbox inside another field (noPlate under the address) must not blank that field's error
+      if (!msg && els[0].type === "checkbox" && controls(name).length === 1 && $$("[name]", els[0].closest(".field")).some((el) => el.name !== name)) continue;
       const slot = $("[data-error]", els[0].closest(".field"));
       if (slot) { slot.textContent = msg; if (!slot.id) slot.id = `${form.id || "f"}-${name}-err`; }
       els.forEach((el) => { el.setAttribute("aria-invalid", String(!!msg)); if (slot) el.setAttribute("aria-describedby", slot.id); });

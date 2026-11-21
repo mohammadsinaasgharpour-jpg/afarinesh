@@ -41,6 +41,13 @@
         </select>
         <a class="ghost" id="csv" href="/api/admin?action=csv&amp;kind=preRegistration">دانلود اکسل</a>
       </div>
+      <details class="settings" id="settings">
+        <summary>تنظیمات: کلیدهای Gemini برای گفتن نشانی با صدا <b id="keys-count"></b></summary>
+        <p class="muted">هر کلید را در یک خط بگذارید. وقتی سهمیه‌ی یک کلید تمام شود، کلید بعدی استفاده می‌شود. کلیدها جایی نمایش داده نمی‌شوند؛ برای عوض کردن، فهرست تازه را بگذارید.</p>
+        <textarea id="gemini-keys" rows="4" dir="ltr" spellcheck="false" autocomplete="off" placeholder="AIza..."></textarea>
+        <button type="button" id="save-keys">ذخیره‌ی کلیدها</button>
+        <span class="muted" id="keys-saved" role="status"></span>
+      </details>
       <p class="error" id="records-error" role="alert"></p>
       <div class="table-wrap"><table id="table"><thead></thead><tbody></tbody></table></div>
       <p class="muted empty hidden" id="empty">رکوردی پیدا نشد.</p>
