@@ -17,6 +17,17 @@ if (!rate_hit('deploy', 1, 60)) out(429, ['error' => 'too_soon'], ['Retry-After'
 $event = json_decode($raw, true) ?: [];
 if (isset($event['ref']) && $event['ref'] !== 'refs/heads/main') out(200, ['ok' => true, 'skipped' => $event['ref']]);
 
+// GitHub gives up on a webhook after 10 seconds and PHP then stopped the copy halfway: keep going after the
+// caller leaves, and answer GitHub at once where the server allows it (a manual call still waits for the result)
+ignore_user_abort(true);
+set_time_limit(300);
+if (isset($_SERVER['HTTP_X_GITHUB_EVENT']) && function_exists('fastcgi_finish_request')) {
+  http_response_code(202);
+  header('Content-Type: application/json; charset=utf-8');
+  echo json_encode(['ok' => true, 'accepted' => $event['after'] ?? null]);
+  fastcgi_finish_request();
+}
+
 $tmp = sys_get_temp_dir() . '/afarinesh-deploy-' . bin2hex(random_bytes(4));
 @mkdir($tmp, 0700, true);
 $zipPath = "$tmp/repo.zip";
