@@ -49,8 +49,29 @@ function loadGsap() {
   }));
 }
 
-/** Below the visible screen right now (only those get an entrance; anything already seen stays put). */
-const belowScreen = (el) => el.getBoundingClientRect().top > innerHeight;
+/**
+ * Below the visible screen right now (only those get an entrance; anything already seen stays put).
+ * Positions come from one measuring pass made before any style is written: measuring between writes made
+ * the browser lay the page out again for every element. An element whose whole section starts below the
+ * screen is not measured itself, so sections the browser has not laid out yet (content-visibility) stay so.
+ */
+const BLOCKS = "section, .site-footer, .enrol";
+let tops = null;
+const topOf = (el) => {
+  if (!tops.has(el)) tops.set(el, el.getBoundingClientRect().top);
+  return tops.get(el);
+};
+const belowScreen = (el) => {
+  const block = el.closest(BLOCKS);
+  if (block && topOf(block) > innerHeight) return true;
+  return topOf(el) > innerHeight;
+};
+const measure = () => {
+  tops = new Map();
+  for (const block of document.querySelectorAll(BLOCKS)) topOf(block);
+  const sel = [...GROUPS.map(([c, ch]) => ch.replace(":scope", c)), ".map-card img", ".fact dd", ".mondrian .path", ".features .steps-line", ".campus-grid li"].join(",");
+  for (const el of document.querySelectorAll(sel)) belowScreen(el);
+};
 /** Elements that have had their entrance; a breakpoint change must not hide them again. */
 const shown = new WeakSet();
 
@@ -316,6 +337,7 @@ export async function initMotion() {
   // only the large effects (parallax, magnetic buttons) stay off there.
   mm.add({ wide: WIDE, narrow: NARROW, still: STILL }, (ctx) => {
     const { wide, still } = ctx.conditions;
+    measure(); // every read first, then the writes below
     entrances(gsap, ScrollTrigger, wide ? MOTION.rise.wide : MOTION.rise.narrow);
     pictures(gsap);
     const undoCount = counters(gsap);

@@ -17,11 +17,25 @@ const whenIdle = (fn) => {
   if (document.readyState === "complete") run();
   else addEventListener("load", run, { once: true });
 };
-whenIdle(() => {
-  /* motion (GSAP) loads in the background; until it is ready, or if it never is, everything works without it */
-  let motion = null;
+/* motion (GSAP) loads in the background; until it is ready, or if it never is, everything works without it.
+   It is set up on the visitor's first scroll, touch, pointer move or key: nothing on the first screen animates,
+   so waiting costs nothing visible, and a phone spends its first seconds showing the page instead. */
+let motion = null;
+const MOTION_START = ["scroll", "wheel", "touchstart", "pointermove", "keydown"];
+const startMotion = () => {
+  MOTION_START.forEach((type) => removeEventListener(type, startMotion, true));
   import("./motion.js").then((m) => m.initMotion()).then((api) => { motion = api; }, () => {});
+};
+if (location.hash) startMotion();
+else MOTION_START.forEach((type) => addEventListener(type, startMotion, { capture: true, passive: true }));
+// once the page has loaded, the vendor files are fetched quietly, so the first interaction does not wait for them
+addEventListener("load", () => setTimeout(() => {
+  for (const f of ["gsap.min.js", "ScrollTrigger.min.js", "Flip.min.js", "lenis.min.js"]) {
+    document.head.append(Object.assign(document.createElement("link"), { rel: "prefetch", href: `/assets/js/vendor/${f}`, as: "script" }));
+  }
+}, 2000), { once: true });
 
+whenIdle(() => {
   /* nav: highlight the section in view */
   const navLinks = $$('#nav a[href^="#"]');
   const spy = new IntersectionObserver((entries) => {
