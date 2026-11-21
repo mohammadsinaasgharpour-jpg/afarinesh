@@ -60,29 +60,29 @@ export function initChrome() {
   if (new URLSearchParams(location.search).has("guides")) import("./guides.js").then((m) => m.initGuides(), () => {});
 
   /* theme: the inline script in <head> picks light before 18:00 and dark after; the button overrides it for this visit */
-  const themeBtn = $("[data-theme-toggle]");
+  const themeBtns = $$("[data-theme-toggle]");
   const themeMeta = $('meta[name="theme-color"]');
   const isDark = () => document.documentElement.dataset.theme === "dark";
   const syncTheme = () => {
-    themeBtn.setAttribute("aria-label", isDark() ? "تغییر به حالت روشن" : "تغییر به حالت تاریک");
+    themeBtns.forEach((b) => b.setAttribute("aria-label", isDark() ? "تغییر به حالت روشن" : "تغییر به حالت تاریک"));
     if (themeMeta) themeMeta.content = isDark() ? PAPER.dark : PAPER.light;
   };
-  // Every colour flips in the same frame: transitions are paused while the theme changes, the page is
-  // forced to restyle, and where supported the switch is a single crossfade of the whole page.
+  // The colours glide to the other theme in place. (A whole-page view transition was used before: on phones its
+  // snapshot looked blurred for a moment and the page could jump to the top.) The scroll position is held.
   const setTheme = (next) => {
     const root = document.documentElement;
-    root.classList.add("theme-switching");
+    const y = scrollY;
+    root.classList.add(reduceMotion.matches ? "theme-switching" : "theme-fading");
     root.dataset.theme = next;
-    void root.offsetHeight;
     syncTheme();
-    requestAnimationFrame(() => requestAnimationFrame(() => root.classList.remove("theme-switching")));
+    if (scrollY !== y) scrollTo({ top: y, behavior: "instant" });
+    setTimeout(() => root.classList.remove("theme-switching", "theme-fading"), reduceMotion.matches ? 50 : 450);
   };
-  themeBtn.addEventListener("click", () => {
+  themeBtns.forEach((b) => b.addEventListener("click", () => {
     const next = isDark() ? "light" : "dark";
     try { sessionStorage.setItem("theme", next); } catch {}
-    if (document.startViewTransition && !reduceMotion.matches) document.startViewTransition(() => setTheme(next));
-    else setTheme(next);
-  });
+    setTheme(next);
+  }));
   syncTheme();
 
   /* header: menu and scrolled state */
@@ -271,6 +271,40 @@ export function createFormController({ form, validate, review, success, draftKey
   form.addEventListener("input", clearFixed);
   form.addEventListener("change", clearFixed);
 
+  // The privacy page opens over the form instead of replacing it, so nothing typed is lost; leaving a
+  // half-filled form by any other way asks first.
+  let dirty = false;
+  form.addEventListener("input", () => { dirty = true; });
+  addEventListener("beforeunload", (e) => { if (dirty && !form.dataset.sent) { e.preventDefault(); e.returnValue = ""; } });
+  for (const a of $$('a[href^="/privacy"]', form.closest("main") ?? form)) {
+    a.addEventListener("click", async (e) => {
+      e.preventDefault();
+      let box = $("#privacy-dialog");
+      if (!box) {
+        box = document.createElement("dialog");
+        box.id = "privacy-dialog";
+        box.className = "dialog privacy-dialog";
+        box.setAttribute("aria-label", "حریم خصوصی");
+        box.innerHTML = '<div class="privacy-body"><p>در حال بارگذاری…</p></div><button type="button" class="btn btn-primary" data-close>بازگشت به فرم</button>';
+        $("[data-close]", box).addEventListener("click", () => box.close());
+        box.addEventListener("click", (ev) => { if (ev.target === box) box.close(); });
+        document.body.append(box);
+        box.showModal();
+        try {
+          const html = await (await fetch("/privacy")).text();
+          const doc = new DOMParser().parseFromString(html, "text/html");
+          const main = doc.querySelector("main .wrap, main");
+          $$("script, form, .context-back, [data-context-back]", main).forEach((n) => n.remove());
+          $(".privacy-body", box).replaceChildren(...main.children);
+        } catch { $(".privacy-body", box).innerHTML = '<p>بارگذاری نشد. <a href="/privacy" target="_blank" rel="noopener">صفحه‌ی حریم خصوصی را در برگه‌ی تازه باز کنید</a>.</p>'; }
+        const hash = a.hash && $(a.hash, box);
+        if (hash) hash.scrollIntoView();
+        return;
+      }
+      box.showModal();
+    });
+  }
+
   // forms with personal identifiers keep no draft; the short callback form restores an unsent draft (per tab)
   if (draftKey) try {
     const draft = JSON.parse(sessionStorage.getItem(draftKey) || "null");
@@ -370,6 +404,7 @@ export function createFormController({ form, validate, review, success, draftKey
       if (res.status === 503) throw new Error(`ارسال آنلاین فعلاً در دسترس نیست. لطفاً با ${SCHOOL_PHONE} تماس بگیرید.`);
       if (!res.ok) throw new Error();
       form.reset();
+      dirty = false;
       $$("[data-count-for]", form).forEach((c) => (c.textContent = "۰"));
       $("[data-started]", form).value = String(Date.now());
       if (steps.length > 1) showStep(0, false);

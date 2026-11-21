@@ -11,7 +11,7 @@
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; img-src 'self' data:; style-src 'self' 'sha256-wgfBE//I1lEJaWFcfBI7tNO04SctDHEtlOTjdQIx87I='; font-src 'self'; script-src 'self' 'sha256-KwIMMOwmnwZ1nVgWVKtmIEPHSISDCNBC2012VaDRewk='; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+          "value": "default-src 'self'; img-src 'self' data:; style-src 'self' 'sha256-aNHlXvdNvPHa/EA7VcVNxXR038o8JdLZNwakraDwSrY='; font-src 'self'; script-src 'self' 'sha256-KwIMMOwmnwZ1nVgWVKtmIEPHSISDCNBC2012VaDRewk='; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
         },
         {
           "key": "X-Content-Type-Options",
