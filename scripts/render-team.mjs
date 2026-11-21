@@ -21,8 +21,26 @@ export function renderTeam(people) {
   }).join("\n");
 }
 
+/** Each staff member as a schema.org Person working at the school, for search results about the teachers. */
+export function teamLd(people) {
+  const graph = people.map((p) => ({
+    "@type": "Person",
+    name: p.name,
+    jobTitle: p.role,
+    image: `https://afarineshshiraz.ir/assets/img/team/${p.id}.webp`,
+    worksFor: { "@id": "https://afarineshshiraz.ir/#school" },
+    hasCredential: p.edu.map((e) => ({ "@type": "EducationalOccupationalCredential", name: e })),
+    ...(p.note ? { description: p.note } : {}),
+  }));
+  // "<" escaped so a name can never close the script element
+  const json = JSON.stringify({ "@context": "https://schema.org", "@graph": graph }).replace(/</g, "\\u003c");
+  return `<script type="application/ld+json">\n${json}\n</script>`;
+}
+
 const START = "<!-- team:start -->";
 const END = "<!-- team:end -->";
+const LD_START = "<!-- team-ld:start -->";
+const LD_END = "<!-- team-ld:end -->";
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const people = JSON.parse(await readFile(new URL("content/team.json", root), "utf8"));
@@ -30,6 +48,10 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const html = await readFile(file, "utf8");
   const a = html.indexOf(START), b = html.indexOf(END);
   if (a < 0 || b < a) throw new Error("team markers not found in public/index.html");
-  await writeFile(file, html.slice(0, a + START.length) + "\n" + renderTeam(people) + "\n" + html.slice(b));
+  let out = html.slice(0, a + START.length) + "\n" + renderTeam(people) + "\n" + html.slice(b);
+  const c = out.indexOf(LD_START), d = out.indexOf(LD_END);
+  if (c < 0 || d < c) throw new Error("team-ld markers not found in public/index.html");
+  out = out.slice(0, c + LD_START.length) + "\n" + teamLd(people) + "\n" + out.slice(d);
+  await writeFile(file, out);
   console.log(`rendered ${people.length} people`);
 }

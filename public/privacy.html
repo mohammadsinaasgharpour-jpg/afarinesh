@@ -764,6 +764,16 @@ background: var(--paper); color: var(--ink); font: inherit; font-weight: 600; cu
 .prose section { padding: var(--s5) var(--s6); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
 .prose h2 { font-size: var(--t-md); font-weight: 800; margin-bottom: var(--s2); }
 .prose p:last-child, .prose ul:last-child { margin-bottom: 0; }
+.prose p:last-child, .prose ol:last-child { margin-bottom: 0; }
+.prose ol, .prose ul { padding-inline-start: 1.3em; }
+.prose li + li { margin-top: var(--s1); }
+.post-date { color: var(--ink-2); font-size: var(--t-sm); margin-top: var(--s2); }
+.post-card h2 a { color: var(--ink); text-decoration: none; }
+.post-card h2 a:hover { color: var(--sky-text); text-decoration: underline; }
+.post-card { transition: transform .3s var(--ease), box-shadow .3s var(--ease); }
+.post-card:hover { transform: translateY(-3px); box-shadow: 0 10px 28px -18px rgb(0 0 0 / .35); }
+.post-cta { border-color: color-mix(in srgb, var(--sky) 45%, var(--line)); }
+.more-posts ul { list-style: none; padding: 0; display: grid; gap: var(--s2); }
 .prose ul { padding-inline-start: 1.3em; display: grid; gap: var(--s1); }
 @media (max-width: 640px) {
 .grid-2 { grid-template-columns: 1fr; }
@@ -998,11 +1008,12 @@ html.lenis, html.lenis body { height: auto; }
       </section>
       <section>
         <h2>چه کسی آن را می‌بیند و کجا نگه‌داری می‌شود</h2>
-        <p>فقط کارکنان دفتر مدرسه. فرم‌ها در پایگاه‌داده‌ی مدرسه ذخیره می‌شوند و برای اطلاع کارکنان به کانال خصوصی دفتر مدرسه فرستاده می‌شوند. سرویس‌هایی که سایت روی آن‌ها کار می‌کند:</p>
+        <p>فقط کارکنان دفتر مدرسه. فرم‌ها در پایگاه‌داده‌ی سایت روی سرور میزبان مدرسه در ایران ذخیره می‌شوند و برای اطلاع کارکنان، خلاصه‌ی هر فرم به کانال خصوصی دفتر مدرسه فرستاده می‌شود. سرویس‌هایی که سایت روی آن‌ها کار می‌کند:</p>
         <ul>
-          <li>Vercel: میزبانی سایت</li>
-          <li>Supabase: پایگاه‌داده‌ی فرم‌ها</li>
+          <li>میهن‌وب‌هاست: میزبانی سایت و پایگاه‌داده‌ی فرم‌ها</li>
           <li>Telegram: کانال خصوصی دفتر مدرسه برای دریافت فرم‌ها</li>
+          <li>Vercel: رساندن پیام فرم‌ها به تلگرام و رساندن صدای نشانی به Gemini، چون این دو سرویس از سرورهای داخل ایران در دسترس نیستند؛ چیزی آنجا ذخیره نمی‌شود</li>
+          <li>Google Gemini: فقط وقتی دکمه‌ی «گفتن نشانی با صدا» را می‌زنید، صدای ضبط‌شده برای نوشتن نشانی به آن فرستاده می‌شود؛ صدا در سایت مدرسه ذخیره نمی‌شود</li>
         </ul>
         <p>اطلاعات شما روی اتصال رمزگذاری‌شده (HTTPS) فرستاده می‌شود.</p>
       </section>
@@ -1020,7 +1031,7 @@ html.lenis, html.lenis body { height: auto; }
       </section>
       <section>
         <h2>کوکی و ردیابی</h2>
-        <p>این سایت کوکی تبلیغاتی، ابزار آمارگیری یا ردیاب ندارد. فقط انتخاب حالت روشن یا تاریک و پیش‌نویس فرم تماس در مرورگر خودتان و تا بستن همان برگه نگه داشته می‌شود.</p>
+        <p>این سایت کوکی تبلیغاتی، ابزار آمارگیری یا ردیاب ندارد. فقط انتخاب حالت روشن یا تاریک و پیش‌نویس فرم‌ها در مرورگر خودتان و تا بستن همان برگه نگه داشته می‌شود. پنل کارکنان مدرسه برای ورود یک کوکی جلسه دارد که برای بازدیدکنندگان ساخته نمی‌شود.</p>
       </section>
       <section>
         <h2>شرایط استفاده</h2>
@@ -1051,7 +1062,8 @@ html.lenis, html.lenis body { height: auto; }
         <li><a href="/pre-registration">پیش‌ثبت‌نام پایه‌های هفتم تا نهم</a></li>
         <li><a href="/careers">دعوت به همکاری</a></li>
         <li><a href="/privacy">حریم خصوصی و شرایط استفاده</a></li>
-            <li><a href="/library/">کتابخانه‌ی مدرسه<svg class="ic" aria-hidden="true"><use href="#i-external"/></svg><span class="visually-hidden"> (در برگه‌ی تازه)</span></a></li>
+            <li><a href="/library/">کتابخانه‌ی مدرسه</a></li>
+        <li><a href="/blog/">مطالب برای والدین</a></li>
         <li><a href="https://instagram.com/afarinesh_sch" target="_blank" rel="noopener"><svg class="ic"><use href="#i-insta"/></svg>اینستاگرام مدرسه</a></li>
       </ul>
     </nav>
@@ -1066,7 +1078,7 @@ html.lenis, html.lenis body { height: auto; }
       </ul>
     </div>
   </div>
-  <div class="wrap copy"><button type="button" class="theme-foot" data-theme-toggle aria-label="تغییر به حالت تاریک"><svg class="ic ic-moon" aria-hidden="true"><use href="#i-moon"/></svg><svg class="ic ic-sun" aria-hidden="true"><use href="#i-sun"/></svg><span>حالت روشن و تاریک</span></button><p>© ۱۴۰۵ دبیرستان آفرینش شیراز</p><p class="credit">طراحی و ساخت: محمدسینا اصغرپور</p></div>
+  <div class="wrap copy"><button type="button" class="theme-foot" data-theme-toggle aria-label="تغییر به حالت تاریک"><svg class="ic ic-moon" aria-hidden="true"><use href="#i-moon"/></svg><svg class="ic ic-sun" aria-hidden="true"><use href="#i-sun"/></svg><span>حالت روشن و تاریک</span></button><p>© ۱۴۰۵ دبیرستان آفرینش شیراز <span lang="en" dir="ltr">· Afarinesh Boys' Junior High School, Shiraz, Iran</span></p><p class="credit">طراحی و ساخت: محمدسینا اصغرپور</p></div>
 </footer>
 <a class="insta-fab" href="https://instagram.com/afarinesh_sch" target="_blank" rel="noopener" aria-label="اینستاگرام مدرسه (afarinesh_sch)"><svg class="ic" aria-hidden="true"><use href="#i-insta"/></svg></a>
 <button class="to-top icon-btn" type="button" aria-label="بازگشت به بالای صفحه" data-to-top hidden><svg class="ic"><use href="#i-up"/></svg></button>

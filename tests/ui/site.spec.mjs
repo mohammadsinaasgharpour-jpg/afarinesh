@@ -128,6 +128,8 @@ test("phones: teachers are swiped one at a time, starting with the founder, each
 });
 
 test("FAQ has no sports-hall question and opens and closes", async ({ page }) => {
+  // the colours below are the daytime theme's; after dark in Iran the site turns dark by itself
+  await page.addInitScript(() => sessionStorage.setItem("theme", "light"));
   await page.goto("/");
   await expect(page.locator(".faq")).not.toContainText("سالن ورزشی");
   await expect(page.locator(".faq details")).toHaveCount(8);

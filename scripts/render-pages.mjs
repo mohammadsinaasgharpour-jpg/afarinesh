@@ -2,7 +2,7 @@
 // header, footer, floating buttons and dialogs, theme script) from public/index.html so every page
 // stays identical to the home page. The theme script must match byte for byte: its CSP hash is taken
 // from index.html.
-import { readFile, writeFile, readdir } from "node:fs/promises";
+import { readFile, writeFile, readdir, mkdir } from "node:fs/promises";
 import { pathToFileURL } from "node:url";
 
 const root = new URL("../", import.meta.url);
@@ -44,8 +44,10 @@ export function renderPage(template, blocks) {
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const blocks = sharedBlocks(await readFile(new URL("public/index.html", root), "utf8"));
   const dir = new URL("content/pages/", root);
-  for (const name of (await readdir(dir)).filter((f) => f.endsWith(".html"))) {
+  // content/pages/blog/<slug>.html becomes public/blog/<slug>.html, served at /blog/<slug>
+  for (const name of (await readdir(dir, { recursive: true })).map((f) => f.split("\\").join("/")).filter((f) => f.endsWith(".html"))) {
     const html = renderPage(await readFile(new URL(name, dir), "utf8"), blocks);
+    if (name.includes("/")) await mkdir(new URL(`public/${name.slice(0, name.lastIndexOf("/"))}/`, root), { recursive: true });
     await writeFile(new URL(`public/${name}`, root), html);
     console.log(`rendered ${name}`);
   }

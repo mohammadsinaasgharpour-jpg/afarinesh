@@ -1,5 +1,8 @@
 User-agent: *
 Allow: /
 Disallow: /api/
+Disallow: /admin
+Disallow: /library/admin/
 
 Sitemap: https://afarineshshiraz.ir/sitemap.xml
+Sitemap: https://afarineshshiraz.ir/library/sitemap.xml
