@@ -40,6 +40,8 @@ test("teachers come one at a time, in the school's order, and changing teacher n
   await expect(page.locator("[data-team]")).not.toContainText("قزلباش");
   await expect(page.locator(".teacher h3")).toHaveCount(0);
   const track = page.locator("[data-team-track]");
+  // the section is set up when the visitor starts scrolling
+  await page.evaluate(() => document.querySelector("#team").scrollIntoView({ behavior: "instant" }));
   await expect(track).toHaveClass(/is-swipe/);
   // nothing is pinned: the section is about one screen tall, not a long scroll
   expect(await track.evaluate((el) => el.offsetHeight)).toBeLessThan(page.viewportSize().height * 2);
@@ -95,8 +97,8 @@ test("phones: teachers are swiped one at a time, starting with the founder, each
   // the page opens at the top, not inside the teachers section
   expect(await page.evaluate(() => scrollY)).toBe(0);
   const track = page.locator("[data-team-track]");
-  await expect(track).toHaveClass(/is-swipe/);
   await track.scrollIntoViewIfNeeded();
+  await expect(track).toHaveClass(/is-swipe/);
   const current = page.locator(".teacher.is-current .teacher-name");
   await expect(current).toHaveText("فرشید فلاحی");
   await expect(page.locator("[data-team-now]")).toHaveText("۱");

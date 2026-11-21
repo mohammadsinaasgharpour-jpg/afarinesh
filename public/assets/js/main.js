@@ -4,18 +4,19 @@ import { $, $$, initChrome, createFormController, reduceMotion, scroller } from 
 
 initChrome();
 
-// The page is drawn first; the teachers section, the menu highlight and the callback form are set up a
-// moment later, when the browser is idle, so their work does not hold up the first paint on phones.
+// The page is drawn first; the teachers section, the menu highlight and the callback form are set up when the
+// visitor starts using the page, so their work does not hold up the first seconds on phones.
 const whenIdle = (fn) => {
   let started = false;
   const start = () => { if (started) return; started = true; fn(); };
   // a link to a section further down needs the final layout at once
   if (location.hash) return start();
-  // otherwise when the browser is idle after loading, or at once when the visitor starts to scroll, tap or type
-  for (const type of ["scroll", "pointerdown", "keydown", "focusin"]) addEventListener(type, start, { once: true, passive: true });
-  const run = () => (window.requestIdleCallback ? requestIdleCallback(start, { timeout: 1500 }) : setTimeout(start, 1));
-  if (document.readyState === "complete") run();
-  else addEventListener("load", run, { once: true });
+  // otherwise as soon as the visitor scrolls, touches, points or types: none of it is on the first screen, so a
+  // phone spends its first seconds drawing the page; a visitor who only reads still gets it after a while
+  for (const type of ["scroll", "wheel", "touchstart", "pointermove", "pointerdown", "keydown", "focusin"]) addEventListener(type, start, { once: true, passive: true, capture: true });
+  const later = () => setTimeout(() => (window.requestIdleCallback ? requestIdleCallback(start) : start()), 12000);
+  if (document.readyState === "complete") later();
+  else addEventListener("load", later, { once: true });
 };
 /* motion (GSAP) loads in the background; until it is ready, or if it never is, everything works without it.
    It is set up on the visitor's first scroll, touch, pointer move or key: nothing on the first screen animates,
