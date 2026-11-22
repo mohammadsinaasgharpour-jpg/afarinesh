@@ -1,7 +1,11 @@
 # Manual check of the live site's relays from outside Iran: a short spoken address goes through /api/transcribe
-# (host -> Vercel -> Gemini), and a panel login code goes through the Telegram relay. Run by hand only.
+# (host -> Vercel -> Gemini), and a panel login code goes through the Telegram relay. Runs by hand, or when this file changes.
 name: live-check
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [.github/workflows/live-check.yml]
 permissions: {}
 jobs:
   check:
