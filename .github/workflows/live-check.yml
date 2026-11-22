@@ -18,4 +18,5 @@ jobs:
           espeak-ng -w voice.wav "Shiraz, Zand street, alley eight, number twelve"
           curl -s -w ' HTTP %{http_code}\n' -X POST -H "Content-Type: audio/wav" --data-binary @voice.wav https://afarineshshiraz.ir/api/transcribe
       - name: Telegram login code
-        run: curl -s -w ' HTTP %{http_code}\n' -X POST -H "Content-Type: application/json" -d '{}' "https://afarineshshiraz.ir/api/admin?action=send-code"
+        run: |
+          curl -s -w ' HTTP %{http_code}\n' -X POST -H "Content-Type: application/json" -d '{}' "https://afarineshshiraz.ir/api/admin?action=send-code"
