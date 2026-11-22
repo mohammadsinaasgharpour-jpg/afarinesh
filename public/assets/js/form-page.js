@@ -18,6 +18,9 @@ function initVoiceInput() {
   const note = document.getElementById(`${button.dataset.voiceFor}-voice-note`);
   const label = button.querySelector("span");
   if (!target || !navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) { button.hidden = true; return; }
+  // the microphone shows only once the school has set voice input up (a Gemini key in the admin panel)
+  button.hidden = true;
+  fetch("/api/transcribe").then((r) => r.json()).then((s) => { button.hidden = !s.ready; }).catch(() => {});
   const types = ["audio/webm;codecs=opus", "audio/ogg;codecs=opus", "audio/mp4", "audio/webm"];
   const mime = types.find((t) => MediaRecorder.isTypeSupported?.(t)) || "";
   const say = (text) => { if (note) note.textContent = text; };

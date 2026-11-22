@@ -17,6 +17,7 @@ jobs:
           UA: "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Mobile Safari/537.36"
         run: |
           sleep 90  # let the deploy workflow put this commit live first
+          echo "ready: $(curl -s -A "$UA" https://afarineshshiraz.ir/api/transcribe)"
           sudo apt-get -qq install -y espeak-ng ffmpeg >/dev/null
           espeak-ng -w voice.wav "Shiraz, Zand street, alley eight, number twelve"
           ffmpeg -loglevel error -i voice.wav -c:a libopus voice.webm

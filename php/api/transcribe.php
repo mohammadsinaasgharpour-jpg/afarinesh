@@ -9,6 +9,9 @@ set_time_limit(40);
 
 const MAX_AUDIO = 1_500_000; // about 45 seconds of compressed speech
 
+// GET: whether voice input can work, so the page shows the microphone only then. Vercel's own gateway is tried
+// too, but it serves requests only once a payment card is on the Vercel account, so a saved key is what counts.
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET') out(200, ['ok' => true, 'ready' => count(secrets()['gemini_keys'] ?? []) > 0 || !empty(secrets()['gateway_ok'])]);
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') out(405, ['error' => 'method_not_allowed']);
 require_same_origin();
 if (!rate_hit('voice:' . client_ip(), 12, 3600)) out(429, ['error' => 'rate_limited'], ['Retry-After' => '600']);
@@ -78,6 +81,7 @@ for ($i = 0; $i < $n; $i++) {
   [$code, $j] = gemini_call('models/' . model_for($key) . ':generateContent', $key, $body);
   if ($code === 200) {
     if ($k !== $start && $key !== '') save_secrets(['gemini_next' => $k]);
+    if ($key === '' && empty(secrets()['gateway_ok'])) save_secrets(['gateway_ok' => true]);
     $text = trim(implode('', array_map(fn($p) => $p['text'] ?? '', $j['candidates'][0]['content']['parts'] ?? [])));
     $text = trim(preg_replace('/\s+/u', ' ', strip_tags($text)), " \t\n\r\0\x0B«»\"'.");
     if ($text === '' || $text === '—') out(422, ['error' => 'no_speech']);
@@ -86,5 +90,6 @@ for ($i = 0; $i < $n; $i++) {
   // quota, rate limit, a disabled or wrong key: try the next one; anything else is a real failure
   if (!in_array($code, [400, 401, 403, 429, 500, 503], true)) break;
 }
+if (count($keys) === 1) out(503, ['error' => 'voice_not_configured', 'upstream' => $code]);
 // the last upstream answer, short and without any key, so a failure can be told apart (relay, gateway, quota)
 out(502, ['error' => 'voice_unavailable', 'upstream' => $code, 'detail' => mb_substr((string)($j['error']['message'] ?? $j['error'] ?? ''), 0, 160) . ' ' . mb_substr((string)($j['detail'] ?? ''), 0, 160)]);
