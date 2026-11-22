@@ -1,5 +1,6 @@
 <?php
-// Admin panel API for the school's vice-principal: sign in with the panel password, list and search every
+// Admin panel API for the school's vice-principal: sign in with the panel password or a one-time code sent to the
+// school's private Telegram channel, list and search every
 // stored form, open one record (the link at the end of each Telegram message), set its follow-up status and
 // a note, and download a CSV for Excel. Every read needs a session; the password is checked against a hash.
 declare(strict_types=1);
@@ -29,15 +30,34 @@ function row_out(array $row): array {
 
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $action = (string)($_GET['action'] ?? '');
-if (!cfg('admin_password_hash')) out(503, ['error' => 'admin_not_configured']);
 
 if ($method === 'POST') require_same_origin();
+
+// a six-digit code for the staff's Telegram channel: only people in that channel can read it, so the panel can be
+// opened without remembering a password. One code at a time, valid 10 minutes, at most 5 guesses.
+if ($method === 'POST' && $action === 'send-code') {
+  if (!rate_hit('code:' . client_ip(), 3, 900) || !rate_hit('code:all', 12, 3600)) out(429, ['error' => 'too_many_attempts'], ['Retry-After' => '900']);
+  $code = (string)random_int(100000, 999999);
+  save_secrets(['login_code' => ['hash' => password_hash($code, PASSWORD_DEFAULT), 'until' => time() + 600, 'tries' => 0]]);
+  $sent = notify_staff("کد ورود به پنل مدیر سایت آفرینش: $code
+این کد تا ۱۰ دقیقه کار می‌کند. اگر کسی از شما آن را نخواسته، به کسی ندهید.");
+  if (!$sent) { save_secrets(['login_code' => null]); out(502, ['error' => 'telegram_unavailable']); }
+  out(200, ['ok' => true]);
+}
 
 if ($method === 'POST' && $action === 'login') {
   if (!rate_hit('login:' . client_ip(), 6, 900)) out(429, ['error' => 'too_many_attempts'], ['Retry-After' => '900']);
   $body = read_json(2048);
-  $password = is_string($body['password'] ?? null) ? $body['password'] : '';
-  if (strlen($password) < 8 || !verify_password($password, (string)cfg('admin_password_hash'))) out(401, ['error' => 'invalid_credentials']);
+  $code = preg_replace('/\D/', '', strtr((string)($body['code'] ?? ''), ['۰' => '0', '۱' => '1', '۲' => '2', '۳' => '3', '۴' => '4', '۵' => '5', '۶' => '6', '۷' => '7', '۸' => '8', '۹' => '9']));
+  if ($code !== '') {
+    $c = secrets()['login_code'] ?? null;
+    if (!is_array($c) || $c['until'] < time() || $c['tries'] >= 5) out(401, ['error' => 'code_expired']);
+    if (!password_verify($code, (string)$c['hash'])) { save_secrets(['login_code' => ['tries' => $c['tries'] + 1] + $c]); out(401, ['error' => 'invalid_credentials']); }
+    save_secrets(['login_code' => null]);
+  } else {
+    $password = is_string($body['password'] ?? null) ? $body['password'] : '';
+    if (strlen($password) < 8 || !verify_password($password, (string)cfg('admin_password_hash'))) out(401, ['error' => 'invalid_credentials']);
+  }
   session_regenerate_id(true);
   $_SESSION['admin_until'] = time() + SESSION_SEC;
   out(200, ['ok' => true]);
@@ -60,11 +80,19 @@ if ($method === 'POST' && $action === 'update') {
   $pdo->prepare("UPDATE submissions SET status = ?, note = ? WHERE id = ?")->execute([$status, $note, $id]);
   out(200, ['ok' => true]);
 }
-// settings: the Gemini keys for voice input and the Neshan map key. The panel only ever sees how many keys there are, never a key.
+// settings: the Gemini keys for voice input, the Neshan map key and Google's verification file name. The panel only
+// ever sees how many keys there are, never a key.
 if ($action === 'settings') {
-  if ($method === 'GET') out(200, ['ok' => true, 'geminiKeys' => count(secrets()['gemini_keys'] ?? []), 'neshanKey' => !empty(secrets()['neshan_key'])]);
+  if ($method === 'GET') out(200, ['ok' => true, 'geminiKeys' => count(secrets()['gemini_keys'] ?? []), 'neshanKey' => !empty(secrets()['neshan_key']), 'googleFile' => (string)(secrets()['google_file'] ?? '')]);
   if ($method !== 'POST') out(405, ['error' => 'method_not_allowed']);
   $body = read_json(16384);
+  // Search Console's "HTML file" check: the name of the file Google gives (googleXXXXXXXX.html); /api/google-verify serves it
+  if (array_key_exists('googleFile', $body)) {
+    $gf = basename(trim((string)$body['googleFile']));
+    if ($gf !== '' && !preg_match('/^google[0-9a-f]{16}\.html$/', $gf)) out(422, ['error' => 'invalid_file']);
+    save_secrets(['google_file' => $gf]);
+    out(200, ['ok' => true, 'googleFile' => $gf]);
+  }
   // the Neshan map key (address check) is saved on its own; an empty value removes it
   if (array_key_exists('neshanKey', $body)) {
     $nk = trim((string)$body['neshanKey']);

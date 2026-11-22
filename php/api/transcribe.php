@@ -1,14 +1,13 @@
 <?php
 // POST /api/transcribe: a short recording of an address (sent by the form's microphone button) becomes Persian
 // text through Gemini. The browser's own speech recognition goes through Google servers that are blocked in
-// Iran, and Google refuses Gemini calls from Iranian servers, so calls go through the Vercel relay. Keys are entered in the admin panel (settings) and tried in turn: when one
-// runs out of quota or is refused, the next one is used. Nothing is stored.
+// Iran, and Google refuses Gemini calls from Iranian servers, so calls go through the Vercel relay. Keys entered in the admin panel are tried in turn, then Vercel's AI
+// Gateway, which needs no key. Nothing is stored.
 declare(strict_types=1);
 require_once __DIR__ . '/_lib/bootstrap.php';
 set_time_limit(40);
 
 const MAX_AUDIO = 1_500_000; // about 45 seconds of compressed speech
-const GEMINI = 'https://generativelanguage.googleapis.com/v1beta';
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') out(405, ['error' => 'method_not_allowed']);
 require_same_origin();
@@ -20,23 +19,14 @@ if ($audio === false || strlen($audio) < 800) out(400, ['error' => 'empty']);
 if (strlen($audio) > MAX_AUDIO) out(413, ['error' => 'too_long']);
 
 $keys = secrets()['gemini_keys'] ?? [];
-if (!$keys) out(503, ['error' => 'voice_not_configured']);
 
 function gemini_call(string $path, string $key, ?array $body = null): array {
-  // Google refuses Gemini calls from Iranian servers, so they go through the Vercel relay (api/gemini.js)
-  $relay = preg_replace('#/relay$#', '/gemini', (string)cfg('relay_url'));
-  $secret = (string)cfg('relay_secret');
-  if ($relay && $secret) {
-    $payload = json_encode(['ts' => time(), 'path' => $path, 'key' => $key, 'body' => $body], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-    $ch = curl_init($relay);
-    $opts = [CURLOPT_POST => true, CURLOPT_POSTFIELDS => $payload, CURLOPT_RETURNTRANSFER => true, CURLOPT_CONNECTTIMEOUT => 8, CURLOPT_TIMEOUT => 35,
-      CURLOPT_HTTPHEADER => ['Content-Type: application/json', 'X-Relay-Signature: ' . hash_hmac('sha256', $payload, $secret)]];
-  } else {
-    $ch = curl_init(GEMINI . '/' . $path);
-    $opts = [CURLOPT_RETURNTRANSFER => true, CURLOPT_CONNECTTIMEOUT => 8, CURLOPT_TIMEOUT => 30, CURLOPT_HTTPHEADER => ['x-goog-api-key: ' . $key, 'Content-Type: application/json']];
-    if ($body !== null) { $opts[CURLOPT_POST] = true; $opts[CURLOPT_POSTFIELDS] = json_encode($body); }
-  }
-  curl_setopt_array($ch, $opts);
+  // Google refuses Gemini calls from Iranian servers, so they go through the Vercel relay (api/gemini.js).
+  // With no key, Vercel answers through its own AI Gateway, so voice input works before any key is added.
+  $payload = json_encode(['ts' => time(), 'path' => $path, 'key' => $key, 'body' => $body], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+  $ch = curl_init(relay_url('gemini'));
+  curl_setopt_array($ch, [CURLOPT_POST => true, CURLOPT_POSTFIELDS => $payload, CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_CONNECTTIMEOUT => 8, CURLOPT_TIMEOUT => 35, CURLOPT_HTTPHEADER => relay_headers($payload)]);
   $raw = curl_exec($ch);
   $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
   curl_close($ch);
@@ -45,6 +35,7 @@ function gemini_call(string $path, string $key, ?array $body = null): array {
 
 /** The newest general "flash" model this key can use, remembered for a day. */
 function model_for(string $key): string {
+  if ($key === '') return 'gemini-2.5-flash';
   $cacheFile = SECRETS_DIR . '/gemini-models.json';
   $cache = is_file($cacheFile) ? (json_decode((string)file_get_contents($cacheFile), true) ?: []) : [];
   $id = substr(hash('sha256', $key), 0, 12);
@@ -70,14 +61,16 @@ $prompt = 'این صدای یک نفر است که نشانی منزلش در ش
 $body = ['contents' => [['parts' => [['text' => $prompt], ['inlineData' => ['mimeType' => $type, 'data' => base64_encode($audio)]]]]],
   'generationConfig' => ['temperature' => 0, 'maxOutputTokens' => 300]];
 
-$start = (int)(secrets()['gemini_next'] ?? 0);
+// the keys saved in the admin panel, then Vercel's own gateway (the empty key) when all of them fail
+$keys[] = '';
+$start = (int)(secrets()['gemini_next'] ?? 0) % count($keys);
 $n = count($keys);
 for ($i = 0; $i < $n; $i++) {
   $k = ($start + $i) % $n;
   $key = $keys[$k];
   [$code, $j] = gemini_call('models/' . model_for($key) . ':generateContent', $key, $body);
   if ($code === 200) {
-    if ($k !== $start) save_secrets(['gemini_next' => $k]);
+    if ($k !== $start && $key !== '') save_secrets(['gemini_next' => $k]);
     $text = trim(implode('', array_map(fn($p) => $p['text'] ?? '', $j['candidates'][0]['content']['parts'] ?? [])));
     $text = trim(preg_replace('/\s+/u', ' ', strip_tags($text)), " \t\n\r\0\x0B«»\"'.");
     if ($text === '' || $text === '—') out(422, ['error' => 'no_speech']);

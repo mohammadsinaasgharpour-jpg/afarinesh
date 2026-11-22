@@ -97,24 +97,51 @@ function fa_time(string $iso): string {
 
 /**
  * Telegram is not reachable from servers in Iran, so the message goes to a small relay on the school's
- * Vercel project (api/relay.js), signed with a shared secret. The database copy is the record; a failed
+ * Vercel project (api/relay.js), signed by this host. The database copy is the record; a failed
  * notification never loses a form.
  */
 function notify_staff(string $text): bool {
-  $url = cfg('relay_url');
-  $secret = cfg('relay_secret');
-  if (!$url || !$secret) return false;
   $body = json_encode(['text' => $text, 'ts' => time()], JSON_UNESCAPED_UNICODE);
-  $ch = curl_init($url);
+  $ch = curl_init(relay_url('relay'));
   curl_setopt_array($ch, [
     CURLOPT_POST => true, CURLOPT_POSTFIELDS => $body, CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_CONNECTTIMEOUT => 5, CURLOPT_TIMEOUT => 10,
-    CURLOPT_HTTPHEADER => ['Content-Type: application/json', 'X-Relay-Signature: ' . hash_hmac('sha256', $body, $secret)],
+    CURLOPT_CONNECTTIMEOUT => 5, CURLOPT_TIMEOUT => 10, CURLOPT_HTTPHEADER => relay_headers($body),
   ]);
   curl_exec($ch);
   $ok = curl_getinfo($ch, CURLINFO_HTTP_CODE) === 200;
   curl_close($ch);
   return $ok;
+}
+
+function relay_url(string $name): string {
+  return preg_replace('#/relay$#', '/' . $name, (string)cfg('relay_url', 'https://afarinesh-site.vercel.app/api/relay'));
+}
+
+/**
+ * Every message to Vercel is signed with an Ed25519 key made on this host the first time it is needed. Vercel
+ * holds only the public half (api/_relay-key.js, published by /api/relay-key), so no secret is ever copied
+ * between the two by hand. A relay_secret in the config file still adds the older HMAC signature.
+ */
+function relay_secret_key(): ?string {
+  if (!function_exists('sodium_crypto_sign_keypair')) return null;
+  $sk = (string)(secrets()['relay_sk'] ?? '');
+  if ($sk === '') {
+    $sk = base64_encode(sodium_crypto_sign_secretkey(sodium_crypto_sign_keypair()));
+    save_secrets(['relay_sk' => $sk]);
+  }
+  return base64_decode($sk);
+}
+function relay_public_key(): ?string {
+  $sk = relay_secret_key();
+  return $sk ? base64_encode(sodium_crypto_sign_publickey_from_secretkey($sk)) : null;
+}
+function relay_headers(string $body): array {
+  $h = ['Content-Type: application/json'];
+  $sk = relay_secret_key();
+  if ($sk) $h[] = 'X-Relay-Ed25519: ' . base64_encode(sodium_crypto_sign_detached($body, $sk));
+  $secret = (string)cfg('relay_secret', '');
+  if ($secret !== '') $h[] = 'X-Relay-Signature: ' . hash_hmac('sha256', $body, $secret);
+  return $h;
 }
 
 /**
@@ -138,17 +165,21 @@ function admin_session(): void {
  * outside Git. Keys are never sent back to any page; the panel only sees how many there are.
  */
 const SECRETS_DIR = '/home/mqcmfbjf/afarinesh-secrets';
-function secrets(): array {
+function secrets(?array $replace = null): array {
   static $s = null;
+  if ($replace !== null) $s = $replace;
   if ($s === null) $s = is_file(SECRETS_DIR . '/settings.json') ? (json_decode((string)file_get_contents(SECRETS_DIR . '/settings.json'), true) ?: []) : [];
   return $s;
 }
 function save_secrets(array $changes): void {
   if (!is_dir(SECRETS_DIR)) @mkdir(SECRETS_DIR, 0700, true);
-  $all = array_merge(secrets(), $changes);
+  // read the file again: another request may have saved a setting since this one started
+  $now = is_file(SECRETS_DIR . '/settings.json') ? (json_decode((string)file_get_contents(SECRETS_DIR . '/settings.json'), true) ?: []) : [];
+  $all = array_merge($now, $changes);
   file_put_contents(SECRETS_DIR . '/settings.json.tmp', json_encode($all, JSON_UNESCAPED_UNICODE));
   rename(SECRETS_DIR . '/settings.json.tmp', SECRETS_DIR . '/settings.json');
   @chmod(SECRETS_DIR . '/settings.json', 0600);
+  secrets($all);
 }
 
 function admin_record_url(string $id): string { return SITE_URL . '/admin?record=' . rawurlencode($id); }

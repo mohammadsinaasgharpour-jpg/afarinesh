@@ -17,12 +17,23 @@
     <section class="card login hidden" id="login-card">
       <h1>ورود به پنل مدیر</h1>
       <p class="muted">این بخش فقط برای معاون و مدیر مدرسه است.</p>
-      <form id="login-form">
-        <label for="password">رمز پنل</label>
-        <input id="password" name="password" type="password" minlength="8" autocomplete="current-password" required>
-        <button type="submit">ورود</button>
-        <p class="error" id="login-error" role="alert"></p>
+      <form id="code-form">
+        <p>یک کد شش‌رقمی به کانال تلگرام کارکنان مدرسه فرستاده می‌شود؛ آن را این‌جا بنویسید.</p>
+        <button type="button" id="send-code">فرستادن کد ورود به تلگرام</button>
+        <label for="code">کد ورود</label>
+        <input id="code" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" dir="ltr">
+        <button type="submit">ورود با کد</button>
+        <p class="muted" id="code-sent" role="status"></p>
       </form>
+      <details class="alt-login">
+        <summary>ورود با رمز پنل</summary>
+        <form id="login-form">
+          <label for="password">رمز پنل</label>
+          <input id="password" name="password" type="password" minlength="8" autocomplete="current-password" required>
+          <button type="submit">ورود با رمز</button>
+        </form>
+      </details>
+      <p class="error" id="login-error" role="alert"></p>
     </section>
 
     <section class="hidden" id="records-card">
@@ -42,8 +53,14 @@
         <a class="ghost" id="csv" href="/api/admin?action=csv&amp;kind=preRegistration">دانلود اکسل</a>
       </div>
       <details class="settings" id="settings">
-        <summary>تنظیمات: کلیدهای Gemini برای گفتن نشانی با صدا <b id="keys-count"></b></summary>
-        <p class="muted">هر کلید را در یک خط بگذارید. وقتی سهمیه‌ی یک کلید تمام شود، کلید بعدی استفاده می‌شود. کلیدها جایی نمایش داده نمی‌شوند؛ برای عوض کردن، فهرست تازه را بگذارید.</p>
+        <summary>تنظیمات</summary>
+        <h3>تأیید سایت در گوگل سرچ کنسول</h3>
+        <p class="muted">در سرچ کنسول با حساب گوگل مدرسه، سایت afarineshshiraz.ir را اضافه کنید و روش «HTML file» را بزنید. نام فایلی را که گوگل می‌دهد (مثل google1a2b3c4d5e6f7a8b.html) این‌جا بنویسید و ذخیره کنید، بعد در سرچ کنسول دکمه‌ی Verify را بزنید. <b id="google-state"></b></p>
+        <input id="google-file" dir="ltr" spellcheck="false" autocomplete="off" placeholder="google0123456789abcdef.html" aria-label="نام فایل تأیید گوگل">
+        <button type="button" id="save-google">ذخیره</button>
+        <span class="muted" id="google-saved" role="status"></span>
+        <h3>کلیدهای Gemini برای گفتن نشانی با صدا (اختیاری) <b id="keys-count"></b></h3>
+        <p class="muted">گفتن نشانی با صدا بدون این کلیدها هم کار می‌کند. اگر روزی سهمیه‌ی رایگان تمام شد، می‌توانید کلید بگذارید: هر کلید در یک خط؛ وقتی سهمیه‌ی یک کلید تمام شود، کلید بعدی استفاده می‌شود. کلیدها جایی نمایش داده نمی‌شوند.</p>
         <textarea id="gemini-keys" rows="4" dir="ltr" spellcheck="false" autocomplete="off" placeholder="AIza..."></textarea>
         <button type="button" id="save-keys">ذخیره‌ی کلیدها</button>
         <span class="muted" id="keys-saved" role="status"></span>

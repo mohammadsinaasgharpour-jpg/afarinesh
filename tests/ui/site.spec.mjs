@@ -134,7 +134,7 @@ test("FAQ has no sports-hall question and opens and closes", async ({ page }) =>
   await page.addInitScript(() => sessionStorage.setItem("theme", "light"));
   await page.goto("/");
   await expect(page.locator(".faq")).not.toContainText("سالن ورزشی");
-  await expect(page.locator(".faq details")).toHaveCount(8);
+  await expect(page.locator(".faq details")).toHaveCount(9);
   const first = page.locator(".faq details").first();
   await first.locator("summary").click();
   await expect(first).toHaveAttribute("open", "");

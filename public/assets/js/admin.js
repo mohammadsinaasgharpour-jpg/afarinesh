@@ -96,8 +96,22 @@ function openRecord(r) {
 }
 
 async function loadSettings() {
-  try { const s = await api("/api/admin?action=settings"); $("#keys-count").textContent = s.geminiKeys ? `(${fa(s.geminiKeys)} کلید ذخیره شده)` : "(هنوز کلیدی نیست)"; $("#neshan-state").textContent = s.neshanKey ? "(ذخیره شده)" : "(ذخیره نشده)"; } catch {}
+  try {
+    const s = await api("/api/admin?action=settings");
+    $("#keys-count").textContent = s.geminiKeys ? `(${fa(s.geminiKeys)} کلید ذخیره شده)` : "(کلیدی نیست)";
+    $("#neshan-state").textContent = s.neshanKey ? "(ذخیره شده)" : "(ذخیره نشده)";
+    $("#google-state").textContent = s.googleFile ? `فایل فعلی: ${s.googleFile}` : "هنوز فایلی ذخیره نشده است.";
+  } catch {}
 }
+$("#save-google").addEventListener("click", async () => {
+  const box = $("#google-file");
+  try {
+    await api("/api/admin?action=settings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ googleFile: box.value }) });
+    box.value = "";
+    $("#google-saved").textContent = "ذخیره شد؛ حالا در سرچ کنسول Verify را بزنید.";
+    loadSettings();
+  } catch { $("#google-saved").textContent = "نام فایل باید مثل google0123456789abcdef.html باشد."; }
+});
 $("#save-keys").addEventListener("click", async () => {
   const box = $("#gemini-keys");
   try {
@@ -133,20 +147,34 @@ function selectTab() { for (const b of $$("[data-kind]")) b.setAttribute("aria-s
 for (const b of $$("[data-kind]")) b.addEventListener("click", () => { kind = b.dataset.kind; selectTab(); render(); });
 $("#q").addEventListener("input", render);
 $("#status-filter").addEventListener("change", render);
-$("#login-form").addEventListener("submit", async (e) => {
-  e.preventDefault();
+async function signIn(body, field) {
   $("#login-error").textContent = "";
   try {
-    await api("/api/admin?action=login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password: $("#password").value }) });
-    $("#password").value = "";
+    await api("/api/admin?action=login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    field.value = "";
     await load();
   } catch (err) {
-    $("#login-error").textContent = err.status === 429 ? "چند بار رمز اشتباه وارد شد؛ ۱۵ دقیقه بعد دوباره امتحان کنید." : "رمز نادرست است.";
+    $("#login-error").textContent = err.status === 429 ? "چند بار اشتباه وارد شد؛ ۱۵ دقیقه بعد دوباره امتحان کنید."
+      : err.message === "code_expired" ? "این کد دیگر کار نمی‌کند؛ کد تازه بخواهید." : body.code ? "کد نادرست است." : "رمز نادرست است.";
   }
+}
+$("#login-form").addEventListener("submit", (e) => { e.preventDefault(); signIn({ password: $("#password").value }, $("#password")); });
+$("#code-form").addEventListener("submit", (e) => { e.preventDefault(); if ($("#code").value.trim()) signIn({ code: $("#code").value }, $("#code")); });
+$("#send-code").addEventListener("click", async () => {
+  const btn = $("#send-code");
+  btn.disabled = true;
+  $("#login-error").textContent = "";
+  try {
+    await api("/api/admin?action=send-code", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+    $("#code-sent").textContent = "کد به کانال تلگرام کارکنان فرستاده شد؛ تا ۱۰ دقیقه کار می‌کند.";
+    $("#code").focus();
+  } catch (err) {
+    $("#login-error").textContent = err.status === 429 ? "چند کد پشت سر هم خواسته شد؛ ۱۵ دقیقه بعد دوباره امتحان کنید." : "کد فرستاده نشد؛ کمی بعد دوباره امتحان کنید یا با رمز وارد شوید.";
+  }
+  setTimeout(() => { btn.disabled = false; }, 30000);
 });
 $("#logout").addEventListener("click", async () => { await api("/api/admin?action=logout", { method: "POST" }).catch(() => {}); all = []; show("login"); });
 load().catch((err) => {
   show("login");
-  if (err.status === 503) $("#login-error").textContent = "پنل هنوز پیکربندی نشده است.";
-  else if (err.status !== 401) $("#login-error").textContent = "ارتباط با سرور برقرار نشد.";
+  if (err.status !== 401) $("#login-error").textContent = "ارتباط با سرور برقرار نشد.";
 });

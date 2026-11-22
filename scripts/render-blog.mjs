@@ -152,6 +152,7 @@ export function renderSitemap(all, photos, changed) {
   const pages = [
     ["/", changed("public/index.html"), "1.0", photos],
     ["/pre-registration", changed("content/pages/pre-registration.html"), "0.9"],
+    ["/en", changed("public/en.html"), "0.7"],
     ["/blog/", all[0]?.date, "0.7"],
     ...all.map((a) => [`/blog/${a.slug}`, a.updated || a.date, "0.6"]),
     ["/library/", changed("library-php-src"), "0.6"],

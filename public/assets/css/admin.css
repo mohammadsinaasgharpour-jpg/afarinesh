@@ -53,3 +53,7 @@ dd a { color: var(--sky); font-weight: 700; }
 .detail-edit button { margin-top: 12px; }
 .danger { color: var(--brick); border-color: color-mix(in srgb, var(--brick) 40%, transparent); }
 @media (max-width: 560px) { dl { grid-template-columns: 1fr; } dt { margin-top: 6px; } }
+.alt-login { margin-top: 16px; border-top: 1px solid var(--line); padding-top: 12px; }
+.alt-login summary { cursor: pointer; font-weight: 700; color: var(--ink-2); }
+#code-form > button[type="button"] { width: 100%; }
+.settings h3 { font-size: 1rem; margin: 18px 0 4px; }

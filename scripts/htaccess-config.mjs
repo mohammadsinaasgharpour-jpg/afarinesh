@@ -29,6 +29,10 @@ ErrorDocument 404 /404.html
   # server code and settings are never served
   RewriteRule ^api/_lib/ - [F,L]
 
+  # Google Search Console's verification file, whose name is saved in the admin panel (END: the clean-URL rules
+  # below would otherwise redirect the .html name away)
+  RewriteRule ^(google[0-9a-f]{16}\\.html)$ api/google-verify.php?f=$1 [END]
+
   # /api/<name> runs api/<name>.php
   RewriteRule ^api/([a-z-]+)/?$ api/$1.php [L,QSA]
 
