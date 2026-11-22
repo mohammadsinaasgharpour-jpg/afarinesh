@@ -46,7 +46,9 @@ ErrorDocument 404 /404.html
   AddType image/webp .webp
   AddType font/woff2 .woff2
   AddType application/manifest+json .webmanifest
+  AddCharset UTF-8 .html .css .js .xml .txt .webmanifest
 </IfModule>
+AddDefaultCharset UTF-8
 
 <IfModule mod_headers.c>
 ${headers}

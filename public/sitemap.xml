@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
-  <url><loc>https://afarineshshiraz.ir/</loc><lastmod>2026-11-21</lastmod><priority>1.0</priority>
+  <url><loc>https://afarineshshiraz.ir/</loc><lastmod>2026-11-22</lastmod><priority>1.0</priority>
     <image:image><image:loc>https://afarineshshiraz.ir/assets/img/hero-wide-1280.webp</image:loc><image:title>نمای ورودی و حیاط دبیرستان آفرینش در خیابان نارون شیراز</image:title></image:image>
     <image:image><image:loc>https://afarineshshiraz.ir/assets/img/school/entrance-1280.webp</image:loc><image:title>سردر و ورودی دبیرستان آفرینش با دیوار رنگی</image:title></image:image>
     <image:image><image:loc>https://afarineshshiraz.ir/assets/img/school/library-1280.webp</image:loc><image:title>قفسه‌های کتاب در کتابخانه‌ی مدرسه</image:title></image:image>
@@ -53,5 +53,5 @@
   <url><loc>https://afarineshshiraz.ir/blog/starting-seventh-grade</loc><lastmod>2026-11-21</lastmod><priority>0.6</priority></url>
   <url><loc>https://afarineshshiraz.ir/library/</loc><lastmod>2026-11-20</lastmod><priority>0.6</priority></url>
   <url><loc>https://afarineshshiraz.ir/careers</loc><lastmod>2026-11-20</lastmod><priority>0.4</priority></url>
-  <url><loc>https://afarineshshiraz.ir/privacy</loc><lastmod>2026-11-21</lastmod><priority>0.3</priority></url>
+  <url><loc>https://afarineshshiraz.ir/privacy</loc><lastmod>2026-11-22</lastmod><priority>0.3</priority></url>
 </urlset>

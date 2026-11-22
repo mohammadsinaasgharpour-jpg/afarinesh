@@ -760,6 +760,11 @@ background: var(--paper); color: var(--ink); font: inherit; font-weight: 600; cu
 .voice-btn { display: inline-flex; align-items: center; gap: var(--s2); min-height: 42px; margin-top: var(--s2); padding: 0 var(--s3); border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--surface); color: var(--sky-text); cursor: pointer; font-weight: 700; }
 .voice-btn:hover, .voice-btn.is-listening { background: color-mix(in srgb, var(--sky) 14%, var(--surface)); }
 .voice-note { margin: var(--s1) 0 0; color: var(--ink-2); font-size: var(--t-xs); }
+.map-check { margin: var(--s2) 0 0; font-size: var(--t-xs); color: var(--ink-2); }
+.map-check:empty { display: none; }
+.map-check.is-ok { color: var(--sky-text); }
+.map-check.is-warn { color: var(--ink); padding: var(--s2) var(--s3); border-radius: var(--r-sm); background: color-mix(in srgb, var(--sun, #f2b33d) 18%, var(--surface)); }
+.map-check a { color: inherit; font-weight: 700; text-decoration: underline; }
 .prose { display: grid; gap: var(--s5); }
 .prose section { padding: var(--s5) var(--s6); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
 .prose h2 { font-size: var(--t-md); font-weight: 800; margin-bottom: var(--s2); }

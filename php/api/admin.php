@@ -60,11 +60,18 @@ if ($method === 'POST' && $action === 'update') {
   $pdo->prepare("UPDATE submissions SET status = ?, note = ? WHERE id = ?")->execute([$status, $note, $id]);
   out(200, ['ok' => true]);
 }
-// settings: the Gemini keys for voice input. The panel only ever sees how many keys there are, never a key.
+// settings: the Gemini keys for voice input and the Neshan map key. The panel only ever sees how many keys there are, never a key.
 if ($action === 'settings') {
-  if ($method === 'GET') out(200, ['ok' => true, 'geminiKeys' => count(secrets()['gemini_keys'] ?? [])]);
+  if ($method === 'GET') out(200, ['ok' => true, 'geminiKeys' => count(secrets()['gemini_keys'] ?? []), 'neshanKey' => !empty(secrets()['neshan_key'])]);
   if ($method !== 'POST') out(405, ['error' => 'method_not_allowed']);
   $body = read_json(16384);
+  // the Neshan map key (address check) is saved on its own; an empty value removes it
+  if (array_key_exists('neshanKey', $body)) {
+    $nk = trim((string)$body['neshanKey']);
+    if ($nk !== '' && !preg_match('/^service\.[A-Za-z0-9]{20,80}$/', $nk)) out(422, ['error' => 'invalid_key']);
+    save_secrets(['neshan_key' => $nk]);
+    out(200, ['ok' => true, 'neshanKey' => $nk !== '']);
+  }
   $keys = array_values(array_unique(array_filter(array_map('trim', preg_split('/[\s,;]+/', (string)($body['geminiKeys'] ?? ''))), fn($k) => preg_match('/^[A-Za-z0-9_\-]{30,60}$/', $k))));
   if (!$keys && empty($body['clear'])) out(422, ['error' => 'no_valid_keys']);
   save_secrets(['gemini_keys' => $keys, 'gemini_next' => 0]);

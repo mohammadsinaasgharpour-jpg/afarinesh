@@ -96,7 +96,7 @@ function openRecord(r) {
 }
 
 async function loadSettings() {
-  try { const s = await api("/api/admin?action=settings"); $("#keys-count").textContent = s.geminiKeys ? `(${fa(s.geminiKeys)} کلید ذخیره شده)` : "(هنوز کلیدی نیست)"; } catch {}
+  try { const s = await api("/api/admin?action=settings"); $("#keys-count").textContent = s.geminiKeys ? `(${fa(s.geminiKeys)} کلید ذخیره شده)` : "(هنوز کلیدی نیست)"; $("#neshan-state").textContent = s.neshanKey ? "(ذخیره شده)" : "(ذخیره نشده)"; } catch {}
 }
 $("#save-keys").addEventListener("click", async () => {
   const box = $("#gemini-keys");
@@ -106,6 +106,16 @@ $("#save-keys").addEventListener("click", async () => {
     $("#keys-saved").textContent = `${fa(s.geminiKeys)} کلید ذخیره شد.`;
     loadSettings();
   } catch { $("#keys-saved").textContent = "کلید معتبری پیدا نشد؛ کلیدها را دوباره بررسی کنید."; }
+});
+
+$("#save-neshan").addEventListener("click", async () => {
+  const box = $("#neshan-key");
+  try {
+    await api("/api/admin?action=settings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ neshanKey: box.value }) });
+    box.value = "";
+    $("#neshan-saved").textContent = "ذخیره شد.";
+    loadSettings();
+  } catch { $("#neshan-saved").textContent = "این کلید درست نیست؛ کلید سرویس با service. شروع می‌شود."; }
 });
 
 async function load() {

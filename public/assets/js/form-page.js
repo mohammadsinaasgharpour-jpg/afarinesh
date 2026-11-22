@@ -57,6 +57,39 @@ function initVoiceInput() {
     stopTimer = setTimeout(() => rec?.state === "recording" && rec.stop(), 40000);
   });
 }
+/**
+ * When the visitor stops typing the address, the site's server looks it up on a map of Shiraz and the result is
+ * shown under the field. It is advice only: a street missing from the map never stops the form.
+ */
+function initMapCheck() {
+  const box = $("[data-map-check]");
+  const field = box && form.querySelector('[name="address"]');
+  if (!field) return;
+  let timer, ctrl, last = "";
+  const show = (cls, html) => { box.className = `map-check ${cls}`; box.innerHTML = html; };
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+  const check = async () => {
+    const q = field.value.trim();
+    if (q === last) return;
+    last = q;
+    ctrl?.abort();
+    if (q.length < 12 || !/[؀-ۿ]/.test(q)) { show("", ""); return; }
+    ctrl = new AbortController();
+    try {
+      const res = await fetch("/api/geocode", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ address: q }), signal: ctrl.signal });
+      const r = await res.json();
+      const link = r.lat ? ` <a href="https://neshan.org/maps/share/${r.lat},${r.lng}" target="_blank" rel="noopener">دیدن روی نقشه</a>` : "";
+      if (r.found === "street") show("is-ok", `خیابان روی نقشه پیدا شد: ${esc(r.label)}.${link}`);
+      else if (r.found === "area") show("is-warn", `فقط بخشی از نشانی روی نقشه پیدا شد (${esc(r.label)})؛ نام خیابان و کوچه را بررسی کنید.${link}`);
+      else if (r.found === "none") show("is-warn", "این نشانی روی نقشه پیدا نشد؛ نام خیابان و محله را بررسی کنید. اگر درست است، می‌توانید ادامه دهید.");
+      else show("", "");
+    } catch (e) { if (e.name !== "AbortError") show("", ""); }
+  };
+  // only after typing stops: a line appearing on blur would push the Next button away mid-tap on phones
+  field.addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(check, 1200); });
+  form.addEventListener("reset", () => { last = ""; show("", ""); });
+}
+
 const PAGES = {
   preRegistration: {
     validate: validatePreRegistration,
@@ -81,6 +114,7 @@ const PAGES = {
 // personal identifiers (national ID, address) are never kept as a browser draft
 createFormController({ form, ...PAGES[form.dataset.form] });
 initVoiceInput();
+initMapCheck();
 
 // pre-registration: the report card asked for depends on the grade applied for
 // (grade 7 comes from primary school, whose report card is descriptive only)

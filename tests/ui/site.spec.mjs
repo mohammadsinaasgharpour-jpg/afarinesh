@@ -510,3 +510,17 @@ test("phone fields keep digits only, at most 11", async ({ page }) => {
   await f.evaluate((el) => { el.value = "091552474551234"; el.dispatchEvent(new Event("input", { bubbles: true })); });
   await expect(f).toHaveValue("09155247455");
 });
+
+test("a typed address is looked up on the map, as advice only", async ({ page }) => {
+  let asked = "";
+  await page.route("**/api/geocode", async (route) => {
+    asked = JSON.parse(route.request().postData()).address;
+    await route.fulfill({ contentType: "application/json", body: JSON.stringify({ ok: true, found: "none" }) });
+  });
+  await page.goto("/pre-registration");
+  const f = page.locator("#p-address");
+  await f.evaluate((el) => { el.value = "شیراز، خیابان ناشناخته، کوچه ۵، پلاک ۱۲"; el.dispatchEvent(new Event("input", { bubbles: true })); });
+  await expect(page.locator("[data-map-check]")).toContainText("روی نقشه پیدا نشد");
+  await expect(page.locator("[data-map-check]")).toContainText("می‌توانید ادامه دهید");
+  expect(asked).toContain("خیابان ناشناخته");
+});
