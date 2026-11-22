@@ -14,9 +14,16 @@ jobs:
     steps:
       - name: Voice address
         run: |
-          sudo apt-get -qq install -y espeak-ng >/dev/null
+          sudo apt-get -qq install -y espeak-ng ffmpeg >/dev/null
           espeak-ng -w voice.wav "Shiraz, Zand street, alley eight, number twelve"
-          curl -s -w ' HTTP %{http_code}\n' -X POST -H "Content-Type: audio/wav" --data-binary @voice.wav https://afarineshshiraz.ir/api/transcribe
+          ffmpeg -loglevel error -i voice.wav -c:a libopus voice.webm
+          UA="Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Mobile Safari/537.36"
+          for f in voice.webm voice.wav; do
+            t=$([ "$f" = voice.webm ] && echo audio/webm || echo audio/wav)
+            curl -s -w " HTTP %{http_code} ($f, browser headers)
+" -A "$UA" -H "Origin: https://afarineshshiraz.ir" -H "Referer: https://afarineshshiraz.ir/pre-registration"               -H "Accept: */*" -H "Accept-Language: fa-IR,fa;q=0.9" -X POST -H "Content-Type: $t" --data-binary @$f https://afarineshshiraz.ir/api/transcribe | tail -c 300
+          done
       - name: Telegram login code
+        if: false
         run: |
           curl -s -w ' HTTP %{http_code}\n' -X POST -H "Content-Type: application/json" -d '{}' "https://afarineshshiraz.ir/api/admin?action=send-code"
