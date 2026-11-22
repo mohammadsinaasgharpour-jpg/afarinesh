@@ -5,5 +5,5 @@ declare(strict_types=1);
 require_once __DIR__ . '/_lib/bootstrap.php';
 
 $pk = relay_public_key();
-if (!$pk) out(503, ['error' => 'sodium_unavailable']);
+if (!$pk) out(503, ['error' => 'openssl_unavailable']);
 out(200, ['ok' => true, 'publicKey' => $pk]);

@@ -118,27 +118,28 @@ function relay_url(string $name): string {
 }
 
 /**
- * Every message to Vercel is signed with an Ed25519 key made on this host the first time it is needed. Vercel
+ * Every message to Vercel is signed with an ECDSA P-256 key made on this host the first time it is needed. Vercel
  * holds only the public half (api/_relay-key.js, published by /api/relay-key), so no secret is ever copied
  * between the two by hand. A relay_secret in the config file still adds the older HMAC signature.
  */
-function relay_secret_key(): ?string {
-  if (!function_exists('sodium_crypto_sign_keypair')) return null;
-  $sk = (string)(secrets()['relay_sk'] ?? '');
-  if ($sk === '') {
-    $sk = base64_encode(sodium_crypto_sign_secretkey(sodium_crypto_sign_keypair()));
-    save_secrets(['relay_sk' => $sk]);
+function relay_private_key() {
+  if (!function_exists('openssl_pkey_new')) return null;
+  $pem = (string)(secrets()['relay_pem'] ?? '');
+  if ($pem === '') {
+    $key = openssl_pkey_new(['private_key_type' => OPENSSL_KEYTYPE_EC, 'curve_name' => 'prime256v1']);
+    if (!$key || !openssl_pkey_export($key, $pem)) return null;
+    save_secrets(['relay_pem' => $pem]);
   }
-  return base64_decode($sk);
+  return openssl_pkey_get_private($pem) ?: null;
 }
 function relay_public_key(): ?string {
-  $sk = relay_secret_key();
-  return $sk ? base64_encode(sodium_crypto_sign_publickey_from_secretkey($sk)) : null;
+  $key = relay_private_key();
+  return $key ? (string)(openssl_pkey_get_details($key)['key'] ?? '') : null;
 }
 function relay_headers(string $body): array {
   $h = ['Content-Type: application/json'];
-  $sk = relay_secret_key();
-  if ($sk) $h[] = 'X-Relay-Ed25519: ' . base64_encode(sodium_crypto_sign_detached($body, $sk));
+  $key = relay_private_key();
+  if ($key && openssl_sign($body, $sig, $key, OPENSSL_ALGO_SHA256)) $h[] = 'X-Relay-Ecdsa: ' . base64_encode($sig);
   $secret = (string)cfg('relay_secret', '');
   if ($secret !== '') $h[] = 'X-Relay-Signature: ' . hash_hmac('sha256', $body, $secret);
   return $h;
