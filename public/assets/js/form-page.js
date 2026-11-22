@@ -80,7 +80,7 @@ function initMapCheck() {
       const r = await res.json();
       const link = r.lat ? ` <a href="https://neshan.org/maps/share/${r.lat},${r.lng}" target="_blank" rel="noopener">دیدن روی نقشه</a>` : "";
       if (r.found === "street") show("is-ok", `خیابان روی نقشه پیدا شد: ${esc(r.label)}.${link}`);
-      else if (r.found === "area") show("is-warn", `فقط بخشی از نشانی روی نقشه پیدا شد (${esc(r.label)})؛ نام خیابان و کوچه را بررسی کنید.${link}`);
+      else if (r.found === "area") show("is-ok", `«${esc(r.label)}» روی نقشه پیدا شد. همه‌ی کوچه‌ها روی نقشه نیستند؛ اگر بقیه‌ی نشانی درست است، ادامه دهید.${link}`);
       else if (r.found === "none") show("is-warn", "این نشانی روی نقشه پیدا نشد؛ نام خیابان و محله را بررسی کنید. اگر درست است، می‌توانید ادامه دهید.");
       else show("", "");
     } catch (e) { if (e.name !== "AbortError") show("", ""); }
