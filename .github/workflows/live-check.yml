@@ -20,9 +20,7 @@ jobs:
           espeak-ng -w voice.wav "Shiraz, Zand street, alley eight, number twelve"
           ffmpeg -loglevel error -i voice.wav -c:a libopus voice.webm
           for f in webm wav; do
-            curl -s -o out.txt -w "HTTP %{http_code} for $f: " -A "$UA" \
-              -H "Origin: https://afarineshshiraz.ir" -H "Referer: https://afarineshshiraz.ir/pre-registration" \
-              -H "Accept-Language: fa-IR,fa;q=0.9" -H "Content-Type: audio/$f" \
-              --data-binary "@voice.$f" https://afarineshshiraz.ir/api/transcribe
+            printf '{"type":"audio/%s","audio":"%s"}' "$f" "$(base64 -w0 voice.$f)" > body.json
+            curl -s -o out.txt -w "HTTP %{http_code} for $f: " -A "$UA"               -H "Origin: https://afarineshshiraz.ir" -H "Referer: https://afarineshshiraz.ir/pre-registration"               -H "Accept-Language: fa-IR,fa;q=0.9" -H "Content-Type: application/json"               --data-binary @body.json https://afarineshshiraz.ir/api/transcribe
             head -c 300 out.txt; echo
           done

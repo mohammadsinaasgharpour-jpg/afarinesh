@@ -39,7 +39,9 @@ function initVoiceInput() {
       label.textContent = "در حال نوشتن نشانی…";
       try {
         const blob = new Blob(chunks, { type: (rec?.mimeType || mime || "audio/webm").split(";")[0] });
-        const res = await fetch("/api/transcribe", { method: "POST", headers: { "Content-Type": blob.type }, body: blob, signal: AbortSignal.timeout(45000) });
+        // sent as base64 inside JSON: the host's firewall refuses a raw audio upload
+        const audio = await new Promise((ok, fail) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(",")[1] || ""); r.onerror = fail; r.readAsDataURL(blob); });
+        const res = await fetch("/api/transcribe", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: blob.type, audio }), signal: AbortSignal.timeout(45000) });
         const body = await res.json().catch(() => ({}));
         if (res.ok && body.text) {
           const now = target.value.trim();

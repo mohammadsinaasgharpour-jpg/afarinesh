@@ -12,9 +12,16 @@ const MAX_AUDIO = 1_500_000; // about 45 seconds of compressed speech
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') out(405, ['error' => 'method_not_allowed']);
 require_same_origin();
 if (!rate_hit('voice:' . client_ip(), 12, 3600)) out(429, ['error' => 'rate_limited'], ['Retry-After' => '600']);
+// the page sends {type, audio: base64} as JSON: the host's firewall refuses a raw audio upload with a 403
 $type = strtolower(trim(explode(';', (string)($_SERVER['CONTENT_TYPE'] ?? ''))[0]));
+if ($type === 'application/json') {
+  $j = read_json((int)(MAX_AUDIO * 1.4) + 1024);
+  $type = strtolower(trim(explode(';', (string)($j['type'] ?? ''))[0]));
+  $audio = base64_decode((string)($j['audio'] ?? ''), true);
+} else {
+  $audio = file_get_contents('php://input', false, null, 0, MAX_AUDIO + 1);
+}
 if (!in_array($type, ['audio/webm', 'audio/ogg', 'audio/mp4', 'audio/mpeg', 'audio/wav', 'audio/aac', 'audio/x-m4a'], true)) out(415, ['error' => 'unsupported_type']);
-$audio = file_get_contents('php://input', false, null, 0, MAX_AUDIO + 1);
 if ($audio === false || strlen($audio) < 800) out(400, ['error' => 'empty']);
 if (strlen($audio) > MAX_AUDIO) out(413, ['error' => 'too_long']);
 
