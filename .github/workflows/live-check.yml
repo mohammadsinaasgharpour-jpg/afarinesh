@@ -1,5 +1,5 @@
 # Manual check of the live site's voice relay from outside Iran: a short spoken address goes through
-# /api/transcribe (host -> Vercel -> Gemini) with a phone browser's headers. Runs by hand, or when this file changes.
+# /api/transcribe (host -> Vercel -> Gemini) with a phone browser's headers. Runs by hand, or when this file changes (run 2).
 name: live-check
 on:
   workflow_dispatch:
@@ -16,6 +16,7 @@ jobs:
         env:
           UA: "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Mobile Safari/537.36"
         run: |
+          sleep 90  # let the deploy workflow put this commit live first
           sudo apt-get -qq install -y espeak-ng ffmpeg >/dev/null
           espeak-ng -w voice.wav "Shiraz, Zand street, alley eight, number twelve"
           ffmpeg -loglevel error -i voice.wav -c:a libopus voice.webm

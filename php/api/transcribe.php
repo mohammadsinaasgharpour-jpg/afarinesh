@@ -86,4 +86,5 @@ for ($i = 0; $i < $n; $i++) {
   // quota, rate limit, a disabled or wrong key: try the next one; anything else is a real failure
   if (!in_array($code, [400, 401, 403, 429, 500, 503], true)) break;
 }
-out(502, ['error' => 'voice_unavailable']);
+// the last upstream answer, short and without any key, so a failure can be told apart (relay, gateway, quota)
+out(502, ['error' => 'voice_unavailable', 'upstream' => $code, 'detail' => mb_substr((string)($j['error']['message'] ?? $j['error'] ?? ''), 0, 160) . ' ' . mb_substr((string)($j['detail'] ?? ''), 0, 160)]);
