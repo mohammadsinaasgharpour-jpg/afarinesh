@@ -1,5 +1,5 @@
-# Manual check of the live site's relays from outside Iran: a short spoken address goes through /api/transcribe
-# (host -> Vercel -> Gemini), and a panel login code goes through the Telegram relay. Runs by hand, or when this file changes.
+# Manual check of the live site's voice relay from outside Iran: a short spoken address goes through
+# /api/transcribe (host -> Vercel -> Gemini) with a phone browser's headers. Runs by hand, or when this file changes.
 name: live-check
 on:
   workflow_dispatch:
@@ -13,17 +13,16 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Voice address
+        env:
+          UA: "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Mobile Safari/537.36"
         run: |
           sudo apt-get -qq install -y espeak-ng ffmpeg >/dev/null
           espeak-ng -w voice.wav "Shiraz, Zand street, alley eight, number twelve"
           ffmpeg -loglevel error -i voice.wav -c:a libopus voice.webm
-          UA="Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Mobile Safari/537.36"
-          for f in voice.webm voice.wav; do
-            t=$([ "$f" = voice.webm ] && echo audio/webm || echo audio/wav)
-            curl -s -w " HTTP %{http_code} ($f, browser headers)
-" -A "$UA" -H "Origin: https://afarineshshiraz.ir" -H "Referer: https://afarineshshiraz.ir/pre-registration"               -H "Accept: */*" -H "Accept-Language: fa-IR,fa;q=0.9" -X POST -H "Content-Type: $t" --data-binary @$f https://afarineshshiraz.ir/api/transcribe | tail -c 300
+          for f in webm wav; do
+            curl -s -o out.txt -w "HTTP %{http_code} for $f: " -A "$UA" \
+              -H "Origin: https://afarineshshiraz.ir" -H "Referer: https://afarineshshiraz.ir/pre-registration" \
+              -H "Accept-Language: fa-IR,fa;q=0.9" -H "Content-Type: audio/$f" \
+              --data-binary "@voice.$f" https://afarineshshiraz.ir/api/transcribe
+            head -c 300 out.txt; echo
           done
-      - name: Telegram login code
-        if: false
-        run: |
-          curl -s -w ' HTTP %{http_code}\n' -X POST -H "Content-Type: application/json" -d '{}' "https://afarineshshiraz.ir/api/admin?action=send-code"
