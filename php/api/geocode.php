@@ -3,6 +3,7 @@
 // of Shiraz. The answer is only advice shown under the field; the form is never refused because of it. Neshan is
 // asked when a Neshan key is saved in the admin panel, otherwise OpenStreetMap. Nothing is stored.
 declare(strict_types=1);
+ini_set('serialize_precision', '-1');
 require_once __DIR__ . '/_lib/bootstrap.php';
 set_time_limit(20);
 
@@ -22,6 +23,15 @@ function get_json(string $url, array $headers): ?array {
   $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
   curl_close($ch);
   return $code === 200 ? (json_decode((string)$raw, true) ?: []) : null;
+}
+/** Letters and digits written one way, so «کوچه ۸» on the form matches «کوچه 8» on the map. */
+function norm(string $s): string {
+  $s = strtr($s, ['ي' => 'ی', 'ك' => 'ک', "\u{200C}" => ' ', '۰' => '0', '۱' => '1', '۲' => '2', '۳' => '3', '۴' => '4', '۵' => '5', '۶' => '6', '۷' => '7', '۸' => '8', '۹' => '9']);
+  return trim(preg_replace('/\s+/u', ' ', $s));
+}
+/** A part of the address without its kind («خیابان زند» → «زند»): the name a map result has to contain. */
+function core(string $part): string {
+  return norm(preg_replace('/^(خیابان|خ\.?|بلوار|کوچه|ک\.?|میدان|بزرگراه|بن‌بست|بن بست|شهرک|محله|کوی|فلکه|چهارراه|سه‌راه|سه راه)\s+/u', '', trim($part)));
 }
 function in_shiraz(float $lat, float $lng): bool {
   return $lng >= SHIRAZ[0] && $lng <= SHIRAZ[2] && $lat >= SHIRAZ[3] && $lat <= SHIRAZ[1];
@@ -55,10 +65,14 @@ foreach ($tries as $i => $q) {
     'viewbox' => implode(',', SHIRAZ), 'bounded' => 1,
   ]), ['User-Agent: afarinesh-school-site/1.0 (' . SITE_URL . ')', 'Referer: ' . SITE_URL]);
   if ($j === null) out(200, ['ok' => true, 'found' => 'unavailable']);
-  if ($hit = $j[0] ?? null) {
-    $street = in_array($hit['category'] ?? $hit['class'] ?? '', ['highway', 'building', 'amenity', 'shop', 'place'], true) && ($hit['addresstype'] ?? '') !== 'suburb';
-    $label = implode('، ', array_slice(array_map('trim', explode(',', (string)($hit['display_name'] ?? $q))), 0, 3));
-    out(200, ['ok' => true, 'found' => $i === 0 && $street ? 'street' : 'area', 'lat' => round((float)$hit['lat'], 5), 'lng' => round((float)$hit['lon'], 5), 'label' => $label]);
+  // a hit counts only when the map's own name for it contains the names typed: otherwise the geocoder has matched
+  // something else nearby (a shop "opposite alley 8" on another street)
+  $hit = $j[0] ?? null;
+  $named = $hit ? norm((string)($hit['display_name'] ?? '')) : '';
+  $tried = array_slice($streetParts, 0, count(explode('، ', $q)));
+  if ($hit && $tried && core($tried[0]) !== '' && str_contains($named, core($tried[0]))) {
+    $all = count(array_filter($tried, fn($p) => core($p) !== '' && str_contains($named, core($p)))) === count($tried);
+    out(200, ['ok' => true, 'found' => $i === 0 && $all ? 'street' : 'area', 'lat' => round((float)$hit['lat'], 5), 'lng' => round((float)$hit['lon'], 5), 'label' => $q]);
   }
 }
 out(200, ['ok' => true, 'found' => 'none']);
