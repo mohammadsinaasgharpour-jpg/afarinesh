@@ -100,7 +100,7 @@ if ($action === 'settings') {
     save_secrets(['neshan_key' => $nk]);
     out(200, ['ok' => true, 'neshanKey' => $nk !== '']);
   }
-  $keys = array_values(array_unique(array_filter(array_map('trim', preg_split('/[\s,;]+/', (string)($body['geminiKeys'] ?? ''))), fn($k) => preg_match('/^[A-Za-z0-9_\-]{30,60}$/', $k))));
+  $keys = array_values(array_unique(array_filter(array_map('trim', preg_split('/[\s,;]+/', (string)($body['geminiKeys'] ?? ''))), fn($k) => preg_match('/^[A-Za-z0-9_.\-]{20,200}$/', $k))));
   if (!$keys && empty($body['clear'])) out(422, ['error' => 'no_valid_keys']);
   save_secrets(['gemini_keys' => $keys, 'gemini_next' => 0]);
   out(200, ['ok' => true, 'geminiKeys' => count($keys)]);
