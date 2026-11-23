@@ -44,7 +44,7 @@ function initVoiceInput() {
         const blob = new Blob(chunks, { type: (rec?.mimeType || mime || "audio/webm").split(";")[0] });
         // sent as base64 inside JSON: the host's firewall refuses a raw audio upload
         const audio = await new Promise((ok, fail) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(",")[1] || ""); r.onerror = fail; r.readAsDataURL(blob); });
-        const res = await fetch("/api/transcribe", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: blob.type, audio }), signal: AbortSignal.timeout(45000) });
+        const res = await fetch("/api/transcribe", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: blob.type, audio }), signal: AbortSignal.timeout(90000) });
         const body = await res.json().catch(() => ({}));
         if (res.ok && body.text) {
           const now = target.value.trim();
@@ -116,8 +116,8 @@ const PAGES = {
   },
 };
 
-// personal identifiers (national ID, address) are never kept as a browser draft
-createFormController({ form, ...PAGES[form.dataset.form] });
+// an unsent form is kept only encrypted, in this tab, for 30 minutes (secureDraft in common.js)
+createFormController({ form, ...PAGES[form.dataset.form], secureKey: form.dataset.form });
 initVoiceInput();
 initMapCheck();
 

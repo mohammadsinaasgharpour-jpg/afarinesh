@@ -88,7 +88,10 @@ copy_tree("$top/public", WEB_ROOT, $copied);
 copy_tree("$top/php", WEB_ROOT, $copied);
 copy_tree("$top/library-php", WEB_ROOT . '/library', $copied);
 remove_tree($tmp);
+// pages changed in the admin panel's editor go back over the deployed ones
+require_once __DIR__ . '/_lib/site-edits.php';
+$edited = reapply_edits();
 // PHP keeps compiled scripts in memory; without this, a changed file can run next to an old copy of another
 if (function_exists('opcache_reset')) opcache_reset();
 if ($sha) @file_put_contents(STATE, json_encode(['sha' => $sha, 'at' => gmdate('c')]));
-out(200, ['ok' => true, 'files' => $copied, 'commit' => $sha ?: null]);
+out(200, ['ok' => true, 'files' => $copied, 'edited' => $edited, 'commit' => $sha ?: null]);

@@ -52,8 +52,36 @@
         </select>
         <a class="ghost" id="csv" href="/api/admin?action=csv&amp;kind=preRegistration">دانلود اکسل</a>
       </div>
+      <details class="settings editor" id="site-editor">
+        <summary>ویرایش صفحه‌های سایت (متن، عکس، بخش‌ها)</summary>
+        <p class="muted">صفحه را انتخاب کنید و «باز کردن» را بزنید. روی هر متن بزنید و همان‌جا بنویسید. روی عکس یا هر بخش بزنید تا انتخاب شود، بعد با دکمه‌ها عوضش کنید، حذفش کنید، تکثیرش کنید یا جابه‌جایش کنید. برای عکس تازه در گالری: یکی از عکس‌ها را «تکثیر» کنید و بعد «تعویض عکس» را بزنید. تا «انتشار» را نزنید، چیزی روی سایت عوض نمی‌شود.</p>
+        <div class="ed-bar">
+          <select id="ed-page" aria-label="صفحه"></select>
+          <button type="button" id="ed-open">باز کردن</button>
+          <button type="button" id="ed-save" disabled>انتشار روی سایت</button>
+          <button type="button" class="ghost" id="ed-revert" disabled>برگشت به نسخه‌ی اصلی</button>
+          <span class="muted" id="ed-status" role="status"></span>
+        </div>
+        <div class="ed-tools" id="ed-tools" hidden>
+          <span class="ed-what" id="ed-what"></span>
+          <button type="button" class="ghost" data-ed="parent">انتخاب بخش بزرگ‌تر</button>
+          <button type="button" class="ghost" data-ed="image">تعویض عکس</button>
+          <button type="button" class="ghost" data-ed="alt">توضیح عکس</button>
+          <button type="button" class="ghost" data-ed="link">نشانی پیوند</button>
+          <button type="button" class="ghost" data-ed="up">بالاتر</button>
+          <button type="button" class="ghost" data-ed="down">پایین‌تر</button>
+          <button type="button" class="ghost" data-ed="copy">تکثیر</button>
+          <button type="button" class="ghost danger" data-ed="delete">حذف</button>
+          <input type="file" id="ed-file" accept="image/jpeg,image/png,image/webp" hidden>
+        </div>
+        <iframe id="ed-frame" title="پیش‌نمایش صفحه برای ویرایش" hidden></iframe>
+      </details>
       <details class="settings" id="settings">
         <summary>تنظیمات</summary>
+        <h3>تلگرام</h3>
+        <p class="muted">هر فرمی که در سایت ثبت شود، همان لحظه در کانال تلگرام کارکنان هم فرستاده می‌شود. برای اطمینان از کار کردنش، یک پیام آزمایشی بفرستید.</p>
+        <button type="button" id="test-telegram">فرستادن پیام آزمایشی به تلگرام</button>
+        <span class="muted" id="telegram-state" role="status"></span>
         <h3>تأیید سایت در گوگل سرچ کنسول</h3>
         <p class="muted">در سرچ کنسول با حساب گوگل مدرسه، سایت afarineshshiraz.ir را اضافه کنید و روش «HTML file» را بزنید. نام فایلی را که گوگل می‌دهد (مثل google1a2b3c4d5e6f7a8b.html) این‌جا بنویسید و ذخیره کنید، بعد در سرچ کنسول دکمه‌ی Verify را بزنید. <b id="google-state"></b></p>
         <input id="google-file" dir="ltr" spellcheck="false" autocomplete="off" placeholder="google0123456789abcdef.html" aria-label="نام فایل تأیید گوگل">
@@ -97,5 +125,6 @@
     </dialog>
   </main>
   <script src="/assets/js/admin.js" defer></script>
+  <script type="module" src="/assets/js/admin-editor.js"></script>
 </body>
 </html>

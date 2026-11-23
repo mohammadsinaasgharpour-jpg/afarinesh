@@ -208,7 +208,63 @@ export function initChrome() {
  * @param {{ form: HTMLFormElement, validate: (input: object) => {ok: boolean, value?: object, errors?: object},
  *   review: (value: object) => [string, string][], success: string, draftKey?: string }} opts
  */
-export function createFormController({ form, validate, review, success, draftKey }) {
+/**
+ * An unsent form kept encrypted in this tab only (AES-GCM): the key cannot be read out of the browser (it lives in
+ * IndexedDB as a non-extractable key), the text sits in sessionStorage and is gone when the tab closes, after
+ * 30 minutes, or once the form is sent. A visitor who opens the rules or goes back comes back to a filled form.
+ */
+export function secureDraft(name) {
+  const slot = `sd:${name}`;
+  const keyDb = () => new Promise((ok, fail) => {
+    const r = indexedDB.open("afarinesh-drafts", 1);
+    r.onupgradeneeded = () => r.result.createObjectStore("keys");
+    r.onsuccess = () => ok(r.result);
+    r.onerror = () => fail(r.error);
+  });
+  const tx = async (mode, fn) => { const db = await keyDb(); return new Promise((ok, fail) => { const q = fn(db.transaction("keys", mode).objectStore("keys")); q.onsuccess = () => ok(q.result); q.onerror = () => fail(q.error); }); };
+  const key = async () => {
+    let k = await tx("readonly", (s) => s.get(name));
+    if (!k) { k = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]); await tx("readwrite", (s) => s.put(k, name)); }
+    return k;
+  };
+  const b64 = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf)));
+  const unb64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+  return {
+    async save(data) {
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const body = new TextEncoder().encode(JSON.stringify({ at: Date.now(), data }));
+      const ct = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, await key(), body);
+      sessionStorage.setItem(slot, `${b64(iv)}.${b64(ct)}`);
+    },
+    async load() {
+      const raw = sessionStorage.getItem(slot);
+      if (!raw) return null;
+      const [iv, ct] = raw.split(".");
+      const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv: unb64(iv) }, await key(), unb64(ct));
+      const { at, data } = JSON.parse(new TextDecoder().decode(plain));
+      if (Date.now() - at > 30 * 60 * 1000) { this.clear(); return null; }
+      return data;
+    },
+    clear() { try { sessionStorage.removeItem(slot); tx("readwrite", (s) => s.delete(name)).catch(() => {}); } catch {} },
+  };
+}
+
+/** After a form is stored: a receipt that stays until closed, with the tracking code the office can look up. */
+function showReceipt(text, id) {
+  const box = document.createElement("dialog");
+  box.className = "dialog receipt-dialog";
+  box.setAttribute("aria-labelledby", "receipt-title");
+  box.innerHTML = '<h3 id="receipt-title">ثبت شد ✓</h3><p data-text></p><p class="receipt-code">کد پیگیری: <b dir="ltr" data-code></b></p><p class="muted">این کد را نگه دارید؛ با آن می‌توانید از دفتر مدرسه پیگیری کنید.</p><div class="dialog-actions"><button type="button" class="btn btn-primary" data-close>باشه</button></div>';
+  $("[data-text]", box).textContent = text;
+  $("[data-code]", box).textContent = id ? String(id).slice(0, 8).toUpperCase() : "—";
+  $("[data-close]", box).addEventListener("click", () => box.close());
+  box.addEventListener("close", () => box.remove());
+  document.body.append(box);
+  box.showModal();
+}
+
+export function createFormController({ form, validate, review, success, draftKey, secureKey }) {
+  const vault = secureKey && window.crypto?.subtle && window.indexedDB ? secureDraft(secureKey) : null;
   const dialog = $("[data-confirm-dialog]");
   const submitBtn = $("[data-submit]", form);
   const submitLabel = $("[data-submit-label]", form);
@@ -263,7 +319,9 @@ export function createFormController({ form, validate, review, success, draftKey
     const counter = $(`[data-count-for="${e.target.name}"]`, form);
     if (counter) counter.textContent = toPersianDigits(e.target.value.length);
     if (draftKey) try { const { website, startedAt, ...draft } = read(); sessionStorage.setItem(draftKey, JSON.stringify(draft)); } catch {}
+    if (vault) { const { website, startedAt, ...draft } = read(); vault.save(draft).catch(() => {}); }
   });
+  form.addEventListener("change", () => { if (vault) { const { website, startedAt, ...draft } = read(); vault.save(draft).catch(() => {}); } });
   // a message already on screen clears as soon as the field is right; nothing new appears while typing
   const clearFixed = (e) => {
     const name = e.target.name || $('input[type="hidden"]', e.target.closest(".field") ?? form)?.name;
@@ -306,6 +364,30 @@ export function createFormController({ form, validate, review, success, draftKey
       box.showModal();
     });
   }
+
+  // the encrypted draft of a longer form: fields are filled back as if typed, so lists and dates show it too
+  vault?.load().then((draft) => {
+    if (!draft) return;
+    for (const [k, v] of Object.entries(draft)) {
+      const f = form.elements[k];
+      if (!f || v === "" || v === false || v == null) continue;
+      if (f.type === "checkbox") { f.checked = !!v; f.dispatchEvent(new Event("change", { bubbles: true })); continue; }
+      if (f.type === "hidden") {
+        const box = $("[data-date]", f.closest(".field") ?? form);
+        const [y, m, d] = String(v).split("/");
+        if (box && d) for (const [part, val] of [["year", y], ["month", m], ["day", d]]) {
+          const sel = $(`[data-date-part="${part}"]`, box);
+          sel.value = val;
+          sel.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+        continue;
+      }
+      f.value = v;
+      (f instanceof RadioNodeList ? [...f].find((r) => r.checked) : f)?.dispatchEvent(new Event("change", { bubbles: true }));
+      $(`[data-count-for="${k}"]`, form)?.replaceChildren(toPersianDigits(String(v).length));
+    }
+    dirty = true;
+  }).catch(() => vault.clear());
 
   // forms with personal identifiers keep no draft; the short callback form restores an unsent draft (per tab)
   if (draftKey) try {
@@ -411,7 +493,8 @@ export function createFormController({ form, validate, review, success, draftKey
       $("[data-started]", form).value = String(Date.now());
       if (steps.length > 1) showStep(0, false);
       if (draftKey) try { sessionStorage.removeItem(draftKey); } catch {}
-      toast(`${success} کد پیگیری: ${String(body.id || "").slice(0, 8)}`, "ok", 9000);
+      vault?.clear();
+      showReceipt(success, body.id);
     } catch (err) {
       const msg = err?.message || `ارسال انجام نشد. اتصال اینترنت را بررسی کنید یا با ${SCHOOL_PHONE} تماس بگیرید.`;
       toast(err?.name === "TimeoutError" ? `پاسخی از سرور نرسید. دوباره امتحان کنید یا با ${SCHOOL_PHONE} تماس بگیرید.` : msg, "err", 9000);

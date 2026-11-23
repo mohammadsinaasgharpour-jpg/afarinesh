@@ -1,0 +1,4 @@
+/* Inside the admin panel's page editor only (never published): what can be clicked, and what is selected. */
+body *:hover { outline: 1px dashed rgba(22, 120, 156, .55); outline-offset: 2px; cursor: pointer; }
+[contenteditable="true"] { outline: 2px dashed #16789c !important; outline-offset: 3px; cursor: text; }
+.ed-sel { outline: 3px solid #f2a516 !important; outline-offset: 3px; }

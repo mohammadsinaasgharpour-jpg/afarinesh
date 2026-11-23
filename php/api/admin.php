@@ -6,7 +6,7 @@
 declare(strict_types=1);
 require_once __DIR__ . '/_lib/bootstrap.php';
 
-const SESSION_SEC = 8 * 3600;
+const SESSION_SEC = 30 * 60; // signed out after 30 minutes without using the panel, and when the browser closes
 const STATUSES = ['new', 'called', 'interview', 'accepted', 'rejected'];
 
 admin_session();
@@ -21,7 +21,11 @@ function verify_password(string $password, string $encoded): bool {
   return hash_equals($expected, $actual);
 }
 
-function signed_in(): bool { return ($_SESSION['admin_until'] ?? 0) > time(); }
+function signed_in(): bool {
+  if (($_SESSION['admin_until'] ?? 0) <= time()) return false;
+  $_SESSION['admin_until'] = time() + SESSION_SEC;
+  return true;
+}
 function row_out(array $row): array {
   $data = json_decode($row['data'], true) ?: [];
   return ['id' => $row['id'], 'kind' => $row['kind'], 'status' => $row['status'], 'note' => $row['note'] ?? '',
@@ -104,6 +108,10 @@ if ($action === 'settings') {
   if (!$keys && empty($body['clear'])) out(422, ['error' => 'no_valid_keys']);
   save_secrets(['gemini_keys' => $keys, 'gemini_next' => 0]);
   out(200, ['ok' => true, 'geminiKeys' => count($keys)]);
+}
+if ($method === 'POST' && $action === 'test-telegram') {
+  $ok = notify_staff("پیام آزمایشی از پنل مدیر سایت آفرینش: تلگرام درست کار می‌کند.");
+  out($ok ? 200 : 502, ['ok' => $ok]);
 }
 if ($method === 'POST' && $action === 'delete') {
   $body = read_json(1024);

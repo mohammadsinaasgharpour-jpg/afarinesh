@@ -157,7 +157,8 @@ function admin_session(): void {
   ini_set('session.gc_maxlifetime', (string)(8 * 3600));
   ini_set('session.use_strict_mode', '1');
   session_name('afarinesh_admin');
-  session_set_cookie_params(['lifetime' => 8 * 3600, 'path' => '/', 'secure' => true, 'httponly' => true, 'samesite' => 'Strict']);
+  // lifetime 0: the sign-in ends when the browser is closed
+  session_set_cookie_params(['lifetime' => 0, 'path' => '/', 'secure' => true, 'httponly' => true, 'samesite' => 'Strict']);
   session_start();
 }
 

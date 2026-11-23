@@ -5,7 +5,7 @@
 // Gateway, which needs no key. Nothing is stored.
 declare(strict_types=1);
 require_once __DIR__ . '/_lib/bootstrap.php';
-set_time_limit(40);
+set_time_limit(120);
 
 const MAX_AUDIO = 1_500_000; // about 45 seconds of compressed speech
 
@@ -79,7 +79,12 @@ $tried = [];
 for ($i = 0; $i < $n; $i++) {
   $k = ($start + $i) % $n;
   $key = $keys[$k];
-  [$code, $j] = gemini_call('models/' . model_for($key) . ':generateContent', $key, $body);
+  // a busy or missing model is not a bad key: the same key tries the next model before the next key
+  $models = $key === '' ? ['gemini-2.5-flash'] : array_values(array_unique([model_for($key), 'gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash']));
+  foreach ($models as $model) {
+    [$code, $j] = gemini_call("models/$model:generateContent", $key, $body);
+    if (!in_array($code, [404, 429, 500, 503, 504], true)) break;
+  }
   if ($code === 200) {
     if ($k !== $start && $key !== '') save_secrets(['gemini_next' => $k]);
     if ($key === '' && empty(secrets()['gateway_ok'])) save_secrets(['gateway_ok' => true]);
