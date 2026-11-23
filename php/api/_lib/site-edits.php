@@ -15,6 +15,7 @@ function clean_page(string $html, string $current): string {
   $allowed = array_flip($m[0]);
   $html = preg_replace_callback('#<script\b[^>]*>.*?</script>#is', fn($s) => isset($allowed[$s[0]]) ? $s[0] : '', $html);
   $html = preg_replace('#<(iframe|object|embed|frame|frameset|applet|base)\b[^>]*>(.*?</\1\s*>)?#is', '', $html);
+  $html = preg_replace('#<meta\b[^>]*http-equiv\s*=\s*["\']?refresh[^>]*>#i', '', $html);
   // tags outside scripts: no on* handlers, no script URLs
   $parts = preg_split('#(<script\b[^>]*>.*?</script>)#is', $html, -1, PREG_SPLIT_DELIM_CAPTURE);
   foreach ($parts as $i => $part) {
