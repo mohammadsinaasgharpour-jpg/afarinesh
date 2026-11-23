@@ -1015,3 +1015,4 @@ html.lenis, html.lenis body { height: auto; }
   .cell:hover, .features > li:hover { transform: translateY(-4px); box-shadow: 0 14px 30px rgba(6, 20, 31, .16); z-index: 1; }
 }.receipt-code b { font-size: 1.5rem; letter-spacing: .12em; }
 .receipt-dialog h3 { color: var(--ok, #1d7a46); }
+.lang-en .path li::before { content: counter(step); }

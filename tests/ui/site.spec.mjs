@@ -215,7 +215,7 @@ test.describe("callback form", () => {
     await expect(dialog).toBeVisible();
     await expect(dialog).toContainText("۰۹۱۷۱۲۳۴۵۶۷");
     await page.locator("[data-confirm-yes]").click();
-    await expect(page.locator(".toast.ok")).toBeVisible();
+    await expect(page.locator(".receipt-dialog")).toBeVisible();
     expect(sent).toMatchObject({ parentName: "مریم احمدی", phone: "09171234567", grade: "8" });
     await expect(page.locator("#f-name")).toHaveValue("");
     await expect(page.locator("#f-name")).toBeVisible();
@@ -421,7 +421,7 @@ test("pre-registration goes step by step, validates each step, reviews and sends
   await expect(dialog).toBeVisible();
   await expect(dialog).toContainText("۰۴۹۹۳۷۰۸۹۹");
   await page.locator("[data-confirm-yes]").click();
-  await expect(page.locator(".toast.ok")).toContainText("abcdef12");
+  await expect(page.locator(".receipt-dialog")).toContainText("ABCDEF12");
   expect(sent).toMatchObject({ nationalId: "0499370899", birthDate: "1393/07/23", motherName: "مریم احمدی", fatherMobile: "09172222223", gpa: "19.5", grade: "8", motherEducation: "لیسانس", consent: true });
 });
 
@@ -444,7 +444,7 @@ test("careers page sends a job application", async ({ page }) => {
   await page.locator('.check input[name="consent"]').check();
   await page.locator("[data-submit]").click();
   await page.locator("[data-confirm-yes]").click();
-  await expect(page.locator(".toast.ok")).toBeVisible();
+  await expect(page.locator(".receipt-dialog")).toBeVisible();
   expect(sent).toMatchObject({ degree: "کارشناسی ارشد", experience: "بالای ۵ سال", phone: "07132293194" });
 });
 
@@ -483,10 +483,12 @@ test("subpages share the home page's header, theme and footer", async ({ page })
 
 test("links to the school's numbers open the contact card", async ({ page }) => {
   await page.goto("/pre-registration");
-  await page.locator('a[href="/#school-contacts"]').click();
-  await expect(page).toHaveURL(/#school-contacts$/);
-  await expect(page.locator("#school-contacts")).toBeInViewport();
-  await expect(page.locator("#school-contacts")).toContainText("071 3229 3194");
+  // a new tab, so the half-filled form stays where it is
+  const [card] = await Promise.all([page.waitForEvent("popup"), page.locator('a[href="/#school-contacts"]').click()]);
+  await expect(card).toHaveURL(/#school-contacts$/);
+  await expect(card.locator("#school-contacts")).toBeInViewport();
+  await expect(card.locator("#school-contacts")).toContainText("071 3229 3194");
+  await expect(page).toHaveURL(/pre-registration$/);
 });
 
 test("the share block carries a description, not just the address", async ({ page }) => {
