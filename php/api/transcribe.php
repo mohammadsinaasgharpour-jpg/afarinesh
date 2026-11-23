@@ -43,26 +43,26 @@ function gemini_call(string $path, string $key, ?array $body = null): array {
   return [$code, json_decode((string)$raw, true) ?: []];
 }
 
-/** The newest general "flash" model this key can use, remembered for a day. */
-function model_for(string $key): string {
-  if ($key === '') return 'gemini-2.5-flash';
+/**
+ * The Flash and Flash-Lite models this key can use, newest first (a stable model never named -preview or -exp),
+ * remembered for a day. Google retires old models and a new one can be busy, so the caller tries them in turn.
+ */
+function models_for(string $key): array {
+  if ($key === '') return ['gemini-2.5-flash'];
   $cacheFile = SECRETS_DIR . '/gemini-models.json';
   $cache = is_file($cacheFile) ? (json_decode((string)file_get_contents($cacheFile), true) ?: []) : [];
   $id = substr(hash('sha256', $key), 0, 12);
-  if (isset($cache[$id]) && $cache[$id]['at'] > time() - 86400) return $cache[$id]['model'];
+  if (!empty($cache[$id]['models']) && $cache[$id]['at'] > time() - 86400) return $cache[$id]['models'];
   [$code, $j] = gemini_call('models?pageSize=1000', $key);
-  $best = 'gemini-2.5-flash';
-  if ($code === 200) {
-    $names = [];
-    foreach ($j['models'] ?? [] as $m) {
-      $name = preg_replace('#^models/#', '', (string)($m['name'] ?? ''));
-      if (in_array('generateContent', $m['supportedGenerationMethods'] ?? [], true) && preg_match('/^gemini-(\d+(?:\.\d+)?)-flash$/', $name, $v)) $names[$name] = (float)$v[1];
-    }
-    if ($names) { arsort($names); $best = array_key_first($names); }
+  $rank = [];
+  if ($code === 200) foreach ($j['models'] ?? [] as $m) {
+    $name = preg_replace('#^models/#', '', (string)($m['name'] ?? ''));
+    if (in_array('generateContent', $m['supportedGenerationMethods'] ?? [], true) && preg_match('/^gemini-(\d+(?:\.\d+)?)-flash(-lite)?$/', $name, $v)) $rank[$name] = (float)$v[1] * 10 + (empty($v[2]) ? 1 : 0);
   }
-  $cache[$id] = ['model' => $best, 'at' => time()];
-  @file_put_contents($cacheFile, json_encode($cache));
-  return $best;
+  arsort($rank);
+  $list = array_slice(array_keys($rank), 0, 5) ?: ['gemini-2.5-flash'];
+  if ($code === 200) { $cache[$id] = ['models' => $list, 'at' => time()]; @file_put_contents($cacheFile, json_encode($cache)); }
+  return $list;
 }
 
 $prompt = 'این صدای یک نفر است که نشانی منزلش در شیراز را می‌گوید. فقط همان نشانی را به فارسی و با املای درست بنویس؛ '
@@ -80,10 +80,15 @@ for ($i = 0; $i < $n; $i++) {
   $k = ($start + $i) % $n;
   $key = $keys[$k];
   // a busy or missing model is not a bad key: the same key tries the next model before the next key
-  $models = $key === '' ? ['gemini-2.5-flash'] : array_values(array_unique([model_for($key), 'gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash']));
+  $models = models_for($key);
+  $first = true;
   foreach ($models as $model) {
     [$code, $j] = gemini_call("models/$model:generateContent", $key, $body);
+    // the newest model is often only briefly busy: one more try after a short wait
+    if ($first && $code === 503) { sleep(2); [$code, $j] = gemini_call("models/$model:generateContent", $key, $body); }
+    $first = false;
     if (!in_array($code, [404, 429, 500, 503, 504], true)) break;
+    $tried[] = ($key === '' ? 'gateway' : 'key ' . ($k + 1)) . " $model: $code";
   }
   if ($code === 200) {
     if ($k !== $start && $key !== '') save_secrets(['gemini_next' => $k]);
