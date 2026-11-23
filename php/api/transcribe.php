@@ -75,6 +75,7 @@ $body = ['contents' => [['parts' => [['text' => $prompt], ['inlineData' => ['mim
 $keys[] = '';
 $start = (int)(secrets()['gemini_next'] ?? 0) % count($keys);
 $n = count($keys);
+$tried = [];
 for ($i = 0; $i < $n; $i++) {
   $k = ($start + $i) % $n;
   $key = $keys[$k];
@@ -87,9 +88,11 @@ for ($i = 0; $i < $n; $i++) {
     if ($text === '' || $text === '—') out(422, ['error' => 'no_speech']);
     out(200, ['ok' => true, 'text' => mb_substr($text, 0, 250)]);
   }
-  // quota, rate limit, a disabled or wrong key: try the next one; anything else is a real failure
-  if (!in_array($code, [400, 401, 403, 429, 500, 503], true)) break;
+  // each failure in short, never a key: "key 1: 400 API key not valid", "gateway: 403 ..."
+  $why = (string)($j['error']['message'] ?? (is_string($j['error'] ?? null) ? $j['error'] : '')) . ' ' . (string)($j['detail'] ?? '');
+  $tried[] = ($key === '' ? 'gateway' : 'key ' . ($k + 1)) . ": $code " . mb_substr(trim(preg_replace('/AIza[0-9A-Za-z_\-]+/', '…', $why)), 0, 140);
+  // quota, rate limit, a disabled or wrong key, a model this key cannot use: try the next one
+  if (!in_array($code, [400, 401, 403, 404, 429, 500, 502, 503, 504], true)) break;
 }
 if (count($keys) === 1) out(503, ['error' => 'voice_not_configured', 'upstream' => $code]);
-// the last upstream answer, short and without any key, so a failure can be told apart (relay, gateway, quota)
-out(502, ['error' => 'voice_unavailable', 'upstream' => $code, 'detail' => mb_substr((string)($j['error']['message'] ?? $j['error'] ?? ''), 0, 160) . ' ' . mb_substr((string)($j['detail'] ?? ''), 0, 160)]);
+out(502, ['error' => 'voice_unavailable', 'tried' => $tried]);

@@ -1,5 +1,5 @@
 # Manual check of the live site's voice relay from outside Iran: a short spoken address goes through
-# /api/transcribe (host -> Vercel -> Gemini) with a phone browser's headers. Runs by hand, or when this file changes (run 3).
+# /api/transcribe (host -> Vercel -> Gemini) with a phone browser's headers. Runs by hand, or when this file changes (run 4).
 name: live-check
 on:
   workflow_dispatch:
