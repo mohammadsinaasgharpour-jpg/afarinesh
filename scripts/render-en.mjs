@@ -60,7 +60,7 @@ export function translate(html, dict, missing = new Set()) {
     if (!FA.test(k) || KEEP.has(k)) return s;
     // a teacher's photo: "name، role دبیرستان آفرینش شیراز"
     const who = k.match(/^(.+?)، (.+) دبیرستان آفرینش شیراز$/);
-    if (who && who[1] in dict && who[2] in dict) return s.replace(k, `${dict[who[1]]}, ${dict[who[2]].toLowerCase()} at Afarinesh High School, Shiraz`);
+    if (who && who[1] in dict && who[2] in dict) return s.replace(k, `${dict[who[1]]}, ${dict[who[2]]} at Afarinesh High School, Shiraz`);
     if (!(k in dict)) { missing.add(k); return s; }
     return s.replace(k, dict[k]);
   };
