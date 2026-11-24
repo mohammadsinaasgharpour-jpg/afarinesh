@@ -2,7 +2,7 @@
 // Used by the local/own-host server (server/app.mjs) and the Vercel functions (api/*.js); only `save` differs.
 import { randomUUID } from "node:crypto";
 import {
-  validateInquiry, validatePreRegistration, validateCareer, GRADE_LABEL, toPersianDigits,
+  validateInquiry, validatePreRegistration, validateCareer, validateLanguage, GRADE_LABEL, toPersianDigits,
 } from "../public/assets/js/validate.js";
 import { adminRecordUrl } from "./admin.mjs";
 
@@ -59,6 +59,22 @@ export const FORMS = {
       `انضباط: ${r.discipline}`,
       `پایه‌ی درخواستی: ${GRADE_LABEL[r.grade]}`,
       `نحوه‌ی آشنایی: ${or(r.referral)}`,
+    ],
+  },
+  language: {
+    validate: validateLanguage,
+    maxBytes: 4 * 1024,
+    perIp: { limit: 4, windowMs: HOUR },
+    perKey: { limit: 2, windowMs: 24 * HOUR },
+    dedupeKey: "phone",
+    lines: (r) => [
+      "ثبت‌نام تازه‌ی آموزشگاه زبان گندم",
+      `نام: ${r.fullName}`,
+      `شماره همراه: ${r.phone}`,
+      `زبان: ${r.language}`,
+      `گروه سنی: ${r.ageGroup}`,
+      `نوع کلاس: ${r.courseType}`,
+      r.message ? `توضیح: ${r.message}` : null,
     ],
   },
   career: {

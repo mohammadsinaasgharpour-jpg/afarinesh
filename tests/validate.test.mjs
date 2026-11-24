@@ -163,3 +163,12 @@ test("pre-registration: a father's and mother's names written in each other's fi
   assert.equal(ok.motherName, undefined);
   assert.match(validatePreRegistration({ fullName: "سارا رضایی" }).errors.fullName, /پسرانه/);
 });
+test("language school: a complete sign-up passes; language, age group and class type must be from the list", async () => {
+  const { validateLanguage } = await import("../public/assets/js/validate.js");
+  const ok = { fullName: "علی رضایی", phone: "۰۹۱۷۱۲۳۴۵۶۷", language: "انگلیسی", ageGroup: "کودک", courseType: "کلاس خصوصی", consent: true };
+  const r = validateLanguage(ok);
+  assert.equal(r.ok, true);
+  assert.equal(r.value.phone, "09171234567");
+  const bad = validateLanguage({ ...ok, language: "چینی", ageGroup: "x", courseType: "", consent: false, message: "www.spam.com" });
+  assert.deepEqual(Object.keys(bad.errors).sort(), ["ageGroup", "consent", "courseType", "language", "message"]);
+});

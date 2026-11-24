@@ -25,3 +25,6 @@ threat-model/
 !library-php/data/
 !library-php/data/books.json
 __pycache__/
+# ChatGPT originals (about 2 MB each) stay on this computer; only the converted covers are committed
+content/blog-images/*
+!content/blog-images/.gitkeep

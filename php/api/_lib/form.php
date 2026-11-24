@@ -29,6 +29,10 @@ function form_spec(string $kind): array {
         "انضباط: {$r['discipline']}", 'پایه‌ی درخواستی: ' . GRADE_LABEL[$r['grade']], 'نحوه‌ی آشنایی: ' . $or($r['referral']),
       ],
     ],
+    'language' => [
+      'validate' => 'validate_language', 'maxBytes' => 4096, 'perIp' => [4, 3600], 'perKey' => [2, 86400], 'dedupe' => 'phone',
+      'lines' => fn($r) => ['ثبت‌نام تازه‌ی آموزشگاه زبان گندم', "نام: {$r['fullName']}", "شماره همراه: {$r['phone']}", "زبان: {$r['language']}", "گروه سنی: {$r['ageGroup']}", "نوع کلاس: {$r['courseType']}", $r['message'] !== '' ? "توضیح: {$r['message']}" : null],
+    ],
     'career' => [
       'validate' => 'validate_career', 'maxBytes' => 4096, 'perIp' => [3, 3600], 'perKey' => [1, 86400], 'dedupe' => 'phone',
       'lines' => fn($r) => ['درخواست همکاری تازه از سایت', "نام: {$r['fullName']}", "رشته: {$r['field']}", "مقطع: {$r['degree']}", "سابقه‌ی تدریس: {$r['experience']}", "شماره تماس: {$r['phone']}"],

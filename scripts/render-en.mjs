@@ -31,6 +31,7 @@ export function englishBody(index) {
   b = cut(b, /\s*<li><a href="\/blog\/">[^<]*<\/a><\/li>/, "menu blog link");
   // the blog is in Persian only
   b = cut(b, /\s*<!-- blog:start -->[\s\S]*?<!-- blog:end -->/, "blog section");
+  b = cut(b, /\s*<!-- lang:start -->[\s\S]*?<!-- lang:end -->/, "language school band");
   // the header button becomes the language switch
   b = b.replace(/<a class="btn btn-cta btn-sm header-cta" href="\/pre-registration"[^>]*>[\s\S]*?<\/a>/, '<a class="btn btn-cta btn-sm header-cta" href="/" hreflang="fa" lang="fa">فارسی</a>');
   b = cut(b, /<a class="btn btn-cta mobile-enrol"[^>]*>[^<]*<\/a>\n?/, "mobile enrol button");
@@ -39,7 +40,7 @@ export function englishBody(index) {
   b = cut(b, /\s*<a class="more" href="\/pre-registration">[^<]*<\/a>/, "admission link");
   b = cut(b, /\s*<a class="more" href="#contact">[^<]*<\/a>/, "callback link");
   // footer links to pages that exist only in Persian
-  for (const href of ["/pre-registration", "/careers", "/privacy", "/library/", "/blog/"]) b = cut(b, new RegExp(`\\s*<li><a href="${href.replace(/[/]/g, "\\/")}">[^<]*<\\/a><\\/li>`), `footer link ${href}`);
+  for (const href of ["/pre-registration", "/careers", "/language-school", "/privacy", "/library/", "/blog/"]) b = cut(b, new RegExp(`\\s*<li><a href="${href.replace(/[/]/g, "\\/")}">[^<]*<\\/a><\\/li>`), `footer link ${href}`);
   // the admission steps stay as information; the form link in them becomes plain text
   b = b.replace(/<a href="\/pre-registration">([^<]*)<\/a>/g, "$1");
   b = cut(b, /\s*<section class="enrol"[\s\S]*?<\/section>/, "enrolment band");

@@ -937,7 +937,26 @@ html.lenis, html.lenis body { height: auto; }
 .features, .mondrian { border-radius: var(--r); }
 .features > li, .mondrian > .cell, .fact, .facts-wall > * { border-radius: 10px; }
 [dir="ltr"] .team-progress span { transform-origin: left; }
-[dir="ltr"] .is-swipe .teacher.is-current { box-shadow: 5px 5px 0 -1px var(--surface), 5px 5px 0 0 var(--line), 10px 10px 0 -1px var(--surface), 10px 10px 0 0 var(--line); }</style><!-- css:end -->
+[dir="ltr"] .is-swipe .teacher.is-current { box-shadow: 5px 5px 0 -1px var(--surface), 5px 5px 0 0 var(--line), 10px 10px 0 -1px var(--surface), 10px 10px 0 0 var(--line); }
+.segmented.seg-wrap { grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); }
+.lang-badge { display: inline-block; margin: 0 0 var(--s2); padding: 4px 14px; border-radius: 999px; background: var(--sun); color: #1d1404; font-weight: 800; font-size: var(--t-sm); }
+.lang-list { margin: var(--s5) 0 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: var(--s3); }
+.lang-list li { display: grid; gap: 2px; padding: var(--s3) var(--s4); border-radius: 12px; background: var(--paper); border: 1px solid var(--line); border-inline-start: 4px solid var(--sky); }
+.lang-list li:nth-child(2) { border-inline-start-color: var(--brick); }
+.lang-list li:nth-child(3) { border-inline-start-color: var(--sun); }
+.lang-list li:nth-child(4) { border-inline-start-color: var(--ink); }
+.lang-list b { font-size: 1.1rem; }
+.lang-list span { color: var(--ink-2); font-size: var(--t-sm); }
+.lang-facts { margin: var(--s4) 0 0; padding: 0; list-style: none; display: grid; gap: var(--s2); color: var(--ink-2); }
+.lang-facts li { display: flex; gap: var(--s2); align-items: center; }
+.lang-facts .ic { color: var(--sky-text); flex: none; }
+.lang-band { padding-block: var(--s7); background: var(--surface); border-block: 1px solid var(--line); }
+.lang-band-row { display: grid; grid-template-columns: minmax(0, 1.4fr) auto; gap: var(--s5); align-items: center; }
+.lang-band h2 { margin: 0 0 var(--s2); }
+.lang-band p { margin: 0; color: var(--ink-2); line-height: 2; }
+.lang-band .lang-chips { margin: var(--s3) 0 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: var(--s2); }
+.lang-band .lang-chips li { padding: 4px 14px; border-radius: 999px; background: var(--paper); border: 1px solid var(--line); font-weight: 700; font-size: var(--t-sm); }
+@media (max-width: 760px) { .lang-band-row { grid-template-columns: 1fr; } .lang-band .btn { justify-self: start; } }</style><!-- css:end -->
 <link rel="modulepreload" href="/assets/js/validate.js">
 <link rel="modulepreload" href="/assets/js/search.js">
 <link rel="modulepreload" href="/assets/js/common.js">
@@ -1156,6 +1175,13 @@ html.lenis, html.lenis body { height: auto; }
    "name": "English",
    "description": "Afarinesh High School, Shiraz, in English",
    "url": "https://afarineshshiraz.ir/en"
+  },
+  {
+   "@type": "SiteNavigationElement",
+   "position": 9,
+   "name": "آموزشگاه زبان گندم",
+   "description": "ثبت‌نام کلاس‌های زبان انگلیسی، فرانسه، ترکی و آلمانی",
+   "url": "https://afarineshshiraz.ir/language-school"
   }
  ]
 }
@@ -1717,6 +1743,18 @@ html.lenis, html.lenis body { height: auto; }
     </div>
   </section>
 
+  <!-- lang:start -->
+  <section class="lang-band" aria-labelledby="lang-title">
+    <div class="wrap lang-band-row">
+      <div>
+        <h2 id="lang-title" class="h2">آموزشگاه زبان گندم؛ ثبت‌نام ترم زمستان</h2>
+        <p>کلاس‌های زبان انگلیسی کودکان و بزرگسالان و زبان‌های دیگر، به‌صورت دوره‌ی عمومی یا خصوصی، در خیابان نارون، نبش کوچه‌ی ۱۴.</p>
+        <ul class="lang-chips" role="list"><li>انگلیسی</li><li>فرانسه</li><li>ترکی</li><li>آلمانی</li><li>سایر زبان‌ها</li></ul>
+      </div>
+      <a class="btn btn-primary" href="/language-school">ثبت‌نام در آموزشگاه زبان</a>
+    </div>
+  </section>
+  <!-- lang:end -->
   <section class="enrol" aria-labelledby="enrol-title">
     <div class="wrap enrol-row">
       <div>
@@ -1818,6 +1856,7 @@ html.lenis, html.lenis body { height: auto; }
       <ul role="list">
         <li><a href="/pre-registration">پیش‌ثبت‌نام پایه‌های هفتم تا نهم</a></li>
         <li><a href="/careers">دعوت به همکاری</a></li>
+        <li><a href="/language-school">آموزشگاه زبان گندم</a></li>
         <li><a href="/privacy">حریم خصوصی و شرایط استفاده</a></li>
             <li><a href="/library/">کتابخانه‌ی مدرسه</a></li>
         <li><a href="/blog/">وبلاگ آفرینش</a></li>

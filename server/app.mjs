@@ -78,6 +78,7 @@ export function createApp({ publicDir, dataDir, logger = console, rateLimit, tru
     "/api/inquiries": createFormHandler("inquiry", { logger, rateLimit, save, trustProxy }),
     "/api/pre-registration": createFormHandler("preRegistration", { logger, save, trustProxy }),
     "/api/careers": createFormHandler("career", { logger, save, trustProxy }),
+    "/api/language": createFormHandler("language", { logger, save, trustProxy }),
   };
   const admin = createAdminHandler({ dataDir, logger });
   const library = createLibraryHandler({ libraryDir: join(root, "..", "library"), dataDir, logger });

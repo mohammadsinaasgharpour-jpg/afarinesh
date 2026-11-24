@@ -136,6 +136,32 @@ function validate_inquiry(array $in): array {
   return v_result($e, ['parentName' => $parentName, 'phone' => $phone, 'grade' => $grade, 'message' => $message]);
 }
 
+const LANGUAGES = ['انگلیسی', 'فرانسه', 'ترکی', 'آلمانی', 'سایر زبان‌ها'];
+const AGE_GROUPS = ['کودک', 'نوجوان', 'بزرگسال'];
+const COURSE_TYPES = ['دوره‌ی عمومی (گروهی)', 'کلاس خصوصی'];
+
+/** Gandom language school sign-up; the PHP twin of validateLanguage in validate.js. */
+function validate_language(array $in): array {
+  $e = [];
+  $fullName = mb_substr(clean_text($in['fullName'] ?? ''), 0, LIMITS['nameMax'] + 1);
+  $phone = normalize_mobile($in['phone'] ?? '') ?? '';
+  $language = v_choice($in['language'] ?? '', LANGUAGES);
+  $ageGroup = v_choice($in['ageGroup'] ?? '', AGE_GROUPS);
+  $courseType = v_choice($in['courseType'] ?? '', COURSE_TYPES);
+  $message = clean_text($in['message'] ?? '', true);
+  $consent = v_consent($in['consent'] ?? false);
+  if (v_len($fullName) < LIMITS['nameMin'] || v_len($fullName) > LIMITS['nameMax'] || !is_full_persian_name($fullName)) $e['fullName'] = NAME_ERR;
+  if (!$phone) $e['phone'] = 'شماره همراه ۱۱ رقمی را با ۰۹ شروع کنید؛ مثلاً ۰۹۱۷۱۲۳۴۵۶۷.';
+  if ($language === '') $e['language'] = 'زبان مورد نظر را انتخاب کنید.';
+  if ($ageGroup === '') $e['ageGroup'] = 'گروه سنی زبان‌آموز را انتخاب کنید.';
+  if ($courseType === '') $e['courseType'] = 'نوع کلاس را انتخاب کنید.';
+  if (v_len($message) > LIMITS['messageMax']) $e['message'] = 'توضیح حداکثر ' . to_persian_digits(LIMITS['messageMax']) . ' حرف است.';
+  elseif (preg_match('/https?:|www./iu', $message)) $e['message'] = 'لطفاً توضیح را بدون لینک بنویسید.';
+  elseif ($message !== '' && !is_persian_text($message)) $e['message'] = 'لطفاً توضیح را به فارسی بنویسید.';
+  if (!$consent) $e['consent'] = 'برای ثبت، موافقت با استفاده از اطلاعات برای تماس لازم است.';
+  return v_result($e, ['fullName' => $fullName, 'phone' => $phone, 'language' => $language, 'ageGroup' => $ageGroup, 'courseType' => $courseType, 'message' => $message, 'consent' => $consent]);
+}
+
 const FEMALE_NAMES = 'مریم فاطمه زهرا زینب معصومه سمیه طاهره طیبه سکینه رقیه خدیجه اعظم اکرم اشرف اقدس منیژه منیره منصوره ملیحه ملیکا مهسا مهناز مهین مهری مهرنوش مینا نازنین نرگس نسرین نسیم نیلوفر نگار نگین پریسا پروانه پروین پری پوران ژاله ساره سارا سحر سمانه سیما سیمین شهلا شهناز شیرین شیما شبنم صدیقه صغری کبری عاطفه عفت فرشته فریبا فرزانه فرحناز فهیمه گلناز گلنار گلی لیلا لادن لاله الهام الهه آزاده آزیتا آتنا آرزو آمنه آناهیتا آیدا آیسان ارمیتا افسانه بهاره بهناز بیتا پگاه ترانه تینا حمیده حمیرا راحله راضیه رویا رها ریحانه زری زیبا سودابه سوسن سهیلا شکوفه شقایق صبا عذرا فائزه فاطیما کتایون کوثر لیدا مائده محبوبه مرضیه مژگان مهتاب مهدیس مهشید نجمه ندا نفیسه هانیه هما هدیه هستی یاسمن یگانه';
 const MALE_NAMES = 'علی محمد حسین حسن رضا مهدی احمد محمود مصطفی مرتضی مجتبی جواد جعفر کاظم قاسم عباس اصغر اکبر ابراهیم اسماعیل یوسف یعقوب یحیی موسی عیسی داود سلیمان صادق باقر هادی امیر امین ایمان بهروز بهرام بیژن پرویز پیمان جمشید جهانگیر حمید حمیدرضا خسرو داریوش رامین رحیم رحمان روح‌الله سعید سجاد سهراب سیاوش شاهین شهرام شهریار عادل عبدالله عرفان عماد فرامرز فرهاد فرشید فریدون کامران کیوان کوروش مجید محسن مسعود منصور منوچهر میلاد ناصر نادر نوید نیما هومن وحید یاسر آرش آرین ابوالفضل احسان ارسلان اسفندیار افشین امیرحسین امیرعلی بابک بهزاد بهنام پوریا تورج جلال جمال حامد حمزه رسول رستم روزبه سامان سینا شاپور صالح عبدالرضا عمار غلامرضا غلامحسین فرزاد فرید قربان کریم کمال محمدرضا محمدحسین محمدعلی مهرداد مهران مهیار نصرالله نعمت‌الله هوشنگ یدالله';
 

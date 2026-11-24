@@ -1,4 +1,4 @@
-import { validatePreRegistration, validateCareer, toPersianDigits, GRADE_LABEL } from "./validate.js";
+import { validatePreRegistration, validateCareer, validateLanguage, toPersianDigits, GRADE_LABEL } from "./validate.js";
 import { $, initChrome, createFormController } from "./common.js";
 
 initChrome();
@@ -19,6 +19,11 @@ const PAGES = {
       v.grade === "7" ? ["نمره‌ی توصیفی", v.gpaDescriptive] : ["معدل", fa(v.gpa)],
       ["انضباط", v.discipline], ["نحوه‌ی آشنایی", v.referral],
     ],
+  },
+  language: {
+    validate: validateLanguage,
+    success: "ثبت‌نام شما در آموزشگاه زبان گندم رسید. همکاران آموزشگاه برای تعیین سطح و زمان کلاس با شما تماس می‌گیرند.",
+    review: (v) => [["نام", v.fullName], ["شماره همراه", fa(v.phone)], ["زبان", v.language], ["گروه سنی", v.ageGroup], ["نوع کلاس", v.courseType], v.message ? ["توضیح", v.message] : null].filter(Boolean),
   },
   career: {
     validate: validateCareer,

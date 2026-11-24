@@ -355,3 +355,31 @@ export function validateCareer(input) {
   if (!v.consent) e.consent = "برای ثبت، موافقت با استفاده از اطلاعات برای تماس لازم است.";
   return result(e, v);
 }
+
+export const LANGUAGES = ["انگلیسی", "فرانسه", "ترکی", "آلمانی", "سایر زبان‌ها"];
+export const AGE_GROUPS = ["کودک", "نوجوان", "بزرگسال"];
+export const COURSE_TYPES = ["دوره‌ی عمومی (گروهی)", "کلاس خصوصی"];
+
+/** Gandom language school (آموزشگاه زبان گندم): sign-up for a term; the school calls back. */
+export function validateLanguage(input) {
+  const e = {};
+  const v = {
+    fullName: cleanText(input?.fullName).slice(0, LIMITS.nameMax + 1),
+    phone: normalizeMobile(input?.phone) ?? "",
+    language: choice(input?.language, LANGUAGES),
+    ageGroup: choice(input?.ageGroup, AGE_GROUPS),
+    courseType: choice(input?.courseType, COURSE_TYPES),
+    message: cleanText(input?.message, { multiline: true }),
+    consent: input?.consent === true || input?.consent === "on" || input?.consent === "true",
+  };
+  if (v.fullName.length < LIMITS.nameMin || v.fullName.length > LIMITS.nameMax || !isFullPersianName(v.fullName)) e.fullName = NAME_ERR;
+  if (!v.phone) e.phone = "شماره همراه ۱۱ رقمی را با ۰۹ شروع کنید؛ مثلاً ۰۹۱۷۱۲۳۴۵۶۷.";
+  if (!v.language) e.language = "زبان مورد نظر را انتخاب کنید.";
+  if (!v.ageGroup) e.ageGroup = "گروه سنی زبان‌آموز را انتخاب کنید.";
+  if (!v.courseType) e.courseType = "نوع کلاس را انتخاب کنید.";
+  if (v.message.length > LIMITS.messageMax) e.message = `توضیح حداکثر ${toPersianDigits(LIMITS.messageMax)} حرف است.`;
+  else if (/https?:|www\./i.test(v.message)) e.message = "لطفاً توضیح را بدون لینک بنویسید.";
+  else if (v.message && !isPersianText(v.message)) e.message = "لطفاً توضیح را به فارسی بنویسید.";
+  if (!v.consent) e.consent = "برای ثبت، موافقت با استفاده از اطلاعات برای تماس لازم است.";
+  return result(e, v);
+}

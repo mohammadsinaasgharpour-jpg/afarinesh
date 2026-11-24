@@ -46,6 +46,7 @@ export function initChrome() {
     const named = {
       "pre-registration": ["/pre-registration", "بازگشت به فرم پیش‌ثبت‌نام"],
       careers: ["/careers", "بازگشت به فرم دعوت به همکاری"],
+      "language-school": ["/language-school", "بازگشت به فرم آموزشگاه زبان گندم"],
     }[from];
     let target = named;
     if (!target && document.referrer) {
