@@ -1,6 +1,11 @@
 import { validateInquiry, toPersianDigits, GRADE_LABEL } from "./validate.js";
 import { searchItem, searchTeachers } from "./search.js";
-import { $, $$, initChrome, createFormController, reduceMotion, scroller } from "./common.js";
+import { $, $$, initChrome, createFormController, reduceMotion, scroller, EN } from "./common.js";
+
+// numbers in the Persian page are written with Persian digits, in the English page with Latin ones
+const num = EN ? String : toPersianDigits;
+// the next item lies to the left in the Persian page and to the right in the English one
+const DIR = EN ? -1 : 1;
 
 initChrome();
 
@@ -23,12 +28,18 @@ const whenIdle = (fn) => {
    so waiting costs nothing visible, and a phone spends its first seconds showing the page instead. */
 let motion = null;
 const MOTION_START = ["scroll", "wheel", "touchstart", "pointermove", "keydown"];
+let motionStarted = false;
 const startMotion = () => {
+  if (motionStarted) return;
+  motionStarted = true;
   MOTION_START.forEach((type) => removeEventListener(type, startMotion, true));
   import("./motion.js").then((m) => m.initMotion()).then((api) => { motion = api; }, () => {});
 };
 if (location.hash) startMotion();
 else MOTION_START.forEach((type) => addEventListener(type, startMotion, { capture: true, passive: true }));
+// on computers it is also started shortly after loading, so smooth scrolling never takes over in the middle of the
+// first scroll (that take-over is what made the first scroll stop short); phones keep waiting for a touch
+if (matchMedia("(hover: hover) and (pointer: fine)").matches) addEventListener("load", () => setTimeout(startMotion, 600), { once: true });
 // once the page has loaded, the vendor files are fetched quietly, so the first interaction does not wait for them
 addEventListener("load", () => setTimeout(() => {
   for (const f of ["gsap.min.js", "ScrollTrigger.min.js", "Flip.min.js", "lenis.min.js"]) {
@@ -150,24 +161,17 @@ whenIdle(() => {
     if (index >= 0) track.dataset.dir = i > index ? "next" : "prev";
     index = i;
     cards.forEach((c, n) => c.classList.toggle("is-current", n === i));
-    $("[data-team-now]").textContent = toPersianDigits(i + 1);
+    $("[data-team-now]").textContent = num(i + 1);
     $("[data-team-progress]").style.setProperty("--p", String((i + 1) / cards.length));
   };
-  // Turning a page: the sheet that moves turns over around its right edge (a Persian book opens to the right),
-  // to -180 degrees for the next teacher; for the previous one the earlier sheet comes back over the stack.
-  // Past 90 degrees its back is hidden, so the sheet underneath shows through.
-  const ANGLE = 180;
   let turning = false;
   let drag = null;
   let target = 0; // where quick repeated clicks are heading; the pages turn one after another until there
   const pageFor = (forward, to) => (forward ? cards[index] : cards[to]);
   const underFor = (forward, to) => (forward ? cards[to] : cards[index]);
-  // Phones: a curtain. The top card slides aside with the finger (a slight tilt, a soft shadow) while the next
-  // one rises from behind it. Wider screens: the card turns over from its right edge like a book page.
-  const curtain = matchMedia("(max-width: 700px)");
-  const frame = (p) => curtain.matches
-    ? { page: { transform: `translateX(${p * 112}%) rotate(${p * 7}deg)`, opacity: String(1 - 0.35 * p) }, under: { transform: `scale(${0.92 + 0.08 * p})`, opacity: String(0.55 + 0.45 * p) } }
-    : { page: { transform: `rotateY(${-p * ANGLE}deg)`, filter: `brightness(${1 - 0.16 * Math.sin(p * Math.PI)})` }, under: { transform: "none", opacity: "1" } };
+  // A curtain on every screen: the top card slides aside with the finger or mouse (a slight tilt, a soft shadow)
+  // while the next one rises from behind it.
+  const frame = (p) => ({ page: { transform: `translateX(${p * 112 * DIR}%) rotate(${p * 7 * DIR}deg)`, opacity: String(1 - 0.35 * p) }, under: { transform: `scale(${0.92 + 0.08 * p})`, opacity: String(0.55 + 0.45 * p) } });
   const pose = (page, under, p) => { Object.assign(page.style, frame(p).page); Object.assign(under.style, frame(p).under); };
   const clear = (...els) => els.forEach((el) => { el.classList.remove("is-turning", "is-under-now", "is-dragging"); el.style.transform = ""; el.style.filter = ""; el.style.opacity = ""; });
   /** Turn to card `to`, starting from progress `from` (0 = flat, 1 = fully turned) when a drag hands over. */
@@ -205,7 +209,7 @@ whenIdle(() => {
     const dx = x - drag.x, dy = y - drag.y;
     drag.sideways ??= Math.abs(dx) > 8 || Math.abs(dy) > 8 ? Math.abs(dx) > Math.abs(dy) : null;
     if (!drag.sideways) return;
-    const forward = dx > 0;
+    const forward = dx * DIR > 0;
     const to = index + (forward ? 1 : -1);
     if (to < 0 || to >= cards.length) return;
     if (drag.forward !== forward) {
@@ -255,14 +259,14 @@ whenIdle(() => {
     bar.hidden = false;
     $("[data-team-prev]").hidden = $("[data-team-next]").hidden = !on;
     bar.querySelector(".team-count").hidden = bar.querySelector(".team-progress").hidden = !on;
-    allBtn.textContent = on ? "نمایش همه" : "نمایش یکی‌یکی";
+    allBtn.textContent = EN ? (on ? "Show all" : "One at a time") : on ? "نمایش همه" : "نمایش یکی‌یکی";
     index = -1;
     delete track.dataset.dir;
     target = 0;
     if (on) setIndex(0);
     else cards.forEach((c) => c.classList.remove("is-current"));
   };
-  $("[data-team-total]").textContent = toPersianDigits(cards.length);
+  $("[data-team-total]").textContent = num(cards.length);
   $("[data-team-prev]").addEventListener("click", () => step(-1));
   $("[data-team-next]").addEventListener("click", () => step(1));
   allBtn.addEventListener("click", () => {
@@ -273,7 +277,7 @@ whenIdle(() => {
   // with the focus on a card or its buttons, the left and right arrows change teacher (left is next in RTL)
   team.parentElement.addEventListener("keydown", (e) => {
     if (!inSwipe() || e.altKey || e.ctrlKey || e.metaKey || e.target.closest?.("input, textarea, select")) return;
-    const dir = { ArrowLeft: 1, ArrowRight: -1 }[e.key];
+    const dir = { ArrowLeft: DIR, ArrowRight: -DIR }[e.key];
     if (!dir) return;
     e.preventDefault();
     step(dir);
@@ -300,9 +304,9 @@ whenIdle(() => {
     else show();
     const shown = q ? matches.size : cards.length;
     empty.hidden = shown > 0;
-    status.textContent = !q ? "" : partial
-      ? `نتیجه‌ی دقیقی نبود؛ ${toPersianDigits(shown)} نفر مرتبط`
-      : `${toPersianDigits(shown)} نفر از ${toPersianDigits(cards.length)} نفر`;
+    status.textContent = !q ? "" : EN
+      ? (partial ? `No exact match; ${shown} related` : `${shown} of ${cards.length}`)
+      : partial ? `نتیجه‌ی دقیقی نبود؛ ${num(shown)} نفر مرتبط` : `${num(shown)} نفر از ${num(cards.length)} نفر`;
   }
   let searchTimer;
   search.addEventListener("input", () => { clearTimeout(searchTimer); searchTimer = setTimeout(applyTeamSearch, 120); });
@@ -319,8 +323,11 @@ whenIdle(() => {
   if (shots.length) {
     const box = document.createElement("dialog");
     box.className = "lightbox";
-    box.setAttribute("aria-label", "عکس‌های مدرسه");
-    box.innerHTML = '<figure><img alt=""><figcaption></figcaption></figure><button type="button" class="lb-close" aria-label="بستن">✕</button><button type="button" class="lb-prev" aria-label="عکس قبلی">›</button><button type="button" class="lb-next" aria-label="عکس بعدی">‹</button>';
+    box.dataset.lenisPrevent = "";
+    box.setAttribute("aria-label", EN ? "School photos" : "عکس‌های مدرسه");
+    box.innerHTML = EN
+      ? '<figure><img alt=""><figcaption></figcaption></figure><button type="button" class="lb-close" aria-label="Close">✕</button><button type="button" class="lb-prev" aria-label="Previous photo">‹</button><button type="button" class="lb-next" aria-label="Next photo">›</button>'
+      : '<figure><img alt=""><figcaption></figcaption></figure><button type="button" class="lb-close" aria-label="بستن">✕</button><button type="button" class="lb-prev" aria-label="عکس قبلی">›</button><button type="button" class="lb-next" aria-label="عکس بعدی">‹</button>';
     document.body.append(box);
     const big = $("img", box), cap = $("figcaption", box);
     let at = 0;
@@ -329,6 +336,7 @@ whenIdle(() => {
       const img = $("img", shots[at]);
       big.src = img.currentSrc.replace("-640.webp", "-1280.webp");
       big.alt = img.alt;
+      unzoom();
       cap.textContent = $("figcaption", shots[at]).textContent;
     };
     shots.forEach((f, i) => {
@@ -342,14 +350,82 @@ whenIdle(() => {
     $(".lb-prev", box).addEventListener("click", () => showShot(at - 1));
     $(".lb-next", box).addEventListener("click", () => showShot(at + 1));
     box.addEventListener("click", (e) => { if (e.target === box || e.target.tagName === "FIGURE") box.close(); });
-    box.addEventListener("keydown", (e) => { if (e.key === "ArrowLeft") showShot(at + 1); if (e.key === "ArrowRight") showShot(at - 1); });
-    let sx = null;
-    box.addEventListener("touchstart", (e) => { sx = e.touches[0].clientX; }, { passive: true });
-    box.addEventListener("touchend", (e) => { if (sx === null) return; const dx = e.changedTouches[0].clientX - sx; if (Math.abs(dx) > 40) showShot(at + (dx > 0 ? 1 : -1)); sx = null; }, { passive: true });
+    box.addEventListener("keydown", (e) => { if (e.key === "ArrowLeft") showShot(at + DIR); if (e.key === "ArrowRight") showShot(at - DIR); });
+    // Zoom: two fingers pinch (up to 4x), a zoomed photo is dragged around, a double tap or double click zooms in
+    // at that spot and back out. At normal size a sideways swipe moves to the next photo.
+    let zoom = { s: 1, x: 0, y: 0 };
+    const pts = new Map();
+    let pinch = null, pan = null, swipeX = null, lastTap = 0, touchy = false;
+    const draw = () => { big.style.transform = zoom.s === 1 ? "" : `translate(${zoom.x}px, ${zoom.y}px) scale(${zoom.s})`; box.classList.toggle("is-zoomed", zoom.s > 1); };
+    function unzoom() { zoom = { s: 1, x: 0, y: 0 }; draw(); }
+    // keeps the photo covering the screen's centre instead of sliding out of view
+    const clamp = () => {
+      const r = big.getBoundingClientRect();
+      const w = r.width / zoom.s, h = r.height / zoom.s;
+      const mx = Math.max(0, (w * zoom.s - w) / 2), my = Math.max(0, (h * zoom.s - h) / 2);
+      zoom.x = Math.min(mx, Math.max(-mx, zoom.x));
+      zoom.y = Math.min(my, Math.max(-my, zoom.y));
+    };
+    // zoom to scale s keeping the point (cx, cy) of the screen where it is
+    const zoomAt = (s, cx, cy) => {
+      const r = big.getBoundingClientRect();
+      const ox = cx - (r.left + r.width / 2), oy = cy - (r.top + r.height / 2);
+      const k = s / zoom.s;
+      zoom = { s, x: zoom.x - ox * (k - 1), y: zoom.y - oy * (k - 1) };
+      if (s <= 1) zoom = { s: 1, x: 0, y: 0 };
+      clamp(); draw();
+    };
+    big.addEventListener("pointerdown", (e) => {
+      touchy = e.pointerType !== "mouse";
+      big.setPointerCapture(e.pointerId);
+      pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (pts.size === 2) {
+        const [a, b] = [...pts.values()];
+        pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), s: zoom.s };
+        pan = swipeX = null;
+      } else if (pts.size === 1) {
+        if (zoom.s > 1) pan = { x: e.clientX - zoom.x, y: e.clientY - zoom.y };
+        else swipeX = e.clientX;
+      }
+    });
+    big.addEventListener("pointermove", (e) => {
+      if (!pts.has(e.pointerId)) return;
+      pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (pinch && pts.size === 2) {
+        const [a, b] = [...pts.values()];
+        const s = Math.min(4, Math.max(1, pinch.s * Math.hypot(a.x - b.x, a.y - b.y) / pinch.d));
+        zoomAt(s, (a.x + b.x) / 2, (a.y + b.y) / 2);
+      } else if (pan) {
+        zoom.x = e.clientX - pan.x; zoom.y = e.clientY - pan.y;
+        clamp(); draw();
+      }
+    });
+    const lift = (e) => {
+      if (!pts.delete(e.pointerId)) return;
+      if (pts.size < 2) pinch = null;
+      if (pts.size === 0) {
+        pan = null;
+        if (swipeX !== null) {
+          const dx = e.clientX - swipeX;
+          swipeX = null;
+          if (Math.abs(dx) > 40) { showShot(at + (dx * DIR > 0 ? 1 : -1)); return; }
+          // a tap: two within 300 ms zoom in at that spot, or back out (a mouse uses dblclick below)
+          if (!touchy) return;
+          const now = Date.now();
+          if (now - lastTap < 300) { zoomAt(zoom.s > 1 ? 1 : 2.5, e.clientX, e.clientY); lastTap = 0; } else lastTap = now;
+        }
+      }
+    };
+    big.addEventListener("pointerup", lift);
+    big.addEventListener("pointercancel", lift);
+    big.addEventListener("dblclick", (e) => { if (!touchy) zoomAt(zoom.s > 1 ? 1 : 2.5, e.clientX, e.clientY); });
+    // the mouse wheel or a trackpad pinch zooms too
+    big.addEventListener("wheel", (e) => { e.preventDefault(); zoomAt(Math.min(4, Math.max(1, zoom.s * (e.deltaY < 0 ? 1.15 : 1 / 1.15))), e.clientX, e.clientY); }, { passive: false });
+    box.addEventListener("close", unzoom);
   }
 
-  /* callback request */
-  createFormController({
+  /* callback request (the English page has no form) */
+  if ($("[data-inquiry]")) createFormController({
     form: $("[data-inquiry]"),
     validate: validateInquiry,
     draftKey: "inquiry-draft",

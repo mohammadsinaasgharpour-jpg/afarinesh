@@ -53,8 +53,7 @@ export const buildSecurityHeaders = (scriptHashes = [], styleHashes = []) => ({
   ].join("; "),
   "X-Content-Type-Options": "nosniff",
   "Referrer-Policy": "strict-origin-when-cross-origin",
-  // the microphone only for this site's own pages (the address field's voice button)
-  "Permissions-Policy": "camera=(), microphone=(self), geolocation=(), interest-cohort=()",
+  "Permissions-Policy": "camera=(), microphone=(), geolocation=(), interest-cohort=()",
   "Cross-Origin-Opener-Policy": "same-origin",
   "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
 });

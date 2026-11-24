@@ -88,6 +88,8 @@ copy_tree("$top/public", WEB_ROOT, $copied);
 copy_tree("$top/php", WEB_ROOT, $copied);
 copy_tree("$top/library-php", WEB_ROOT . '/library', $copied);
 remove_tree($tmp);
+// endpoints taken out of the site are removed from the host too
+foreach (['api/transcribe.php', 'api/geocode.php', 'sitemap.xml'] as $gone) @unlink(WEB_ROOT . "/$gone");
 // pages changed in the admin panel's editor go back over the deployed ones
 require_once __DIR__ . '/_lib/site-edits.php';
 $edited = reapply_edits();

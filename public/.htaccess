@@ -21,6 +21,9 @@ ErrorDocument 404 /404.html
   # below would otherwise redirect the .html name away)
   RewriteRule ^(google[0-9a-f]{16}\.html)$ api/google-verify.php?f=$1 [END]
 
+  # /sitemap.xml is built on each request from the pages on the host (sitemap.php); ?page=N for large sites
+  RewriteRule ^sitemap\.xml$ sitemap.php [END,QSA]
+
   # /api/<name> runs api/<name>.php
   RewriteRule ^api/([a-z-]+)/?$ api/$1.php [L,QSA]
 
@@ -43,10 +46,10 @@ ErrorDocument 404 /404.html
 AddDefaultCharset UTF-8
 
 <IfModule mod_headers.c>
-  Header always set Content-Security-Policy "default-src 'self'; img-src 'self' data:; style-src 'self' 'sha256-l2CtI0WwByh19On3y/Rrk13PEou1I1SCbVD7eChICNc='; font-src 'self'; script-src 'self' 'sha256-KwIMMOwmnwZ1nVgWVKtmIEPHSISDCNBC2012VaDRewk='; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+  Header always set Content-Security-Policy "default-src 'self'; img-src 'self' data:; style-src 'self' 'sha256-OaQkWrprHgbtnS8dr5hzAaVWFTOQunRsZxg+yC0LoQM='; font-src 'self'; script-src 'self' 'sha256-KwIMMOwmnwZ1nVgWVKtmIEPHSISDCNBC2012VaDRewk='; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
   Header always set X-Content-Type-Options "nosniff"
   Header always set Referrer-Policy "strict-origin-when-cross-origin"
-  Header always set Permissions-Policy "camera=(), microphone=(self), geolocation=(), interest-cohort=()"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), interest-cohort=()"
   Header always set Cross-Origin-Opener-Policy "same-origin"
   Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
   # file names are not content-hashed: code revalidates, pictures are cached for a month, fonts for a year

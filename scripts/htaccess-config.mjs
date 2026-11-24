@@ -33,6 +33,9 @@ ErrorDocument 404 /404.html
   # below would otherwise redirect the .html name away)
   RewriteRule ^(google[0-9a-f]{16}\\.html)$ api/google-verify.php?f=$1 [END]
 
+  # /sitemap.xml is built on each request from the pages on the host (sitemap.php); ?page=N for large sites
+  RewriteRule ^sitemap\\.xml$ sitemap.php [END,QSA]
+
   # /api/<name> runs api/<name>.php
   RewriteRule ^api/([a-z-]+)/?$ api/$1.php [L,QSA]
 

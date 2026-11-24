@@ -18,6 +18,9 @@ export async function buildVercelConfig() {
     trailingSlash: false,
     headers: [
       { source: "/(.*)", headers: toList(buildSecurityHeaders(inlineScriptHashes(html), inlineStyleHashes(html))) },
+      // the copy on Vercel only carries the Telegram relay; the site itself lives at afarineshshiraz.ir and only
+      // that address may appear in search results
+      { source: "/(.*)", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }] },
       // file names are not content-hashed: code revalidates, pictures are cached for a month, fonts for a year
       { source: "/assets/fonts/(.*)", headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }] },
       { source: "/assets/img/(.*)", headers: [{ key: "Cache-Control", value: "public, max-age=2592000, stale-while-revalidate=86400" }] },

@@ -6,95 +6,6 @@ initChrome();
 const form = $("[data-form]");
 const fa = (v) => (v ? toPersianDigits(v) : "");
 
-/**
- * The address said aloud: the microphone records up to 40 seconds, the site's server has Gemini write it down
- * (the browser's own speech recognition goes through Google servers that are blocked in Iran), and the text is
- * added to the field for the visitor to check.
- */
-function initVoiceInput() {
-  const button = $("[data-voice-for]");
-  if (!button) return;
-  const target = document.getElementById(button.dataset.voiceFor);
-  const note = document.getElementById(`${button.dataset.voiceFor}-voice-note`);
-  const label = button.querySelector("span");
-  if (!target || !navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) { button.hidden = true; return; }
-  // the microphone shows only once the school has set voice input up (a Gemini key in the admin panel)
-  button.hidden = true;
-  fetch("/api/transcribe").then((r) => r.json()).then((s) => { button.hidden = !s.ready; }).catch(() => {});
-  const types = ["audio/webm;codecs=opus", "audio/ogg;codecs=opus", "audio/mp4", "audio/webm"];
-  const mime = types.find((t) => MediaRecorder.isTypeSupported?.(t)) || "";
-  const say = (text) => { if (note) note.textContent = text; };
-  let rec = null, stopTimer;
-  const reset = () => { rec = null; clearTimeout(stopTimer); button.classList.remove("is-listening", "is-busy"); button.disabled = false; label.textContent = "گفتن نشانی با صدا"; };
-  button.addEventListener("click", async () => {
-    if (rec) { rec.stop(); return; }
-    let stream;
-    try { stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } }); }
-    catch { say("اجازه‌ی میکروفون داده نشد؛ نشانی را دستی بنویسید یا اجازه را از تنظیمات مرورگر بدهید."); return; }
-    const chunks = [];
-    rec = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
-    rec.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data); };
-    rec.onstop = async () => {
-      stream.getTracks().forEach((t) => t.stop());
-      button.classList.remove("is-listening");
-      button.classList.add("is-busy");
-      button.disabled = true;
-      label.textContent = "در حال نوشتن نشانی…";
-      try {
-        const blob = new Blob(chunks, { type: (rec?.mimeType || mime || "audio/webm").split(";")[0] });
-        // sent as base64 inside JSON: the host's firewall refuses a raw audio upload
-        const audio = await new Promise((ok, fail) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(",")[1] || ""); r.onerror = fail; r.readAsDataURL(blob); });
-        const res = await fetch("/api/transcribe", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: blob.type, audio }), signal: AbortSignal.timeout(90000) });
-        const body = await res.json().catch(() => ({}));
-        if (res.ok && body.text) {
-          const now = target.value.trim();
-          target.value = `${now}${now ? "، " : ""}${body.text}`.slice(0, 250);
-          target.dispatchEvent(new Event("input", { bubbles: true }));
-          say("نشانی نوشته شد؛ لطفاً آن را بخوانید و اگر لازم است اصلاح کنید.");
-        } else say(body.error === "no_speech" ? "صدایی شنیده نشد؛ دوباره و کمی بلندتر بگویید." : body.error === "voice_not_configured" ? "گفتن نشانی با صدا هنوز راه‌اندازی نشده است؛ نشانی را دستی بنویسید." : "تبدیل صدا انجام نشد؛ دوباره امتحان کنید یا نشانی را دستی بنویسید.");
-      } catch { say("تبدیل صدا انجام نشد؛ اتصال اینترنت را بررسی کنید یا نشانی را دستی بنویسید."); }
-      reset();
-    };
-    rec.start();
-    button.classList.add("is-listening");
-    label.textContent = "در حال شنیدن… برای پایان دوباره بزنید";
-    say("نشانی را آرام و واضح بگویید: شهر، خیابان، کوچه و پلاک.");
-    stopTimer = setTimeout(() => rec?.state === "recording" && rec.stop(), 40000);
-  });
-}
-/**
- * When the visitor stops typing the address, the site's server looks it up on a map of Shiraz and the result is
- * shown under the field. It is advice only: a street missing from the map never stops the form.
- */
-function initMapCheck() {
-  const box = $("[data-map-check]");
-  const field = box && form.querySelector('[name="address"]');
-  if (!field) return;
-  let timer, ctrl, last = "";
-  const show = (cls, html) => { box.className = `map-check ${cls}`; box.innerHTML = html; };
-  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
-  const check = async () => {
-    const q = field.value.trim();
-    if (q === last) return;
-    last = q;
-    ctrl?.abort();
-    if (q.length < 12 || !/[؀-ۿ]/.test(q)) { show("", ""); return; }
-    ctrl = new AbortController();
-    try {
-      const res = await fetch("/api/geocode", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ address: q }), signal: ctrl.signal });
-      const r = await res.json();
-      const link = r.lat ? ` <a href="https://neshan.org/maps/share/${r.lat},${r.lng}" target="_blank" rel="noopener">دیدن روی نقشه</a>` : "";
-      if (r.found === "street") show("is-ok", `خیابان روی نقشه پیدا شد: ${esc(r.label)}.${link}`);
-      else if (r.found === "area") show("is-ok", `«${esc(r.label)}» روی نقشه پیدا شد. همه‌ی کوچه‌ها روی نقشه نیستند؛ اگر بقیه‌ی نشانی درست است، ادامه دهید.${link}`);
-      else if (r.found === "none") show("is-warn", "این نشانی روی نقشه پیدا نشد؛ نام خیابان و محله را بررسی کنید. اگر درست است، می‌توانید ادامه دهید.");
-      else show("", "");
-    } catch (e) { if (e.name !== "AbortError") show("", ""); }
-  };
-  // only after typing stops: a line appearing on blur would push the Next button away mid-tap on phones
-  field.addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(check, 1200); });
-  form.addEventListener("reset", () => { last = ""; show("", ""); });
-}
-
 const PAGES = {
   preRegistration: {
     validate: validatePreRegistration,
@@ -118,8 +29,6 @@ const PAGES = {
 
 // an unsent form is kept only encrypted, in this tab, for 30 minutes (secureDraft in common.js)
 createFormController({ form, ...PAGES[form.dataset.form], secureKey: form.dataset.form });
-initVoiceInput();
-initMapCheck();
 
 // pre-registration: the report card asked for depends on the grade applied for
 // (grade 7 comes from primary school, whose report card is descriptive only)

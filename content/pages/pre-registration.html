@@ -80,7 +80,8 @@
           <div class="field">
             <label for="p-nationalId">کد ملی دانش‌آموز <span class="req" aria-hidden="true">*</span></label>
             <input id="p-nationalId" name="nationalId" inputmode="numeric" dir="ltr" autocomplete="off" required maxlength="10" placeholder="۱۰ رقم">
-            <p class="example">عددها را با صفحه‌کلید فارسی یا انگلیسی می‌توانید بنویسید.</p>
+            <p class="example">به این ترتیب بنویسید: شهر، خیابان، کوچه، پلاک، واحد. مثلاً: شیراز، خیابان زند، کوچه‌ی ۸، پلاک ۲۴، واحد ۲</p>
+            <label class="check no-plate"><input type="checkbox" name="noPlate" value="on"><span>ساختمان پلاک ندارد (به‌جای پلاک، نشانه‌ای بنویسید؛ مثلاً «روبه‌روی نانوایی، درِ سبز»)</span></label>
             <p class="hint" data-error></p>
           </div>
         </div>
@@ -120,11 +121,7 @@
           <div class="field">
             <label for="p-address">نشانی محل سکونت <span class="req" aria-hidden="true">*</span></label>
             <textarea id="p-address" name="address" rows="3" autocomplete="street-address" required maxlength="250" lang="fa"></textarea>
-            <button class="voice-btn" type="button" data-voice-for="p-address" aria-describedby="p-address-voice-note"><svg class="ic" aria-hidden="true"><use href="#i-mic"/></svg><span>گفتن نشانی با صدا</span></button>
-            <p class="voice-note" id="p-address-voice-note">صدای شما فقط برای نوشتن نشانی فرستاده می‌شود و جایی ذخیره نمی‌شود.</p>
             <p class="example">به این ترتیب بنویسید: شهر، خیابان، کوچه، پلاک، واحد. مثلاً: شیراز، خیابان زند، کوچه‌ی ۸، پلاک ۲۴، واحد ۲</p>
-            <label class="check no-plate"><input type="checkbox" name="noPlate" value="on"><span>ساختمان پلاک ندارد (به‌جای پلاک، نشانه‌ای بنویسید؛ مثلاً «روبه‌روی نانوایی، درِ سبز»)</span></label>
-            <p class="map-check" data-map-check aria-live="polite"></p>
             <p class="hint" data-error></p>
           </div>
         </div>

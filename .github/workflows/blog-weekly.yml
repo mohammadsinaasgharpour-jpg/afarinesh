@@ -1,0 +1,42 @@
+# Publishes the blog's scheduled articles: each article in content/blog/ carries its date, and the build only includes
+# those whose day has come (Tehran time). Every Saturday at 07:00 Tehran (03:30 UTC) this rebuilds the site, commits
+# whatever changed (the new article, the blog index, the feed) to main and asks the host to deploy. The sitemap needs
+# nothing: php/sitemap.php lists the new page as soon as it is on the host.
+name: blog-weekly
+on:
+  schedule:
+    - cron: "30 3 * * 6"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency: { group: blog-weekly, cancel-in-progress: false }
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: main
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+      - run: npm ci --ignore-scripts
+      - run: npm run build
+      - name: Commit the newly due articles
+        run: |
+          git add -A public content
+          if git diff --cached --quiet; then echo "nothing new this week"; exit 0; fi
+          git config user.name "blog-weekly"
+          git config user.email "blog-weekly@users.noreply.github.com"
+          git commit -m "Blog: publish this week's article"
+          git push origin HEAD:main
+      - name: Ask the site to deploy main
+        run: |
+          for i in 1 2 3; do
+            code=$(curl -s -o out.json -w '%{http_code}' -X POST --max-time 150 "https://afarineshshiraz.ir/api/deploy?poll=1")
+            cat out.json; echo
+            [ "$code" = 200 ] && exit 0
+            sleep 65
+          done
+          exit 1

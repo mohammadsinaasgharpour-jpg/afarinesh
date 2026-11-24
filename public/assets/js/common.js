@@ -3,6 +3,8 @@ import { toPersianDigits, jalaliMonthDays } from "./validate.js";
 
 export const $ = (sel, root = document) => root.querySelector(sel);
 export const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+/** The English page (/en) uses the same scripts; labels the scripts write themselves follow its language. */
+export const EN = document.documentElement.lang === "en";
 export const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
 /** Page scrolling by script goes through here, so the smooth-scroll engine (motion.js, desktops only) can
     take it over; without it the browser scrolls. `smooth` is ignored with reduced motion. */
@@ -64,7 +66,7 @@ export function initChrome() {
   const themeMeta = $('meta[name="theme-color"]');
   const isDark = () => document.documentElement.dataset.theme === "dark";
   const syncTheme = () => {
-    themeBtns.forEach((b) => b.setAttribute("aria-label", isDark() ? "تغییر به حالت روشن" : "تغییر به حالت تاریک"));
+    themeBtns.forEach((b) => b.setAttribute("aria-label", EN ? (isDark() ? "Switch to light mode" : "Switch to dark mode") : isDark() ? "تغییر به حالت روشن" : "تغییر به حالت تاریک"));
     if (themeMeta) themeMeta.content = isDark() ? PAPER.dark : PAPER.light;
   };
   // The colours glide to the other theme in place. (A whole-page view transition was used before: on phones its
@@ -92,7 +94,7 @@ export function initChrome() {
   const setMenu = (open) => {
     nav.classList.toggle("is-open", open);
     menuBtn.setAttribute("aria-expanded", String(open));
-    menuBtn.setAttribute("aria-label", open ? "بستن منو" : "باز کردن منو");
+    menuBtn.setAttribute("aria-label", EN ? (open ? "Close menu" : "Open menu") : open ? "بستن منو" : "باز کردن منو");
   };
   menuBtn.addEventListener("click", () => setMenu(menuBtn.getAttribute("aria-expanded") !== "true"));
   nav.addEventListener("click", (e) => { if (e.target.closest("a")) setMenu(false); });
@@ -125,16 +127,6 @@ export function initChrome() {
     goTop();
   });
 
-  // the share links carry the address this page is served from
-  const shareText = $("[data-share-text]")?.textContent.trim() ?? "";
-  const site = `${location.origin}/`;
-  const tg = $('[data-share="tg"]'), wa = $('[data-share="wa"]');
-  if (tg) tg.href = `https://t.me/share/url?url=${encodeURIComponent(site)}&text=${encodeURIComponent(shareText)}`;
-  if (wa) wa.href = `https://wa.me/?text=${encodeURIComponent(`${shareText} ${site}`)}`;
-  $("[data-copy-link]")?.addEventListener("click", async () => {
-    try { await navigator.clipboard.writeText(`${shareText}\n${site}`); toast("متن معرفی و نشانی سایت رونوشت شد."); }
-    catch { toast(`نشانی سایت: ${site}`); }
-  });
 
   // links to the school's numbers land on the contact card and highlight it briefly
   const contacts = $("#school-contacts");

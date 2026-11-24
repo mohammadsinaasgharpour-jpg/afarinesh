@@ -18,7 +18,7 @@ export const MOTION = {
   ease: "power3.out",
   dur: { quick: 0.15, fast: 0.25, slow: 0.4, verySlow: 0.5, count: 1.1 },
   stagger: 0.06,
-  rise: { wide: 18, narrow: 10 }, // px an element travels on entrance
+  rise: { wide: 34, narrow: 10 }, // px an element travels on entrance
   start: "top 88%", // when an entrance plays: the element's top passes 88% of the screen height
 };
 
@@ -86,13 +86,13 @@ const GROUPS = [
   [".contact", ":scope > *"],
 ];
 
-function entrances(gsap, ScrollTrigger, rise) {
+function entrances(gsap, ScrollTrigger, rise, wide) {
   for (const [container, children] of GROUPS) {
     for (const box of document.querySelectorAll(container)) {
       const items = [...box.querySelectorAll(children)].filter((el) => !shown.has(el) && belowScreen(el));
       if (!items.length) continue;
       // the cards' own CSS hover transition would chase every frame of the entrance; it waits until the end
-      gsap.set(items, { opacity: 0, y: rise, transition: "none" });
+      gsap.set(items, { opacity: 0, y: rise, scale: wide ? 0.97 : 1, transition: "none" });
       ScrollTrigger.batch(items, {
         start: MOTION.start,
         once: true,
@@ -100,7 +100,7 @@ function entrances(gsap, ScrollTrigger, rise) {
           batch.forEach((el) => shown.add(el));
           box.classList.add("is-seen"); // CSS draws the heading's underline
           gsap.to(batch, {
-            opacity: 1, y: 0, duration: MOTION.dur.verySlow, stagger: MOTION.stagger,
+            opacity: 1, y: 0, scale: 1, duration: wide ? 0.85 : MOTION.dur.verySlow, stagger: wide ? 0.09 : MOTION.stagger,
             overwrite: true, clearProps: "opacity,transform,transition",
           });
         },
@@ -125,8 +125,9 @@ function pictures(gsap) {
  * is hidden from screen readers, which read the real value from a visually hidden copy the whole time.
  */
 function counters(gsap) {
-  const FA = /([۰-۹]+)/;
+  const FA = /([۰-۹0-9]+)/;
   const toNumber = (s) => Number(s.replace(/[۰-۹]/g, (d) => "۰۱۲۳۴۵۶۷۸۹".indexOf(d)));
+  const write = document.documentElement.lang === "en" ? String : toPersianDigits;
   const restores = [];
   for (const dd of document.querySelectorAll(".fact dd")) {
     if (shown.has(dd) || !belowScreen(dd)) continue;
@@ -137,7 +138,7 @@ function counters(gsap) {
     const live = document.createElement("span");
     live.setAttribute("aria-hidden", "true");
     const state = { p: 0 };
-    const draw = () => { live.textContent = parts.map((s, i) => (i % 2 ? toPersianDigits(Math.round(toNumber(s) * state.p)) : s)).join(""); };
+    const draw = () => { live.textContent = parts.map((s, i) => (i % 2 ? write(Math.round(toNumber(s) * state.p)) : s)).join(""); };
     const restore = () => { dd.textContent = text; };
     restores.push(restore);
     dd.replaceChildren(real, live);
@@ -188,6 +189,38 @@ function gallery(gsap) {
   });
 }
 
+/** Wide screens: each campus photo drifts inside its frame as the page passes it, so the grid has depth. */
+function photoDepth(gsap) {
+  for (const img of document.querySelectorAll(".campus-grid img, .map-card img")) {
+    gsap.fromTo(img, { yPercent: -5, scale: 1.12 }, {
+      yPercent: 5, scale: 1.12, ease: "none",
+      scrollTrigger: { trigger: img.parentElement, start: "top bottom", end: "bottom top", scrub: 0.6 },
+    });
+  }
+}
+
+/** Desktops: cards lean toward the pointer a few degrees and lift, and settle back when it leaves. */
+function tilt(gsap) {
+  const undo = [];
+  for (const card of document.querySelectorAll(".features > li, .mondrian > .cell, .fact, .contact > *")) {
+    gsap.set(card, { transformPerspective: 900 });
+    const rx = gsap.quickTo(card, "rotationX", { duration: 0.5, ease: MOTION.ease });
+    const ry = gsap.quickTo(card, "rotationY", { duration: 0.5, ease: MOTION.ease });
+    const lift = gsap.quickTo(card, "y", { duration: 0.5, ease: MOTION.ease });
+    const move = (e) => {
+      const r = card.getBoundingClientRect();
+      ry(((e.clientX - r.left) / r.width - 0.5) * 6);
+      rx(-((e.clientY - r.top) / r.height - 0.5) * 6);
+      lift(-4);
+    };
+    const leave = () => { rx(0); ry(0); lift(0); };
+    card.addEventListener("pointermove", move);
+    card.addEventListener("pointerleave", leave);
+    undo.push(() => { card.removeEventListener("pointermove", move); card.removeEventListener("pointerleave", leave); gsap.set(card, { clearProps: "transform" }); });
+  }
+  return () => undo.forEach((u) => u());
+}
+
 /** The hero photo drifts a little slower than the page (wide screens only, about 8% of its height). */
 function heroDepth(gsap) {
   const media = document.querySelector(".hero-media");
@@ -207,7 +240,8 @@ function heroDepth(gsap) {
 function smoothScroll(gsap, ScrollTrigger) {
   const Lenis = window.Lenis;
   if (!Lenis) return undefined;
-  const lenis = new Lenis({ lerp: 0.14, wheelMultiplier: 1, syncTouch: true, syncTouchLerp: 0.1, touchInertiaMultiplier: 35, allowNestedScroll: true, autoRaf: false, stopInertiaOnNavigate: true });
+  // lerp 0.09: each wheel step glides out over about half a second instead of stopping short
+  const lenis = new Lenis({ lerp: 0.09, wheelMultiplier: 1, syncTouch: true, syncTouchLerp: 0.1, touchInertiaMultiplier: 35, allowNestedScroll: true, autoRaf: false, stopInertiaOnNavigate: true });
   lenis.on("scroll", ScrollTrigger.update);
   // in-page links glide to their section instead of jumping. Sections further down are laid out only as
   // they come near (content-visibility), so the target can move while the page travels: on arrival the
@@ -268,10 +302,18 @@ function magnetic(gsap) {
   return () => undo.forEach((u) => u());
 }
 
-/** Trigger positions follow layout changes below them (sections drawn late, the teacher deck finishing). */
+/**
+ * Trigger positions follow layout changes below them (photos arriving, the teacher deck finishing). The refresh
+ * waits until the page stops moving: recalculating in the middle of a scroll is what made scrolling halt.
+ */
 function followLayout(ScrollTrigger) {
-  let timer;
-  const ro = new ResizeObserver(() => { clearTimeout(timer); timer = setTimeout(() => ScrollTrigger.refresh(), 200); });
+  let timer, pending = false;
+  const refresh = () => { pending = false; ScrollTrigger.refresh(); };
+  ScrollTrigger.addEventListener("scrollEnd", () => { if (pending) refresh(); });
+  const ro = new ResizeObserver(() => {
+    clearTimeout(timer);
+    timer = setTimeout(() => { if (ScrollTrigger.isScrolling()) pending = true; else refresh(); }, 250);
+  });
   ro.observe(document.body);
 }
 
@@ -338,19 +380,21 @@ export async function initMotion() {
   mm.add({ wide: WIDE, narrow: NARROW, still: STILL }, (ctx) => {
     const { wide, still } = ctx.conditions;
     measure(); // every read first, then the writes below
-    entrances(gsap, ScrollTrigger, wide ? MOTION.rise.wide : MOTION.rise.narrow);
+    entrances(gsap, ScrollTrigger, wide ? MOTION.rise.wide : MOTION.rise.narrow, wide);
     pictures(gsap);
     const undoCount = counters(gsap);
     sequences(gsap, wide);
     gallery(gsap);
-    if (wide && !still) heroDepth(gsap);
+    if (wide && !still) { heroDepth(gsap); photoDepth(gsap); }
     return undoCount;
   });
   // all devices: Lenis smooth scrolling; magnetic buttons still only run where a precise pointer exists
   mm.add("all", () => {
     const undoScroll = smoothScroll(gsap, ScrollTrigger);
-    const undoMagnet = matchMedia(DESK).matches && !matchMedia(STILL).matches ? magnetic(gsap) : () => {};
-    return () => { undoMagnet(); undoScroll?.(); };
+    const desk = matchMedia(DESK).matches && !matchMedia(STILL).matches;
+    const undoMagnet = desk ? magnetic(gsap) : () => {};
+    const undoTilt = desk ? tilt(gsap) : () => {};
+    return () => { undoTilt(); undoMagnet(); undoScroll?.(); };
   });
   followLayout(ScrollTrigger);
 

@@ -277,7 +277,7 @@ test("the school name in the header goes back to the top of the home page", asyn
   await page.goto("/careers");
   await page.locator("header a.brand").click();
   await expect(page).toHaveURL(/\/$/);
-  await expect(page.locator(".site-footer")).toContainText("طراحی و ساخت: محمدسینا اصغرپور");
+  await expect(page.locator(".site-footer")).toContainText("طراحی و برنامه‌نویسی سایت: محمدسینا اصغرپور");
   await expect(page.locator(".site-footer")).not.toContainText("سامانه");
 });
 
@@ -491,11 +491,9 @@ test("links to the school's numbers open the contact card", async ({ page }) => 
   await expect(page).toHaveURL(/pre-registration$/);
 });
 
-test("the share block carries a description, not just the address", async ({ page }) => {
+test("the footer has no share box", async ({ page }) => {
   await page.goto("/");
-  await expect(page.locator("[data-share-text]")).toContainText("پیش‌ثبت‌نام");
-  const tg = await page.locator('[data-share="tg"]').getAttribute("href");
-  expect(decodeURIComponent(tg)).toContain("کلاس‌های ۱۵ تا ۱۷ نفره");
+  await expect(page.locator("[data-share-text], [data-share]")).toHaveCount(0);
   await expect(page.locator(".credit a")).toHaveCount(0);
 });
 
@@ -513,16 +511,41 @@ test("phone fields keep digits only, at most 11", async ({ page }) => {
   await expect(f).toHaveValue("09155247455");
 });
 
-test("a typed address is looked up on the map, as advice only", async ({ page }) => {
-  let asked = "";
-  await page.route("**/api/geocode", async (route) => {
-    asked = JSON.parse(route.request().postData()).address;
-    await route.fulfill({ contentType: "application/json", body: JSON.stringify({ ok: true, found: "none" }) });
-  });
+test("the address field has no voice button or map lookup", async ({ page }) => {
   await page.goto("/pre-registration");
-  const f = page.locator("#p-address");
-  await f.evaluate((el) => { el.value = "شیراز، خیابان ناشناخته، کوچه ۵، پلاک ۱۲"; el.dispatchEvent(new Event("input", { bubbles: true })); });
-  await expect(page.locator("[data-map-check]")).toContainText("روی نقشه پیدا نشد");
-  await expect(page.locator("[data-map-check]")).toContainText("می‌توانید ادامه دهید");
-  expect(asked).toContain("خیابان ناشناخته");
+  await expect(page.locator("[data-voice-for], [data-map-check]")).toHaveCount(0);
+  await expect(page.locator(".no-plate")).toHaveCount(1);
+});
+
+test("the English page is the home page in English, with no form or sign-up", async ({ page }) => {
+  await page.goto("/en");
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  await expect(page.locator("form, dialog, a[href*='pre-registration']")).toHaveCount(0);
+  await expect(page.locator("#team .teacher")).toHaveCount(await (async () => { await page.goto("/"); const n = await page.locator("#team .teacher").count(); await page.goto("/en"); return n; })());
+  const text = await page.locator("body").innerText();
+  expect(text.replace(/فارسی/g, "")).not.toMatch(/[؀-ۿ]/);
+  await expect(page.locator("h1")).toContainText("Big ideas");
+});
+
+test("the blog is in the main menu and lists articles with photos", async ({ page, isMobile }) => {
+  await page.goto("/");
+  if (isMobile) await page.locator("[data-menu]").click();
+  await page.locator('#nav a[href="/blog/"]').click();
+  await expect(page).toHaveURL(/\/blog\/$/);
+  expect(await page.locator(".post-card").count()).toBeGreaterThanOrEqual(8);
+  await expect(page.locator(".post-card img").first()).toHaveAttribute("alt", /.+/);
+  await page.locator('[data-cat-link="study"]').click();
+  await expect(page.locator('[data-cat-link="study"]')).toHaveAttribute("aria-current", "true");
+  for (const c of await page.locator(".blog-list .post-card:visible").all()) await expect(c).toHaveAttribute("data-cat", "study");
+});
+
+test("a campus photo opens large and zooms on double click", async ({ page }) => {
+  await page.goto("/#campus");
+  await page.locator(".campus-grid figure").first().click();
+  const img = page.locator(".lightbox img");
+  await expect(img).toBeVisible();
+  await img.dblclick();
+  await expect(page.locator(".lightbox")).toHaveClass(/is-zoomed/);
+  await img.dblclick();
+  await expect(page.locator(".lightbox")).not.toHaveClass(/is-zoomed/);
 });

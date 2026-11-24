@@ -4,5 +4,22 @@ Disallow: /api/
 Disallow: /admin
 Disallow: /library/admin/
 
+# Search and AI answer engines are welcome to read and cite the school's public pages (a summary is in /llms.txt).
+User-agent: Googlebot
+User-agent: Bingbot
+User-agent: Google-Extended
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: ClaudeBot
+User-agent: Claude-SearchBot
+User-agent: Claude-User
+User-agent: PerplexityBot
+User-agent: Applebot
+User-agent: Applebot-Extended
+Allow: /
+Disallow: /api/
+Disallow: /admin
+Disallow: /library/admin/
+
 Sitemap: https://afarineshshiraz.ir/sitemap.xml
-Sitemap: https://afarineshshiraz.ir/library/sitemap.xml

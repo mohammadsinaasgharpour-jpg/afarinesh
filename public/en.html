@@ -3,16 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Afarinesh High School Shiraz | Private Research-Based Boys' School</title>
-<meta name="description" content="Afarinesh High School is a private, research-based boys' lower-secondary school in Shiraz, Iran, since 2008: classes of 15 to 17, specialist teachers and year-long research, art, language and sport electives.">
-<meta name="keywords" content="Afarinesh High School, Afarinesh School, Afarinesh High School Shiraz, Afarinesh School Shiraz, private school Shiraz, private high school Shiraz, non-governmental school Shiraz, research-based school, research-based high school, school in Shiraz, high school in Shiraz, boys school Shiraz">
+<title>Afarinesh High School Shiraz | Private Research-Based Boys' School in Iran</title>
+<meta name="description" content="Afarinesh High School is a private, research-based boys' school for grades 7 to 9 in Shiraz, Iran, since 2008: classes of 15 to 17 and year-long electives.">
+<meta name="keywords" content="Afarinesh High School, Afarinesh School, Afarinesh High School Shiraz, Afarinesh School Shiraz, private school Shiraz, private high school Shiraz, non-governmental school Shiraz, research-based school, research-based high school, school in Shiraz, high school in Shiraz, boys school Shiraz, middle school Shiraz Iran">
 <link rel="canonical" href="https://afarineshshiraz.ir/en">
 <link rel="alternate" hreflang="fa" href="https://afarineshshiraz.ir/">
 <link rel="alternate" hreflang="en" href="https://afarineshshiraz.ir/en">
 <link rel="alternate" hreflang="x-default" href="https://afarineshshiraz.ir/">
 <meta name="theme-color" content="#e8edf2">
 <meta name="color-scheme" content="light dark">
-<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
 <meta name="geo.region" content="IR-07">
 <meta name="geo.placename" content="Shiraz">
 <meta name="geo.position" content="29.6368;52.5353">
@@ -30,7 +30,8 @@
 <link rel="icon" href="/assets/img/icon-192.png" sizes="192x192">
 <link rel="apple-touch-icon" href="/assets/img/icon-180.png">
 <link rel="manifest" href="/manifest.webmanifest">
-<link rel="preload" href="/assets/fonts/estedad-arabic.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/estedad-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/lalezar-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" as="image" media="(max-width: 640px)" imagesrcset="/assets/img/hero-gate-510.webp 510w" imagesizes="100vw" fetchpriority="high">
 <link rel="preload" as="image" media="(min-width: 641px)" imagesrcset="/assets/img/hero-wide-640.webp 640w, /assets/img/hero-wide-960.webp 960w, /assets/img/hero-wide-1280.webp 1280w" imagesizes="100vw" fetchpriority="high">
 <script>(function(){var t;try{t=sessionStorage.getItem('theme')}catch(e){}if(!t){var h=new Date().getHours();t=h>=18||h<6?'dark':'light'}document.documentElement.dataset.theme=t;document.documentElement.classList.add('js');var m=document.querySelector('meta[name=theme-color]');if(m)m.content=t==='dark'?'#0d2131':'#e8edf2'})();</script>
@@ -186,7 +187,7 @@ transition: border-color .2s, background-color .2s;
 .nav a {
 display: block; padding: var(--s2) var(--s3); border-radius: var(--r-sm);
 color: var(--ink); text-decoration: none; font-weight: 500; font-size: .98rem;
-transition: background-color .15s;
+transition: background-color .15s; white-space: nowrap;
 }
 .nav a:hover { background: color-mix(in srgb, var(--ink) 7%, transparent); }
 .nav a { position: relative; }
@@ -200,7 +201,7 @@ transform: scaleX(0); transform-origin: right; transition: transform var(--dur-f
 .ic-sun, .ic-shut, .menu-btn { display: none; }
 :root[data-theme="dark"] .ic-moon { display: none; }
 :root[data-theme="dark"] .ic-sun { display: block; }
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
 .menu-btn { display: inline-grid; }
 .nav {
 position: fixed; inset: 72px 0 auto 0; margin: 0;
@@ -280,7 +281,10 @@ transition: opacity .2s, transform .2s var(--ease), visibility 0s .2s;
 .lightbox { padding: 0; border: 0; background: transparent; max-width: 100vw; max-height: 100svh; width: 100vw; height: 100svh; }
 .lightbox::backdrop { background: rgba(4, 14, 22, .92); }
 .lightbox figure { margin: 0; height: 100%; display: grid; place-items: center; align-content: center; gap: var(--s3); padding: var(--s5); }
-.lightbox img { max-width: min(100%, 1280px); max-height: calc(100svh - 120px); object-fit: contain; border-radius: var(--r-sm); }
+.lightbox img { max-width: min(100%, 1280px); max-height: calc(100svh - 120px); object-fit: contain; border-radius: var(--r-sm); touch-action: none; cursor: zoom-in; transform-origin: center; user-select: none; -webkit-user-drag: none; }
+.lightbox.is-zoomed img { cursor: grab; border-radius: 0; }
+.lightbox.is-zoomed figcaption, .lightbox.is-zoomed .lb-prev, .lightbox.is-zoomed .lb-next { opacity: 0; pointer-events: none; }
+.lightbox figure { overflow: hidden; }
 .lightbox figcaption { color: #fff; font-weight: 700; }
 .lightbox button { position: fixed; top: 12px; inset-inline-start: 12px; width: 48px; height: 48px; border-radius: 50%; border: 0; background: rgba(255, 255, 255, .14); color: #fff; font-size: 1.4rem; cursor: pointer; }
 .lightbox .lb-prev, .lightbox .lb-next { top: 50%; translate: 0 -50%; }
@@ -550,17 +554,13 @@ grid-template-columns: minmax(0, 1fr); min-width: 0; justify-items: center; alig
 }
 .is-swipe .teacher[hidden] { display: none; }
 .is-swipe .teacher.is-current { visibility: visible; z-index: 2; }
-.is-swipe .team { perspective: 2000px; }
-.is-swipe .teacher { transform-origin: 100% 50%; backface-visibility: hidden; transform-style: preserve-3d; will-change: auto; }
 .is-swipe .teacher.is-current { box-shadow: -5px 5px 0 -1px var(--surface), -5px 5px 0 0 var(--line), -10px 10px 0 -1px var(--surface), -10px 10px 0 0 var(--line); }
 .is-swipe .teacher.is-under-now { visibility: visible; z-index: 3; }
 .is-swipe .teacher.is-turning { visibility: visible; z-index: 4; will-change: transform; box-shadow: -18px 14px 40px rgba(6, 20, 31, .22); }
 .is-swipe .teacher.is-dragging { transition: none; }
-@media (max-width: 700px) {
 .is-swipe .team { overflow-x: clip; padding: 0 0 12px 12px; margin: 0 0 -12px -12px; }
 .is-swipe .teacher { transform-origin: 50% 110%; }
 .is-swipe .teacher.is-turning { box-shadow: -14px 18px 36px rgba(6, 20, 31, .28); }
-}
 .hint-mouse { display: none; }
 @media (pointer: fine) { .hint-touch { display: none; } .hint-mouse { display: inline; } }
 .is-swipe.is-mouse-dragging { cursor: grabbing; }
@@ -768,14 +768,6 @@ background: var(--paper); color: var(--ink); font: inherit; font-weight: 600; cu
 .check input { width: 22px; height: 22px; min-height: 0; margin-top: 4px; flex: none; accent-color: #16789c; }
 .privacy-note { margin: 0; font-size: var(--t-sm); color: var(--ink-2); text-align: center; }
 .privacy-note a, .prose a { font-weight: 700; }
-.voice-btn { display: inline-flex; align-items: center; gap: var(--s2); min-height: 42px; margin-top: var(--s2); padding: 0 var(--s3); border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--surface); color: var(--sky-text); cursor: pointer; font-weight: 700; }
-.voice-btn:hover, .voice-btn.is-listening { background: color-mix(in srgb, var(--sky) 14%, var(--surface)); }
-.voice-note { margin: var(--s1) 0 0; color: var(--ink-2); font-size: var(--t-xs); }
-.map-check { margin: var(--s2) 0 0; font-size: var(--t-xs); color: var(--ink-2); }
-.map-check:empty { display: none; }
-.map-check.is-ok { color: var(--sky-text); }
-.map-check.is-warn { color: var(--ink); padding: var(--s2) var(--s3); border-radius: var(--r-sm); background: color-mix(in srgb, var(--sun, #f2b33d) 18%, var(--surface)); }
-.map-check a { color: inherit; font-weight: 700; text-decoration: underline; }
 .prose { display: grid; gap: var(--s5); }
 .prose section { padding: var(--s5) var(--s6); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
 .prose h2 { font-size: var(--t-md); font-weight: 800; margin-bottom: var(--s2); }
@@ -805,11 +797,11 @@ background: var(--paper); color: var(--ink); font: inherit; font-weight: 600; cu
 .site-footer ul { display: grid; gap: 0; }
 .site-footer a { color: #cfdbe4; text-decoration: none; display: inline-flex; gap: var(--s2); align-items: center; min-height: 44px; }
 .site-footer a:hover { color: #fff; text-decoration: underline; }
-.share-site { display: inline-flex; margin-bottom: var(--s2); font-weight: 800; color: #ffd166 !important; direction: ltr; }
-.share-text { max-width: 34ch; margin-bottom: var(--s2); font-size: var(--t-sm); line-height: 1.9; color: #b4c4d0; }
 .copy { margin-top: var(--s7); padding-bottom: var(--s4); border-bottom: 1px solid rgba(255, 255, 255, .22); font-size: var(--t-sm); color: #b4c4d0; display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--s2) var(--s5); }
 .copy p { margin: 0; }
-.credit { color: #c6d3dd; }
+.credit { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 999px; border: 1px solid rgba(255, 209, 102, .55); background: rgba(255, 209, 102, .08); color: #dbe5ec; }
+.credit b { color: #ffd166; font-weight: 800; }
+.credit-en { color: #b4c4d0; font-size: .85em; }
 .link-btn { min-height: 44px; padding: 0; border: 0; background: none; color: #cfdbe4; cursor: pointer; }
 .link-btn:hover { color: #fff; text-decoration: underline; }
 .site-footer { padding-bottom: calc(var(--s5) + 86px); }
@@ -902,7 +894,6 @@ html.lenis, html.lenis body { height: auto; }
 .site-header { view-transition-name: site-header; }
 ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .2s; animation-timing-function: var(--ease); }
 }
-#programs, #faq, #contact, .enrol, .site-footer { content-visibility: auto; contain-intrinsic-size: auto 900px; }
 .teacher { content-visibility: auto; contain-intrinsic-size: auto 190px; }
 .is-swipe .teacher { contain-intrinsic-size: auto 560px; }
 .section-head .h2 { position: relative; padding-bottom: var(--s2); }
@@ -924,30 +915,24 @@ html.lenis, html.lenis body { height: auto; }
 .cell:hover, .features > li:hover { transform: translateY(-4px); box-shadow: 0 14px 30px rgba(6, 20, 31, .16); z-index: 1; }
 }.receipt-code b { font-size: 1.5rem; letter-spacing: .12em; }
 .receipt-dialog h3 { color: var(--ok, #1d7a46); }
-.lang-en .path li::before { content: counter(step); }</style><!-- css:end -->
+.lang-en .path li::before { content: counter(step); }
+.features, .mondrian { border-radius: var(--r); }
+.features > li, .mondrian > .cell, .fact, .facts-wall > * { border-radius: 10px; }</style><!-- css:end -->
+<link rel="modulepreload" href="/assets/js/common.js">
+<script type="module" src="/assets/js/main.js"></script>
 <script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "HighSchool",
-  "@id": "https://afarineshshiraz.ir/#school",
-  "name": "Afarinesh High School Shiraz",
-  "alternateName": ["Afarinesh School", "Afarinesh School Shiraz", "Afarinesh Private High School", "Afarinesh Research-Based High School", "Afarinesh Boys' Junior High School", "دبیرستان غیردولتی آفرینش شیراز", "مدرسه غیردولتی آفرینش شیراز"],
-  "description": "A private (non-governmental), research-based boys' lower-secondary school (grades 7 to 9) in Shiraz, Iran, founded in 2008.",
-  "url": "https://afarineshshiraz.ir/en",
-  "logo": "https://afarineshshiraz.ir/assets/img/icon-512.png",
-  "image": "https://afarineshshiraz.ir/assets/img/og-cover.jpg",
-  "foundingDate": "2008",
-  "email": "afarineshsch@afarineshshiraz.ir",
-  "telephone": ["+98-71-32293194", "+98-71-32295122"],
-  "address": {"@type": "PostalAddress", "streetAddress": "Narvan Street, corner of Alley 14, Chenchene", "addressLocality": "Shiraz", "addressRegion": "Fars", "addressCountry": "IR"},
-  "geo": {"@type": "GeoCoordinates", "latitude": 29.6368, "longitude": 52.5353},
-  "openingHoursSpecification": {"@type": "OpeningHoursSpecification", "dayOfWeek": ["Saturday","Sunday","Monday","Tuesday","Wednesday"], "opens": "07:00", "closes": "14:00"},
-  "keywords": "Afarinesh High School, Afarinesh School Shiraz, private school Shiraz, research-based high school, high school in Shiraz",
-  "sameAs": ["https://instagram.com/afarinesh_sch"]
-}
+{"@context":"https://schema.org","@type":["HighSchool","LocalBusiness"],"@id":"https://afarineshshiraz.ir/#school","name":"Afarinesh High School Shiraz","alternateName":["Afarinesh School","Afarinesh School Shiraz","Afarinesh Private High School","Afarinesh Research-Based High School","Afarinesh Boys' Junior High School","دبیرستان غیردولتی آفرینش شیراز","مدرسه غیردولتی آفرینش شیراز"],"description":"A private (non-governmental), research-based boys' lower-secondary school (grades 7 to 9) in Shiraz, Iran, founded in 2008.","url":"https://afarineshshiraz.ir/en","logo":"https://afarineshshiraz.ir/assets/img/icon-512.png","image":"https://afarineshshiraz.ir/assets/img/og-cover.jpg","foundingDate":"2008","email":"afarineshsch@afarineshshiraz.ir","telephone":["+98-71-32293194","+98-71-32295122"],"address":{"@type":"PostalAddress","streetAddress":"Narvan Street, corner of Alley 14, Chenchene","addressLocality":"Shiraz","addressRegion":"Fars","addressCountry":"IR"},"geo":{"@type":"GeoCoordinates","latitude":29.6368,"longitude":52.5353},"openingHoursSpecification":{"@type":"OpeningHoursSpecification","dayOfWeek":["Saturday","Sunday","Monday","Tuesday","Wednesday"],"opens":"07:00","closes":"14:00"},"keywords":"Afarinesh High School, Afarinesh School Shiraz, private school Shiraz, research-based high school, high school in Shiraz","sameAs":["https://instagram.com/afarinesh_sch"]}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebPage","@id":"https://afarineshshiraz.ir/en#page","url":"https://afarineshshiraz.ir/en","name":"Afarinesh High School Shiraz","inLanguage":"en","about":{"@id":"https://afarineshshiraz.ir/#school"},"isPartOf":{"@id":"https://afarineshshiraz.ir/#website"}}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","inLanguage":"en","mainEntity":[{"@type":"Question","name":"How does admission work?","acceptedAnswer":{"@type":"Answer","text":"Parents fill in the pre-registration form (in Persian) for the grade on the school's website. The vice principals call the family to arrange a visit and an interview. A specialist interview with the parents and the student takes place at the school. The result is announced and the family is invited to complete the paperwork."}},{"@type":"Question","name":"What kind of school is Afarinesh High School, and where in Shiraz is it?","acceptedAnswer":{"@type":"Answer","text":"Afarinesh High School, Shiraz (often called Afarinesh School or Afarinesh Private School) is a private, research-based boys' school for the first cycle of secondary education: grades 7, 8 and 9. Since 2008 it has been in Chenchene, on Narvan Street at the corner of Alley 14, Shiraz, and among the city's private schools it is known for classes of 15 to 17 students and for its research, art, language and sport electives."}},{"@type":"Question","name":"How are the electives chosen?","acceptedAnswer":{"@type":"Answer","text":"Each student chooses the path he likes from the research, art, language, culture, sport and special strands. These classes are not one-offs; they run until the end of the school year."}},{"@type":"Question","name":"How many students are in each class?","acceptedAnswer":{"@type":"Answer","text":"Classes have 15 to 17 students, so the teacher can work with every student individually."}},{"@type":"Question","name":"How are maths and science taught?","acceptedAnswer":{"@type":"Answer","text":"The maths book is taught as two separate courses, arithmetic and geometry, and the science book as two, physics–chemistry and biology–earth science, each by a specialist teacher."}},{"@type":"Question","name":"What counsellors does the school have?","acceptedAnswer":{"@type":"Answer","text":"Three specialist counsellors work in the school itself: an academic counsellor, a clinical counsellor and a nutrition counsellor."}},{"@type":"Question","name":"How are students assessed?","acceptedAnswer":{"@type":"Answer","text":"There are four school-wide exam rounds during the year, multiple-choice and written, and students work from the school's own practice books."}},{"@type":"Question","name":"Who are the teachers at Afarinesh?","acceptedAnswer":{"@type":"Answer","text":"The name, role and degree of every teacher and staff member are listed under Teachers and staff on this page. Maths is taught as arithmetic and geometry, and science as physics–chemistry and biology–earth science."}},{"@type":"Question","name":"When is the school office open?","acceptedAnswer":{"@type":"Answer","text":"Saturday to Wednesday, 7:00 to 14:00 (Iran time). Phone: +98 71 3229 3194 and +98 71 3229 5122 . All contact details"}}]}
 </script>
 </head>
 <body class="lang-en">
+<a class="skip" href="#main">Skip to content</a>
+
 <svg width="0" height="0" class="sprite" aria-hidden="true">
   <defs>
     <symbol id="i-interview" viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 12l2 2 4-4M9 17h6"/></symbol>
@@ -982,7 +967,7 @@ html.lenis, html.lenis body { height: auto; }
     <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.3v.2"/></symbol>
   </defs>
 </svg>
-<a class="skip" href="#main">Skip to content</a>
+
 <header class="site-header" data-header><div class="read-progress" aria-hidden="true"></div>
   <div class="wrap header-row">
     <a class="brand" href="/en">
@@ -994,16 +979,16 @@ html.lenis, html.lenis body { height: auto; }
         <li><a href="#approach">Our approach</a></li>
         <li><a href="#programs">Electives</a></li>
         <li><a href="#campus">The school</a></li>
+        <li><a href="#team">Teachers</a></li>
         <li><a href="#faq">Questions</a></li>
-        <li><a href="#contact">Contact</a></li>
-        <li><a href="/" hreflang="fa" lang="fa">فارسی</a></li>
+        <li><a href="#school-contacts">Contact</a></li>
       </ul>
     </nav>
     <div class="header-actions">
       <button class="icon-btn" type="button" data-theme-toggle aria-label="Switch to dark mode">
         <svg class="ic ic-moon"><use href="#i-moon"/></svg><svg class="ic ic-sun"><use href="#i-sun"/></svg>
       </button>
-      <a class="btn btn-cta btn-sm header-cta" href="/pre-registration" hreflang="fa"><span class="cta-long">Pre-register</span><span class="cta-short">Apply</span></a>
+      <a class="btn btn-cta btn-sm header-cta" href="/" hreflang="fa" lang="fa">فارسی</a>
       <button class="icon-btn menu-btn" type="button" aria-controls="nav" aria-expanded="false" aria-label="Open menu" data-menu>
         <svg class="ic ic-open"><use href="#i-menu"/></svg><svg class="ic ic-shut"><use href="#i-close"/></svg>
       </button>
@@ -1011,7 +996,8 @@ html.lenis, html.lenis body { height: auto; }
   </div>
 </header>
 
-<main id="main">
+<main id="main" tabindex="-1">
+
   <section class="hero" aria-labelledby="hero-title">
     <picture class="hero-media">
       <source media="(max-width: 640px)" srcset="/assets/img/hero-gate-510.webp 510w" sizes="100vw" width="510" height="515">
@@ -1019,20 +1005,20 @@ html.lenis, html.lenis body { height: auto; }
     </picture>
     <div class="wrap hero-body">
       <h1 id="hero-title" class="display"><span class="hero-school">Afarinesh High School, Shiraz</span> <span class="hero-line">Big ideas</span> <br><span class="hero-line">for curious minds</span></h1>
-      <p class="hero-lede">A private, research-based boys' lower-secondary school in Shiraz, Iran, since 2008. Every student has his own talents and interests, so instead of one model for everyone, Afarinesh builds several paths of learning and lets each student choose.</p>
+      <p class="hero-lede">A private boys' lower-secondary school (grades 7 to 9) in Shiraz, Iran, since 2008. Every student has his own talents and interests. Instead of one model for everyone, Afarinesh builds several paths of learning and each student chooses his own.</p>
       <div class="hero-cta">
-        <a class="btn btn-cta" href="/pre-registration" hreflang="fa">Pre-registration 2027-2028</a>
-        <a class="btn btn-ghost" href="#contact">Contact the school</a>
+        <a class="btn btn-cta" href="#school-contacts">Contact the school</a>
+        <a class="btn btn-ghost" href="#team">Meet the teachers</a>
       </div>
     </div>
   </section>
 
   <section class="facts" aria-label="The school at a glance">
     <dl class="wrap facts-wall">
-      <div class="fact f-sun"><dt>students in each class</dt><dd>15-17</dd></div>
-      <div class="fact f-sky"><dt>coordinated exams a year</dt><dd>4</dd></div>
-      <div class="fact f-brick"><dt>counsellors: academic, clinical, nutrition</dt><dd>3</dd></div>
-      <div class="fact f-paper"><dt>students at Afarinesh</dt><dd>100+</dd></div>
+      <div class="fact f-sun"><dt>students in each class</dt><dd>15 to 17</dd></div>
+      <div class="fact f-sky"><dt>school-wide exam rounds a year</dt><dd>4</dd></div>
+      <div class="fact f-brick"><dt>specialist counsellors: academic, clinical, nutrition</dt><dd>3</dd></div>
+      <div class="fact f-paper"><dt>students at Afarinesh</dt><dd dir="ltr">100+</dd></div>
       <div class="fact-fill f-ink" aria-hidden="true"></div>
     </dl>
   </section>
@@ -1040,46 +1026,96 @@ html.lenis, html.lenis body { height: auto; }
   <section id="approach" class="section" aria-labelledby="approach-title">
     <div class="wrap split split-solo">
       <div class="split-text">
-        <h2 id="approach-title" class="h2">A private, research-based school in Shiraz</h2>
-        <p>Afarinesh (دبیرستان غیردولتی آفرینش) is a non-governmental boys' high school for grades 7, 8 and 9 on Narvan Street, Shiraz: a place for curious minds where students' big ideas are taken seriously. Its programme rests on variety, informed choice and attention to individual differences. A student who joins an activity out of real interest grows a lasting talent, so the research, art, language, cultural and sports electives run until the end of the school year.</p>
+        <h2 id="approach-title" class="h2">From a school for life to research-based learning</h2>
+        <p>Afarinesh High School is a private boys' lower-secondary school on Narvan Street in Shiraz: a place for curious minds, where students' big ideas are taken seriously. The programme is built on variety, informed choice and attention to each student's differences. A student who takes part in something he cares about develops his talent for real and for good, which is why the research, art, language, culture and sport electives run for the whole school year.</p>
         <div class="approach-side">
-          <p>Alongside teaching, three specialist counsellors (academic, clinical and nutrition) work with students at school.</p>
+          <p>Alongside teaching, three specialist counsellors (academic, clinical and nutrition) work with students in the school itself.</p>
           <ul class="approach-tiles" role="list" aria-label="Electives">
-            <li class="t-research"><a href="#programs"><svg class="ic" aria-hidden="true"><use href="#i-robot"/></svg>Research</a></li>
-            <li class="t-art"><a href="#programs"><svg class="ic" aria-hidden="true"><use href="#i-palette"/></svg>Art</a></li>
-            <li class="t-lang"><a href="#programs"><svg class="ic" aria-hidden="true"><use href="#i-lang"/></svg>Languages</a></li>
-            <li class="t-culture"><a href="#programs"><svg class="ic" aria-hidden="true"><use href="#i-book"/></svg>Culture</a></li>
-            <li class="t-sport"><a href="#programs"><svg class="ic" aria-hidden="true"><use href="#i-ball"/></svg>Sport</a></li>
+            <li class="t-research"><a href="#programs"><svg class="ic"><use href="#i-robot"/></svg>Research</a></li>
+            <li class="t-art"><a href="#programs"><svg class="ic"><use href="#i-palette"/></svg>Art</a></li>
+            <li class="t-lang"><a href="#programs"><svg class="ic"><use href="#i-lang"/></svg>Languages</a></li>
+            <li class="t-culture"><a href="#programs"><svg class="ic"><use href="#i-book"/></svg>Culture</a></li>
+            <li class="t-sport"><a href="#programs"><svg class="ic"><use href="#i-ball"/></svg>Sport</a></li>
           </ul>
         </div>
       </div>
     </div>
 
     <ul class="wrap features" role="list">
-      <li><svg class="ic" aria-hidden="true"><use href="#i-interview"/></svg><h3>Admission</h3><p>Every new student has an interview at school with his parents, so the school and the family get to know each other before the year starts.</p><ul class="trail steps-line" role="list" aria-label="Admission steps"><li>Form</li><li>Call</li><li>Interview</li><li>Result</li></ul><a class="more" href="/pre-registration" hreflang="fa">Pre-registration form (Persian)</a></li>
-      <li><svg class="ic" aria-hidden="true"><use href="#i-teachers"/></svg><h3>A specialist for every subject</h3><p>Each subject is taught by a teacher trained in that field; many hold a master's degree or a doctorate, and several have more than 30 years of teaching experience.</p><a class="more" href="/#team" hreflang="fa">Meet the teachers (Persian)</a></li>
-      <li><svg class="ic" aria-hidden="true"><use href="#i-desks"/></svg><h3>Small classes</h3><p>15 to 17 students per class: the teacher knows every student by name, answers each one's questions and follows his progress closely.</p></li>
-      <li><svg class="ic" aria-hidden="true"><use href="#i-split"/></svg><h3>Subjects taught separately</h3><p>Mathematics as arithmetic and geometry; science as physics-chemistry and biology-earth science, each with its own specialist.</p><ul class="trail" role="list"><li>Arithmetic</li><li>Geometry</li><li>Physics-chemistry</li><li>Biology-earth</li></ul></li>
-      <li><svg class="ic" aria-hidden="true"><use href="#i-counsel"/></svg><h3>Three specialist counsellors</h3><p>Academic, clinical and nutrition counselling at school, for students and for their families.</p><ul class="trail" role="list"><li>Academic</li><li>Clinical</li><li>Nutrition</li></ul></li>
-      <li><svg class="ic" aria-hidden="true"><use href="#i-exam"/></svg><h3>Exams and study books</h3><p>Four rounds of coordinated multiple-choice and written exams a year, and the school's own practice books, so each student's progress is seen and followed.</p><ol class="rounds" aria-label="Four exam rounds"><li>1<small>round</small></li><li>2<small>round</small></li><li>3<small>round</small></li><li>4<small>round</small></li></ol></li>
+      <li>
+        <svg class="ic"><use href="#i-interview"/></svg><h3>Assessment and admission</h3>
+        <p>Every new student has a specialist interview together with his parents, so that the school and the family get to know each other before the year begins.</p>
+        <ul class="trail steps-line" role="list" aria-label="Admission steps"><li>Form</li><li>Contact</li><li>Interview</li><li>Result</li></ul>
+      </li>
+      <li>
+        <svg class="ic"><use href="#i-teachers"/></svg><h3>A specialist teacher for every subject</h3>
+        <p>Each subject is taught by a teacher who studied that field; many hold a master's degree or a doctorate, and several have more than 30 years of teaching experience.</p>
+        <a class="more" href="#team">Meet the teachers</a>
+      </li>
+      <li>
+        <svg class="ic"><use href="#i-desks"/></svg><h3>Small classes</h3>
+        <p>15 to 17 students in each class: the teacher knows every student by name, has time for each one's questions and follows his progress closely.</p>
+        <div class="seats" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+      </li>
+      <li>
+        <svg class="ic"><use href="#i-split"/></svg><h3>Subjects taught in separate parts</h3>
+        <p>Maths as two courses, arithmetic and geometry; science as two courses, physics–chemistry and biology–earth science.</p>
+        <ul class="trail" role="list"><li>Arithmetic</li><li>Geometry</li><li>Physics–chemistry</li><li>Biology–earth science</li></ul>
+      </li>
+      <li>
+        <svg class="ic"><use href="#i-counsel"/></svg><h3>Three specialist counsellors</h3>
+        <p>Academic, clinical and nutrition counselling in the school itself, for students and for their families.</p>
+        <ul class="trail" role="list"><li>Academic</li><li>Clinical</li><li>Nutrition</li></ul>
+      </li>
+      <li>
+        <svg class="ic"><use href="#i-exam"/></svg><h3>Exams and study books</h3>
+        <p>Four school-wide exam rounds a year, multiple-choice and written, and the school's own practice books, so each student's progress is seen and followed through the year.</p>
+        <ol class="rounds" aria-label="Four exam rounds"><li>1<small>Round</small></li><li>2<small>Round</small></li><li>3<small>Round</small></li><li>4<small>Round</small></li></ol>
+      </li>
     </ul>
   </section>
 
   <section id="programs" class="section programs" aria-labelledby="programs-title">
     <div class="wrap">
       <div class="section-head">
-        <h2 id="programs-title" class="h2">Electives that last the whole year</h2>
-        <p>These paths are not one-off shows: they run until the end of the year and the student chooses them himself. That choice builds belonging and responsibility.</p>
+        <h2 id="programs-title" class="h2">Electives</h2>
+        <p>These paths are not one-off shows: they run until the end of the year and each student chooses his own. That choice builds a sense of belonging and responsibility.</p>
       </div>
       <div class="mondrian">
-        <article class="cell c-research"><div class="cell-head"><svg class="ic" aria-hidden="true"><use href="#i-robot"/></svg><h3>Research</h3></div><p>A student takes an idea from a first sketch to a working build: he writes programs, builds robots and solves problems in a team.</p><ol class="path" aria-label="A project's path"><li>Idea</li><li>Sketch</li><li>Build</li><li>Solve</li></ol><ul class="chips" role="list"><li>Programming</li><li>Robotics</li><li>Aerospace</li><li>Artificial intelligence</li></ul></article>
-        <article class="cell c-art"><div class="cell-head"><svg class="ic" aria-hidden="true"><use href="#i-palette"/></svg><h3>Art</h3></div><p>From drawing and sculpture to graphic design, architecture, khatam inlay and cinema; each student picks his own field.</p><ul class="chips" role="list"><li>Drawing</li><li>Sculpture</li><li>Graphic design</li><li>Architecture</li><li>Khatam</li><li>Cinema</li></ul></article>
+        <article class="cell c-research">
+          <div class="cell-head"><svg class="ic"><use href="#i-robot"/></svg><h3>Research</h3></div>
+          <p>Students take an idea from first sketch to a working build: they write programs, build robots and solve problems in teams. These classes run for the whole year.</p>
+          <ol class="path" aria-label="The path of a project"><li>Idea</li><li>First sketch</li><li>Build</li><li>Problem solving</li></ol>
+          <ul class="chips" role="list"><li>Programming</li><li>Robotics</li><li>Comic making</li><li>Aerospace</li><li>Artificial intelligence</li></ul>
+        </article>
+        <article class="cell c-art">
+          <div class="cell-head"><svg class="ic"><use href="#i-palette"/></svg><h3>Art</h3></div>
+          <p>From drawing and sculpture to graphic design, architecture, khatam marquetry and film: each student chooses the art he likes and keeps at it all year.</p>
+          <ul class="chips" role="list"><li>Drawing</li><li>Sculpture</li><li>Graphic design</li><li>Architecture</li><li>Khatam marquetry</li><li>Film</li></ul>
+        </article>
         <div class="cell c-blank c-blank-1" aria-hidden="true"></div>
-        <article class="cell c-lang"><div class="cell-head"><svg class="ic" aria-hidden="true"><use href="#i-lang"/></svg><h3>Languages</h3></div><p>English in term courses, and French for those interested; classes apart from the school's own language lessons.</p><ul class="chips" role="list"><li>English</li><li>French</li></ul></article>
-        <article class="cell c-culture"><div class="cell-head"><svg class="ic" aria-hidden="true"><use href="#i-book"/></svg><h3>Culture</h3></div><p>Reading, writing and talking about books and Persian literature.</p><ul class="chips" role="list"><li>Book discussion</li><li>Shahnameh reading</li><li>Creative writing</li><li>Research methods</li></ul></article>
+        <article class="cell c-lang">
+          <div class="cell-head"><svg class="ic"><use href="#i-lang"/></svg><h3>Foreign languages</h3></div>
+          <p>English in term courses, and French for those who want it: classes separate from the school's language lessons, chosen by the student and running all year.</p>
+          <ul class="chips" role="list"><li>English term courses</li><li>French</li></ul>
+        </article>
+        <article class="cell c-culture">
+          <div class="cell-head"><svg class="ic"><use href="#i-book"/></svg><h3>Culture</h3></div>
+          <p>Reading, writing and talking about books and Persian literature.</p>
+          <ul class="chips" role="list"><li>Book reviews</li><li>Reading the Shahnameh</li><li>Creative writing</li><li>Research methods</li><li>Essay writing</li></ul>
+        </article>
         <div class="cell c-blank c-blank-2" aria-hidden="true"></div>
-        <article class="cell c-sport"><div class="cell-head"><svg class="ic" aria-hidden="true"><use href="#i-ball"/></svg><h3>Sport</h3></div><p>Sports electives that run until the end of the year.</p><ul class="chips" role="list"><li>Futsal</li><li>Chess</li></ul></article>
-        <article class="cell c-special"><span class="cell-tag">Workshops</span><div class="cell-head"><svg class="ic" aria-hidden="true"><use href="#i-mask"/></svg><h3>Special</h3></div><p>Workshops for making things by hand, going on stage and learning skills for everyday life.</p><ul class="chips" role="list"><li>Creative drama</li><li>Life skills</li><li>Hands-on making</li></ul></article>
+        <article class="cell c-sport">
+          <div class="cell-head"><svg class="ic"><use href="#i-ball"/></svg><h3>Sport</h3></div>
+          <p>Sport electives that run for the whole year.</p>
+          <ul class="chips" role="list"><li>Futsal</li><li>Chess</li></ul>
+        </article>
+        <article class="cell c-special">
+          <span class="cell-tag">Workshops</span>
+          <div class="cell-head"><svg class="ic"><use href="#i-mask"/></svg><h3>Special</h3></div>
+          <p>Workshops for making things by hand, going on stage and learning skills that are useful in everyday life.</p>
+          <ul class="chips" role="list"><li>Creative drama</li><li>Creativity workshop</li><li>Life skills</li><li>Pasta structures</li><li>Cuneiform on clay</li></ul>
+        </article>
       </div>
     </div>
   </section>
@@ -1088,56 +1124,404 @@ html.lenis, html.lenis body { height: auto; }
     <div class="wrap">
       <div class="section-head">
         <h2 id="campus-title" class="h2">The school</h2>
-        <p>The Afarinesh building on Narvan Street, Shiraz: the entrance, the grass yard, the library, the lab and classrooms with 15 to 17 seats each.</p>
+        <p>A few views of the Afarinesh building on Narvan Street: the entrance, the grass yard, the library, the lab and classrooms of 15 to 17 seats each. Tap any photo to see it larger.</p>
       </div>
       <ul class="campus-grid" role="list">
-        <li><figure><img src="/assets/img/school/entrance-640.webp" srcset="/assets/img/school/entrance-640.webp 640w, /assets/img/school/entrance-1280.webp 1280w" sizes="(max-width: 640px) 100vw, 50vw" width="1280" height="720" loading="lazy" decoding="async" alt="Colourful entrance of Afarinesh High School, Shiraz"><figcaption>School entrance</figcaption></figure></li>
-        <li><figure><img src="/assets/img/school/library-640.webp" srcset="/assets/img/school/library-640.webp 640w, /assets/img/school/library-1280.webp 720w" sizes="(max-width: 640px) 100vw, 50vw" width="720" height="1280" loading="lazy" decoding="async" alt="Bookshelves in the Afarinesh High School library"><figcaption>Library</figcaption></figure></li>
-        <li><figure><img src="/assets/img/school/yard-640.webp" srcset="/assets/img/school/yard-640.webp 640w, /assets/img/school/yard-1280.webp 1280w" sizes="(max-width: 640px) 100vw, 50vw" width="1280" height="720" loading="lazy" decoding="async" alt="Afarinesh school yard with artificial grass and shade"><figcaption>Yard and playground</figcaption></figure></li>
-        <li><figure><img src="/assets/img/school/garden-640.webp" srcset="/assets/img/school/garden-640.webp 640w, /assets/img/school/garden-1280.webp 1280w" sizes="(max-width: 640px) 100vw, 50vw" width="1280" height="720" loading="lazy" decoding="async" alt="Garden beds in the yard of Afarinesh High School, Shiraz"><figcaption>Garden</figcaption></figure></li>
-        <li><figure><img src="/assets/img/school/classroom-1-640.webp" srcset="/assets/img/school/classroom-1-640.webp 640w, /assets/img/school/classroom-1-1280.webp 1280w" sizes="(max-width: 640px) 100vw, 50vw" width="1280" height="720" loading="lazy" decoding="async" alt="Classroom at Afarinesh High School, Shiraz"><figcaption>Classroom for 15 to 17</figcaption></figure></li>
-        <li><figure><img src="/assets/img/school/lab-doors-640.webp" srcset="/assets/img/school/lab-doors-640.webp 640w, /assets/img/school/lab-doors-1280.webp 1280w" sizes="(max-width: 640px) 100vw, 50vw" width="1280" height="720" loading="lazy" decoding="async" alt="Doors of the newsletter office, science lab and library at Afarinesh"><figcaption>Lab and library</figcaption></figure></li>
-        <li><figure><img src="/assets/img/school/classroom-2-640.webp" srcset="/assets/img/school/classroom-2-640.webp 640w, /assets/img/school/classroom-2-1280.webp 1280w" sizes="(max-width: 640px) 100vw, 50vw" width="1280" height="720" loading="lazy" decoding="async" alt="Classroom at Afarinesh High School, Shiraz"><figcaption>Classroom for 15 to 17</figcaption></figure></li>
-        <li><figure><img src="/assets/img/school/path-640.webp" srcset="/assets/img/school/path-640.webp 640w, /assets/img/school/path-1280.webp 720w" sizes="(max-width: 640px) 100vw, 50vw" width="720" height="1280" loading="lazy" decoding="async" alt="Path from the yard into the school building"><figcaption>Way in</figcaption></figure></li>
-        <li><figure><img src="/assets/img/school/classroom-3-640.webp" srcset="/assets/img/school/classroom-3-640.webp 640w, /assets/img/school/classroom-3-1280.webp 1280w" sizes="(max-width: 640px) 100vw, 50vw" width="1280" height="720" loading="lazy" decoding="async" alt="Classroom at Afarinesh High School, Shiraz"><figcaption>Classroom for 15 to 17</figcaption></figure></li>
-        <li><figure><img src="/assets/img/school/classroom-7-640.webp" srcset="/assets/img/school/classroom-7-640.webp 640w, /assets/img/school/classroom-7-1280.webp 1280w" sizes="(max-width: 640px) 100vw, 50vw" width="1280" height="720" loading="lazy" decoding="async" alt="Classroom at Afarinesh High School, Shiraz"><figcaption>Classroom for 15 to 17</figcaption></figure></li>
-        <li><figure><img src="/assets/img/school/classroom-4-640.webp" srcset="/assets/img/school/classroom-4-640.webp 640w, /assets/img/school/classroom-4-1280.webp 1280w" sizes="(max-width: 640px) 100vw, 50vw" width="1280" height="720" loading="lazy" decoding="async" alt="Classroom at Afarinesh High School, Shiraz"><figcaption>Classroom for 15 to 17</figcaption></figure></li>
-        <li><figure><img src="/assets/img/school/classroom-5-640.webp" srcset="/assets/img/school/classroom-5-640.webp 640w, /assets/img/school/classroom-5-1280.webp 1280w" sizes="(max-width: 640px) 100vw, 50vw" width="1280" height="720" loading="lazy" decoding="async" alt="Classroom at Afarinesh High School, Shiraz"><figcaption>Classroom for 15 to 17</figcaption></figure></li>
-        <li><figure><img src="/assets/img/school/classroom-6-640.webp" srcset="/assets/img/school/classroom-6-640.webp 640w, /assets/img/school/classroom-6-1280.webp 1280w" sizes="(max-width: 640px) 100vw, 50vw" width="1280" height="720" loading="lazy" decoding="async" alt="Classroom at Afarinesh High School, Shiraz"><figcaption>Classroom for 15 to 17</figcaption></figure></li>
-        <li><figure><img src="/assets/img/school/yard-2-640.webp" srcset="/assets/img/school/yard-2-640.webp 640w, /assets/img/school/yard-2-1280.webp 1280w" sizes="(max-width: 640px) 100vw, 50vw" width="1280" height="720" loading="lazy" decoding="async" alt="Another view of the Afarinesh school yard and garden"><figcaption>The yard</figcaption></figure></li>
+        <li><figure><img src="/assets/img/school/entrance-640.webp" srcset="/assets/img/school/entrance-640.webp 640w, /assets/img/school/entrance-1280.webp 1280w" sizes="(max-width: 640px) 100vw, 50vw" width="1280" height="720" loading="lazy" decoding="async" alt="Colourful entrance wall of Afarinesh High School, Shiraz"><figcaption>School entrance</figcaption></figure></li>
+        <li><figure><img src="/assets/img/school/library-640.webp" srcset="/assets/img/school/library-640.webp 640w, /assets/img/school/library-1280.webp 720w" sizes="(max-width: 640px) 100vw, 50vw" width="720" height="1280" loading="lazy" decoding="async" alt="Bookshelves in the library of Afarinesh High School, Shiraz"><figcaption>Library</figcaption></figure></li>
+        <li><figure><img src="/assets/img/school/yard-640.webp" srcset="/assets/img/school/yard-640.webp 640w, /assets/img/school/yard-1280.webp 1280w" sizes="(max-width: 640px) 100vw, 50vw" width="1280" height="720" loading="lazy" decoding="async" alt="Afarinesh school yard in Shiraz with artificial grass and shade sails"><figcaption>Yard and playground</figcaption></figure></li>
+        <li><figure><img src="/assets/img/school/garden-640.webp" srcset="/assets/img/school/garden-640.webp 640w, /assets/img/school/garden-1280.webp 1280w" sizes="(max-width: 640px) 100vw, 50vw" width="1280" height="720" loading="lazy" decoding="async" alt="Garden beds and yard of Afarinesh High School, Shiraz, on a sunny day"><figcaption>Garden in the yard</figcaption></figure></li>
+        <li><figure><img src="/assets/img/school/classroom-1-640.webp" srcset="/assets/img/school/classroom-1-640.webp 640w, /assets/img/school/classroom-1-1280.webp 1280w" sizes="(max-width: 640px) 100vw, 50vw" width="1280" height="720" loading="lazy" decoding="async" alt="A classroom for 15 at Afarinesh High School with blue chairs and colourful walls"><figcaption>Classroom for 15 to 17</figcaption></figure></li>
+        <li><figure><img src="/assets/img/school/lab-doors-640.webp" srcset="/assets/img/school/lab-doors-640.webp 640w, /assets/img/school/lab-doors-1280.webp 1280w" sizes="(max-width: 640px) 100vw, 50vw" width="1280" height="720" loading="lazy" decoding="async" alt="Doors of the newsletter office, science lab and library at the research-based Afarinesh High School"><figcaption>Lab and newsletter office</figcaption></figure></li>
+        <li><figure><img src="/assets/img/school/classroom-2-640.webp" srcset="/assets/img/school/classroom-2-640.webp 640w, /assets/img/school/classroom-2-1280.webp 1280w" sizes="(max-width: 640px) 100vw, 50vw" width="1280" height="720" loading="lazy" decoding="async" alt="Classroom at Afarinesh High School with a whiteboard and blue chairs"><figcaption>Classroom</figcaption></figure></li>
+        <li><figure><img src="/assets/img/school/path-640.webp" srcset="/assets/img/school/path-640.webp 640w, /assets/img/school/path-1280.webp 720w" sizes="(max-width: 640px) 100vw, 50vw" width="720" height="1280" loading="lazy" decoding="async" alt="Path from the yard into the Afarinesh High School building"><figcaption>Path through the yard</figcaption></figure></li>
+        <li><figure><img src="/assets/img/school/classroom-3-640.webp" srcset="/assets/img/school/classroom-3-640.webp 640w, /assets/img/school/classroom-3-1280.webp 1280w" sizes="(max-width: 640px) 100vw, 50vw" width="1280" height="720" loading="lazy" decoding="async" alt="Classroom at Afarinesh High School with a green curtain and the teacher's desk"><figcaption>Classroom</figcaption></figure></li>
+        <li><figure><img src="/assets/img/school/classroom-7-640.webp" srcset="/assets/img/school/classroom-7-640.webp 640w, /assets/img/school/classroom-7-1280.webp 1280w" sizes="(max-width: 640px) 100vw, 50vw" width="1280" height="720" loading="lazy" decoding="async" alt="Classroom at Afarinesh High School, Shiraz, with blue chairs and a pink wall"><figcaption>Classroom</figcaption></figure></li>
+        <li><figure><img src="/assets/img/school/classroom-4-640.webp" srcset="/assets/img/school/classroom-4-640.webp 640w, /assets/img/school/classroom-4-1280.webp 1280w" sizes="(max-width: 640px) 100vw, 50vw" width="1280" height="720" loading="lazy" decoding="async" alt="Classroom at Afarinesh School, Shiraz, with windows and daylight"><figcaption>Classroom</figcaption></figure></li>
+        <li><figure><img src="/assets/img/school/classroom-5-640.webp" srcset="/assets/img/school/classroom-5-640.webp 640w, /assets/img/school/classroom-5-1280.webp 1280w" sizes="(max-width: 640px) 100vw, 50vw" width="1280" height="720" loading="lazy" decoding="async" alt="Classroom at Afarinesh High School, Shiraz, with green and orange walls"><figcaption>Classroom</figcaption></figure></li>
+        <li><figure><img src="/assets/img/school/classroom-6-640.webp" srcset="/assets/img/school/classroom-6-640.webp 640w, /assets/img/school/classroom-6-1280.webp 1280w" sizes="(max-width: 640px) 100vw, 50vw" width="1280" height="720" loading="lazy" decoding="async" alt="Classroom at Afarinesh Private School with a whiteboard"><figcaption>Classroom</figcaption></figure></li>
+        <li><figure><img src="/assets/img/school/yard-2-640.webp" srcset="/assets/img/school/yard-2-640.webp 640w, /assets/img/school/yard-2-1280.webp 1280w" sizes="(max-width: 640px) 100vw, 50vw" width="1280" height="720" loading="lazy" decoding="async" alt="Another view of the yard and garden beds of Afarinesh High School, Shiraz"><figcaption>The yard</figcaption></figure></li>
       </ul>
+    </div>
+  </section>
+
+  <section id="team" class="section team-section" aria-labelledby="team-title" data-team-track>
+    <div class="wrap team-pin" data-team-pin>
+      <div class="section-head">
+        <h2 id="team-title" class="h2">Teachers and staff</h2>
+        <p>From the founder and the principal to the teacher of each subject: meet the people who work with the students every day.</p>
+      </div>
+      <div class="team-tools">
+        <label class="search">
+          <span class="visually-hidden">Search teachers by name, role, subject or degree</span>
+          <svg class="ic"><use href="#i-search"/></svg>
+          <input type="search" placeholder="Name, subject or degree, e.g. “English” or “Mathematics”" data-team-search autocomplete="off">
+        </label>
+      </div>
+      <p class="team-status" role="status" aria-live="polite" data-team-status></p>
+      <div class="team-bar" data-team-bar hidden>
+        <p class="team-count" aria-live="polite"><b data-team-now>1</b> of <span data-team-total></span></p>
+        <div class="team-progress" aria-hidden="true"><span data-team-progress></span></div>
+        <div class="team-nav">
+          <button type="button" class="btn btn-ghost btn-sm" data-team-prev>Previous</button>
+          <button type="button" class="btn btn-ghost btn-sm" data-team-next>Next</button>
+          <button type="button" class="btn btn-ghost btn-sm" data-team-all>Show all</button>
+        </div>
+      </div>
+      <ol class="team" data-team>
+<!-- team:start -->
+        <li class="teacher">
+          <div class="teacher-photo"><img src="/assets/img/team/fallahi.webp" width="400" height="400" loading="lazy" decoding="async" alt="Farshid Fallahi, founder at Afarinesh High School, Shiraz"></div>
+          <div class="teacher-body">
+            <p class="teacher-role">Founder</p>
+            <p class="teacher-name">Farshid Fallahi</p>
+            <ul class="teacher-edu" role="list"><li>BA in Judicial Law</li></ul>
+              <p class="teacher-note">More than 30 years of teaching and school leadership</p>
+          </div>
+        </li>
+        <li class="teacher">
+          <div class="teacher-photo"><img src="/assets/img/team/yadollahi.webp" width="400" height="400" loading="lazy" decoding="async" alt="Abdolrahman Yadollahi, principal at Afarinesh High School, Shiraz"></div>
+          <div class="teacher-body">
+            <p class="teacher-role">Principal</p>
+            <p class="teacher-name">Abdolrahman Yadollahi</p>
+            <ul class="teacher-edu" role="list"><li>MA in Educational Management</li></ul>
+              <p class="teacher-note">More than 30 years of school leadership</p>
+          </div>
+        </li>
+        <li class="teacher">
+          <div class="teacher-photo"><img src="/assets/img/team/abbaslou.webp" width="400" height="400" loading="lazy" decoding="async" alt="Sina Abbaslou, vice principal and head of year at Afarinesh High School, Shiraz"></div>
+          <div class="teacher-body">
+            <p class="teacher-role">Vice principal and head of year</p>
+            <p class="teacher-name">Sina Abbaslou</p>
+            <ul class="teacher-edu" role="list"><li>BSc in Mechanical Engineering</li><li>MA in Linguistics</li></ul>
+          </div>
+        </li>
+        <li class="teacher">
+          <div class="teacher-photo"><img src="/assets/img/team/dehbozorgi-sh.webp" width="400" height="400" loading="lazy" decoding="async" alt="Shahram Dehbozorgi, family counsellor and civil defence teacher at Afarinesh High School, Shiraz"></div>
+          <div class="teacher-body">
+            <p class="teacher-role">Family counsellor and civil defence teacher</p>
+            <p class="teacher-name">Shahram Dehbozorgi</p>
+            <ul class="teacher-edu" role="list"><li>MA in Psychology</li></ul>
+              <p class="teacher-note">25 years of counselling</p>
+          </div>
+        </li>
+        <li class="teacher">
+          <div class="teacher-photo"><img src="/assets/img/team/mirzaei.webp" width="400" height="400" loading="lazy" decoding="async" alt="Majid Mirzaei, geometry teacher at Afarinesh High School, Shiraz"></div>
+          <div class="teacher-body">
+            <p class="teacher-role">Geometry teacher</p>
+            <p class="teacher-name">Majid Mirzaei</p>
+            <ul class="teacher-edu" role="list"><li>BSc in Mathematics</li></ul>
+              <p class="teacher-note">More than 30 years of teaching</p>
+          </div>
+        </li>
+        <li class="teacher">
+          <div class="teacher-photo"><img src="/assets/img/team/keshavarz.webp" width="400" height="400" loading="lazy" decoding="async" alt="Karim Keshavarz, arithmetic teacher at Afarinesh High School, Shiraz"></div>
+          <div class="teacher-body">
+            <p class="teacher-role">Arithmetic teacher</p>
+            <p class="teacher-name">Karim Keshavarz</p>
+            <ul class="teacher-edu" role="list"><li>MSc in Pure Mathematics</li></ul>
+          </div>
+        </li>
+        <li class="teacher">
+          <div class="teacher-photo"><img src="/assets/img/team/sadri.webp" width="400" height="400" loading="lazy" decoding="async" alt="Shahram Sadri, arithmetic and geometry teacher at Afarinesh High School, Shiraz"></div>
+          <div class="teacher-body">
+            <p class="teacher-role">Arithmetic and geometry teacher</p>
+            <p class="teacher-name">Shahram Sadri</p>
+            <ul class="teacher-edu" role="list"><li>MSc in Pure Mathematics</li></ul>
+          </div>
+        </li>
+        <li class="teacher">
+          <div class="teacher-photo"><img src="/assets/img/team/mahmoudi.webp" width="400" height="400" loading="lazy" decoding="async" alt="Mohammad-Jafar Mahmoudi, arabic and quran teacher at Afarinesh High School, Shiraz"></div>
+          <div class="teacher-body">
+            <p class="teacher-role">Arabic and Quran teacher</p>
+            <p class="teacher-name">Mohammad-Jafar Mahmoudi</p>
+            <ul class="teacher-edu" role="list"><li>BA in Islamic Studies</li></ul>
+          </div>
+        </li>
+        <li class="teacher">
+          <div class="teacher-photo"><img src="/assets/img/team/mohammadi.webp" width="400" height="400" loading="lazy" decoding="async" alt="Sajjad Mohammadi, physics–chemistry teacher and nutrition counsellor at Afarinesh High School, Shiraz"></div>
+          <div class="teacher-body">
+            <p class="teacher-role">Physics–chemistry teacher and nutrition counsellor</p>
+            <p class="teacher-name">Sajjad Mohammadi</p>
+            <ul class="teacher-edu" role="list"><li>MSc in Food Science</li></ul>
+          </div>
+        </li>
+        <li class="teacher">
+          <div class="teacher-photo"><img src="/assets/img/team/yazdanpour.webp" width="400" height="400" loading="lazy" decoding="async" alt="Houman Yazdanpour, biology–earth science teacher at Afarinesh High School, Shiraz"></div>
+          <div class="teacher-body">
+            <p class="teacher-role">Biology–earth science teacher</p>
+            <p class="teacher-name">Houman Yazdanpour</p>
+            <ul class="teacher-edu" role="list"><li>BSc in Laboratory Sciences</li><li>MSc in Microbiology</li></ul>
+          </div>
+        </li>
+        <li class="teacher">
+          <div class="teacher-photo"><img src="/assets/img/team/naderi.webp" width="400" height="400" loading="lazy" decoding="async" alt="Farhad Naderi, vice principal for student life and pe teacher at Afarinesh High School, Shiraz"></div>
+          <div class="teacher-body">
+            <p class="teacher-role">Vice principal for student life and PE teacher</p>
+            <p class="teacher-name">Farhad Naderi</p>
+            <ul class="teacher-edu" role="list"><li>MA in Sport Management</li></ul>
+          </div>
+        </li>
+        <li class="teacher">
+          <div class="teacher-photo"><img src="/assets/img/team/akbari.webp" width="400" height="400" loading="lazy" decoding="async" alt="Abdollah Akbari, arabic and persian teacher at Afarinesh High School, Shiraz"></div>
+          <div class="teacher-body">
+            <p class="teacher-role">Arabic and Persian teacher</p>
+            <p class="teacher-name">Abdollah Akbari</p>
+            <ul class="teacher-edu" role="list"><li>BA in Persian Language and Literature</li></ul>
+              <p class="teacher-note">More than 30 years of teaching</p>
+          </div>
+        </li>
+        <li class="teacher">
+          <div class="teacher-photo"><img src="/assets/img/team/rouhi.webp" width="400" height="400" loading="lazy" decoding="async" alt="Ahmadreza Rouhi, persian and shahnameh teacher at Afarinesh High School, Shiraz"></div>
+          <div class="teacher-body">
+            <p class="teacher-role">Persian and Shahnameh teacher</p>
+            <p class="teacher-name">Ahmadreza Rouhi</p>
+            <ul class="teacher-edu" role="list"><li>MA in Persian Language and Literature</li></ul>
+          </div>
+        </li>
+        <li class="teacher">
+          <div class="teacher-photo"><img src="/assets/img/team/dehghan.webp" width="400" height="400" loading="lazy" decoding="async" alt="Mehdi Dehghan Farsi, persian and reading teacher at Afarinesh High School, Shiraz"></div>
+          <div class="teacher-body">
+            <p class="teacher-role">Persian and reading teacher</p>
+            <p class="teacher-name">Mehdi Dehghan Farsi</p>
+            <ul class="teacher-edu" role="list"><li>MA in Persian Language and Literature</li></ul>
+          </div>
+        </li>
+        <li class="teacher">
+          <div class="teacher-photo"><img src="/assets/img/team/moheb.webp" width="400" height="400" loading="lazy" decoding="async" alt="Amin Moheb, english teacher at Afarinesh High School, Shiraz"></div>
+          <div class="teacher-body">
+            <p class="teacher-role">English teacher</p>
+            <p class="teacher-name">Amin Moheb</p>
+            <ul class="teacher-edu" role="list"><li>BSc in Materials and Metallurgical Engineering</li></ul>
+              <p class="teacher-note">Language institute teacher</p>
+          </div>
+        </li>
+        <li class="teacher">
+          <div class="teacher-photo"><img src="/assets/img/team/attarzadeh.webp" width="400" height="400" loading="lazy" decoding="async" alt="Mohammad Attarzadeh, english term-course teacher at Afarinesh High School, Shiraz"></div>
+          <div class="teacher-body">
+            <p class="teacher-role">English term-course teacher</p>
+            <p class="teacher-name">Mohammad Attarzadeh</p>
+            <ul class="teacher-edu" role="list"><li>BA in English</li></ul>
+          </div>
+        </li>
+        <li class="teacher">
+          <div class="teacher-photo"><img src="/assets/img/team/ebrahimi.webp" width="400" height="400" loading="lazy" decoding="async" alt="Hassan Ebrahimi, english term-course teacher at Afarinesh High School, Shiraz"></div>
+          <div class="teacher-body">
+            <p class="teacher-role">English term-course teacher</p>
+            <p class="teacher-name">Hassan Ebrahimi</p>
+            <ul class="teacher-edu" role="list"><li>MA in English Literature</li></ul>
+          </div>
+        </li>
+        <li class="teacher">
+          <div class="teacher-photo"><img src="/assets/img/team/dehbozorgi-a.webp" width="400" height="400" loading="lazy" decoding="async" alt="Abdolhossein Dehbozorgi, english term-course teacher at Afarinesh High School, Shiraz"></div>
+          <div class="teacher-body">
+            <p class="teacher-role">English term-course teacher</p>
+            <p class="teacher-name">Abdolhossein Dehbozorgi</p>
+            <ul class="teacher-edu" role="list"><li>BSc in Electronics Engineering</li></ul>
+              <p class="teacher-note">Language institute teacher</p>
+          </div>
+        </li>
+        <li class="teacher">
+          <div class="teacher-photo"><img src="/assets/img/team/rabiei.webp" width="400" height="400" loading="lazy" decoding="async" alt="Amir Rabiei, writing and creative drama teacher at Afarinesh High School, Shiraz"></div>
+          <div class="teacher-body">
+            <p class="teacher-role">Writing and creative drama teacher</p>
+            <p class="teacher-name">Amir Rabiei</p>
+            <ul class="teacher-edu" role="list"><li>MA in Children's and Young Adult Literature</li></ul>
+          </div>
+        </li>
+        <li class="teacher">
+          <div class="teacher-photo"><img src="/assets/img/team/jafarian.webp" width="400" height="400" loading="lazy" decoding="async" alt="Manouchehr Jafarian, social studies teacher at Afarinesh High School, Shiraz"></div>
+          <div class="teacher-body">
+            <p class="teacher-role">Social studies teacher</p>
+            <p class="teacher-name">Manouchehr Jafarian</p>
+            <ul class="teacher-edu" role="list"><li>MA in Ancient Iranian History</li></ul>
+          </div>
+        </li>
+        <li class="teacher">
+          <div class="teacher-photo"><img src="/assets/img/team/abbasi.webp" width="400" height="400" loading="lazy" decoding="async" alt="Farshid Abbasi, social studies teacher at Afarinesh High School, Shiraz"></div>
+          <div class="teacher-body">
+            <p class="teacher-role">Social studies teacher</p>
+            <p class="teacher-name">Farshid Abbasi</p>
+            <ul class="teacher-edu" role="list"><li>PhD in Iranian History</li></ul>
+          </div>
+        </li>
+        <li class="teacher">
+          <div class="teacher-photo"><img src="/assets/img/team/zarepour.webp" width="400" height="400" loading="lazy" decoding="async" alt="Mohammad Zarepour, quran and religious studies teacher at Afarinesh High School, Shiraz"></div>
+          <div class="teacher-body">
+            <p class="teacher-role">Quran and religious studies teacher</p>
+            <p class="teacher-name">Mohammad Zarepour</p>
+            <ul class="teacher-edu" role="list"><li>Seminary education</li></ul>
+          </div>
+        </li>
+        <li class="teacher">
+          <div class="teacher-photo"><img src="/assets/img/team/shokouhi.webp" width="400" height="400" loading="lazy" decoding="async" alt="Mohammadreza Shokouhi, academic counsellor and aerospace teacher at Afarinesh High School, Shiraz"></div>
+          <div class="teacher-body">
+            <p class="teacher-role">Academic counsellor and aerospace teacher</p>
+            <p class="teacher-name">Mohammadreza Shokouhi</p>
+            <ul class="teacher-edu" role="list"><li>BSc in Aerospace Engineering</li></ul>
+          </div>
+        </li>
+        <li class="teacher">
+          <div class="teacher-photo"><img src="/assets/img/team/alizadeh.webp" width="400" height="400" loading="lazy" decoding="async" alt="Alireza Alizadeh, programming and hooshvareh teacher at Afarinesh High School, Shiraz"></div>
+          <div class="teacher-body">
+            <p class="teacher-role">Programming and Hooshvareh teacher</p>
+            <p class="teacher-name">Alireza Alizadeh</p>
+            <ul class="teacher-edu" role="list"><li>MSc in Computer Engineering</li></ul>
+          </div>
+        </li>
+        <li class="teacher">
+          <div class="teacher-photo"><img src="/assets/img/team/mahboudi.webp" width="400" height="400" loading="lazy" decoding="async" alt="Hossein Mahboudi, robotics teacher at Afarinesh High School, Shiraz"></div>
+          <div class="teacher-body">
+            <p class="teacher-role">Robotics teacher</p>
+            <p class="teacher-name">Hossein Mahboudi</p>
+            <ul class="teacher-edu" role="list"><li>BSc in Mechanical Engineering</li></ul>
+          </div>
+        </li>
+        <li class="teacher">
+          <div class="teacher-photo"><img src="/assets/img/team/jamei.webp" width="400" height="400" loading="lazy" decoding="async" alt="Erfan Jamei, graphic design teacher at Afarinesh High School, Shiraz"></div>
+          <div class="teacher-body">
+            <p class="teacher-role">Graphic design teacher</p>
+            <p class="teacher-name">Erfan Jamei</p>
+            <ul class="teacher-edu" role="list"><li>MA in Painting</li></ul>
+          </div>
+        </li>
+        <li class="teacher">
+          <div class="teacher-photo"><img src="/assets/img/team/ardeshirzadeh.webp" width="400" height="400" loading="lazy" decoding="async" alt="Pedram Ardeshirzadeh, film and screenwriting teacher at Afarinesh High School, Shiraz"></div>
+          <div class="teacher-body">
+            <p class="teacher-role">Film and screenwriting teacher</p>
+            <p class="teacher-name">Pedram Ardeshirzadeh</p>
+            <ul class="teacher-edu" role="list"><li>MA in Art Research</li></ul>
+          </div>
+        </li>
+        <li class="teacher">
+          <div class="teacher-photo"><img src="/assets/img/team/mokhtari.webp" width="400" height="400" loading="lazy" decoding="async" alt="Ali Mokhtari, religious studies teacher at Afarinesh High School, Shiraz"></div>
+          <div class="teacher-body">
+            <p class="teacher-role">Religious studies teacher</p>
+            <p class="teacher-name">Ali Mokhtari</p>
+            <ul class="teacher-edu" role="list"><li>BA in Educational Sciences</li></ul>
+          </div>
+        </li>
+        <li class="teacher">
+          <div class="teacher-photo"><img src="/assets/img/team/ghasemi.webp" width="400" height="400" loading="lazy" decoding="async" alt="Hossein Ghasemi, pe teacher at Afarinesh High School, Shiraz"></div>
+          <div class="teacher-body">
+            <p class="teacher-role">PE teacher</p>
+            <p class="teacher-name">Hossein Ghasemi</p>
+            <ul class="teacher-edu" role="list"><li>MSc in Sport Sciences</li></ul>
+          </div>
+        </li>
+<!-- team:end -->
+      </ol>
+      <p class="swipe-hint" aria-hidden="true"><svg class="ic"><use href="#i-swipe"/></svg><span class="hint-touch">Swipe the card left or right to see the next teacher</span><span class="hint-mouse">Drag the card left or right to see the next teacher</span></p>
+      <div class="empty" hidden data-team-empty>
+        <p>No one matches that search.</p>
+        <button type="button" class="btn btn-ghost btn-sm" data-team-reset>Show all teachers</button>
+      </div>
     </div>
   </section>
 
   <section id="faq" class="section" aria-labelledby="faq-title">
     <div class="wrap narrow">
-      <h2 id="faq-title" class="h2">Questions</h2>
+      <h2 id="faq-title" class="h2">Frequently asked questions</h2>
       <div class="faq">
-        <details><summary>What kind of school is Afarinesh, and where is it?<svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg></summary><p>Afarinesh High School (Afarinesh School Shiraz) is a private, research-based boys' school for grades 7, 8 and 9. Since 2008 it has been on Narvan Street, corner of Alley 14, Chenchene, Shiraz.</p></details>
-        <details><summary>How does admission work?<svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg></summary><p>Fill in the online pre-registration form; the school calls to arrange a visit and an interview with the student and his parents; then the result is announced.</p></details>
-        <details><summary>How many students are in a class?<svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg></summary><p>15 to 17, so the teacher can work with every student.</p></details>
-        <details><summary>Is teaching in English?<svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg></summary><p>Teaching follows the Iranian curriculum in Persian. English is taught as a subject and as an elective term course; French is offered as an elective.</p></details>
+        <details>
+          <summary>How does admission work?<svg class="ic"><use href="#i-plus"/></svg></summary>
+          <ol class="steps">
+            <li>Parents fill in the pre-registration form (in Persian) for the grade on the school's website.</li>
+            <li>The vice principals call the family to arrange a visit and an interview.</li>
+            <li>A specialist interview with the parents and the student takes place at the school.</li>
+            <li>The result is announced and the family is invited to complete the paperwork.</li>
+          </ol>
+        </details>
+        <details>
+          <summary>What kind of school is Afarinesh High School, and where in Shiraz is it?<svg class="ic"><use href="#i-plus"/></svg></summary>
+          <p>Afarinesh High School, Shiraz (often called Afarinesh School or Afarinesh Private School) is a private, research-based boys' school for the first cycle of secondary education: grades 7, 8 and 9. Since 2008 it has been in Chenchene, on Narvan Street at the corner of Alley 14, Shiraz, and among the city's private schools it is known for classes of 15 to 17 students and for its research, art, language and sport electives.</p>
+        </details>
+        <details>
+          <summary>How are the electives chosen?<svg class="ic"><use href="#i-plus"/></svg></summary>
+          <p>Each student chooses the path he likes from the research, art, language, culture, sport and special strands. These classes are not one-offs; they run until the end of the school year.</p>
+        </details>
+        <details>
+          <summary>How many students are in each class?<svg class="ic"><use href="#i-plus"/></svg></summary>
+          <p>Classes have 15 to 17 students, so the teacher can work with every student individually.</p>
+        </details>
+        <details>
+          <summary>How are maths and science taught?<svg class="ic"><use href="#i-plus"/></svg></summary>
+          <p>The maths book is taught as two separate courses, arithmetic and geometry, and the science book as two, physics–chemistry and biology–earth science, each by a specialist teacher.</p>
+        </details>
+        <details>
+          <summary>What counsellors does the school have?<svg class="ic"><use href="#i-plus"/></svg></summary>
+          <p>Three specialist counsellors work in the school itself: an academic counsellor, a clinical counsellor and a nutrition counsellor.</p>
+        </details>
+        <details>
+          <summary>How are students assessed?<svg class="ic"><use href="#i-plus"/></svg></summary>
+          <p>There are four school-wide exam rounds during the year, multiple-choice and written, and students work from the school's own practice books.</p>
+        </details>
+        <details>
+          <summary>Who are the teachers at Afarinesh?<svg class="ic"><use href="#i-plus"/></svg></summary>
+          <p>The name, role and degree of every teacher and staff member are listed under <a href="#team">Teachers and staff</a> on this page. Maths is taught as arithmetic and geometry, and science as physics–chemistry and biology–earth science.</p>
+        </details>
+        <details>
+          <summary>When is the school office open?<svg class="ic"><use href="#i-plus"/></svg></summary>
+          <p>Saturday to Wednesday, 7:00 to 14:00 (Iran time). Phone: <a href="tel:+987132293194" dir="ltr">+98 71 3229 3194</a> and <a href="tel:+987132295122" dir="ltr">+98 71 3229 5122</a>. <a href="#school-contacts">All contact details</a></p>
+        </details>
       </div>
     </div>
   </section>
 
   <section id="contact" class="section" aria-labelledby="contact-title">
-    <div class="wrap narrow">
-      <h2 id="contact-title" class="h2">Address and contact</h2>
-      <p>Narvan Street, corner of Alley 14, Chenchene, Shiraz, Fars, Iran</p>
-      <p>Office: Saturday to Wednesday, 7:00 to 14:00. Phone: <a href="tel:+987132293194">+98 71 3229 3194</a>, <a href="tel:+987132295122">+98 71 3229 5122</a></p>
-      <p>Email: <a href="mailto:afarineshsch@afarineshshiraz.ir">afarineshsch@afarineshshiraz.ir</a> · Instagram: <a href="https://instagram.com/afarinesh_sch" rel="noopener">afarinesh_sch</a></p>
-      <p><a class="btn btn-cta" href="/pre-registration" hreflang="fa">Pre-registration form (Persian)</a></p>
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="contact-title" class="h2">Contact</h2>
+        <p>Questions about the school? Call, e-mail or visit us in Shiraz.</p>
+      </div>
+      <div class="contact">
+
+        <div class="contact-info" id="school-contacts" tabindex="-1">
+          <h3 class="h3">How to reach the school</h3>
+          <ul class="contact-list" role="list">
+            <li><svg class="ic"><use href="#i-pin"/></svg><a href="https://nshn.ir/de_bguoSPFQe8V" target="_blank" rel="noopener">Narvan Street, corner of Alley 14, Chenchene, Shiraz, Iran</a></li>
+            <li><svg class="ic"><use href="#i-phone"/></svg><span><a href="tel:+987132293194" dir="ltr">071 3229 3194</a> · <a href="tel:+987132295122" dir="ltr">071 3229 5122</a></span></li>
+            <li><svg class="ic"><use href="#i-phone"/></svg><span><a href="tel:+989173023856" dir="ltr">0917 302 3856</a> · <a href="tel:+989177873940" dir="ltr">0917 787 3940</a></span></li>
+            <li><svg class="ic"><use href="#i-mail"/></svg><a href="mailto:afarineshsch@afarineshshiraz.ir" dir="ltr">afarineshsch@afarineshshiraz.ir</a></li>
+            <li><svg class="ic"><use href="#i-clock"/></svg><span>Saturday to Wednesday, 7:00 to 14:00 (Iran time)</span></li>
+          </ul>
+        </div>
+
+        <div class="map-card">
+          <a href="https://nshn.ir/de_bguoSPFQe8V" target="_blank" rel="noopener">
+            <picture>
+              <source media="(max-width: 640px)" srcset="/assets/img/map-chenchene-sq.webp" width="400" height="400">
+              <img src="/assets/img/map-chenchene.webp" width="720" height="400" loading="lazy" decoding="async" alt="Map of Afarinesh High School in Chenchene, Narvan Street at the corner of Alley 14, Shiraz">
+            </picture>
+            <span class="map-cta"><svg class="ic" aria-hidden="true"><use href="#i-pin"/></svg>Directions on the Neshan map<span class="visually-hidden"> (opens in a new tab)</span></span>
+          </a>
+          <p class="map-credit">Map: © OpenStreetMap contributors</p>
+        </div>
+      </div>
     </div>
   </section>
 </main>
 
 <footer class="site-footer">
-  <div class="wrap copy"><button type="button" class="theme-foot" data-theme-toggle aria-label="Switch theme"><svg class="ic ic-moon" aria-hidden="true"><use href="#i-moon"/></svg><svg class="ic ic-sun" aria-hidden="true"><use href="#i-sun"/></svg><span>Light and dark</span></button><p>© Afarinesh High School, Shiraz, Iran · <a href="/" hreflang="fa" lang="fa">دبیرستان غیردولتی آفرینش شیراز</a></p></div>
+  <div class="wrap footer-row">
+    <div class="footer-brand">
+      <img src="/assets/img/logo-mark-96.webp" width="96" height="96" alt="Afarinesh High School, Shiraz, logo" loading="lazy">
+      <p><b>Afarinesh High School, Shiraz</b><br>A private, research-based boys' lower-secondary school in Shiraz, since 2008.</p>
+    </div>
+    <nav aria-label="Quick links">
+      <h2 class="footer-h">Quick links</h2>
+      <ul role="list">
+        <li><a href="/" hreflang="fa" lang="fa">فارسی</a></li>
+        <li><a href="https://instagram.com/afarinesh_sch" target="_blank" rel="noopener"><svg class="ic"><use href="#i-insta"/></svg>The school on Instagram</a></li>
+      </ul>
+    </nav>
+  </div>
+  <div class="wrap copy"><button type="button" class="theme-foot" data-theme-toggle aria-label="Switch to dark mode"><svg class="ic ic-moon" aria-hidden="true"><use href="#i-moon"/></svg><svg class="ic ic-sun" aria-hidden="true"><use href="#i-sun"/></svg><span>Light and dark mode</span></button><p>© 2026 Afarinesh High School, Shiraz <span lang="en" dir="ltr">· Afarinesh Boys' Junior High School, Shiraz, Iran</span></p><p class="credit"><span>Website design and development:</span> <b>Mohammad Sina Asgharpour</b></p></div>
 </footer>
-<a class="insta-fab" href="https://instagram.com/afarinesh_sch" target="_blank" rel="noopener" aria-label="The school's Instagram (afarinesh_sch)"><svg class="ic" aria-hidden="true"><use href="#i-insta"/></svg></a>
+
+<a class="insta-fab" href="https://instagram.com/afarinesh_sch" target="_blank" rel="noopener" aria-label="The school on Instagram (afarinesh_sch)"><svg class="ic" aria-hidden="true"><use href="#i-insta"/></svg></a>
 <button class="to-top icon-btn" type="button" aria-label="Back to top" data-to-top hidden><svg class="ic"><use href="#i-up"/></svg></button>
+
 <div class="toasts" aria-live="polite" aria-atomic="false" data-toasts></div>
-<script type="module" src="/assets/js/en.js"></script>
 </body>
 </html>

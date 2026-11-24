@@ -3,20 +3,24 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>انتخاب مدرسه‌ی دوره اول متوسطه در شیراز: والدین به چه چیزهایی نگاه کنند | دبیرستان آفرینش شیراز</title>
+<title>انتخاب مدرسه‌ی دوره اول | دبیرستان آفرینش شیراز</title>
 <meta name="description" content="چک‌لیست والدین برای انتخاب دبیرستان دوره اول پسرانه در شیراز: تعداد دانش‌آموز هر کلاس، دبیر متخصص، مشاوره، کلاس‌های انتخابی، آزمون‌ها و بازدید از مدرسه.">
 <link rel="canonical" href="https://afarineshshiraz.ir/blog/choosing-middle-school-shiraz">
 <meta name="theme-color" content="#e8edf2">
 <meta name="color-scheme" content="light dark">
-<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
 <meta property="og:type" content="article">
 <meta property="og:locale" content="fa_IR">
-<meta property="og:site_name" content="دبیرستان آفرینش">
-<meta property="og:title" content="انتخاب مدرسه‌ی دوره اول متوسطه در شیراز: والدین به چه چیزهایی نگاه کنند | دبیرستان آفرینش شیراز">
+<meta property="og:site_name" content="دبیرستان آفرینش شیراز">
+<meta property="og:title" content="انتخاب مدرسه‌ی دوره اول | دبیرستان آفرینش شیراز">
 <meta property="og:description" content="چک‌لیست والدین برای انتخاب دبیرستان دوره اول پسرانه در شیراز: تعداد دانش‌آموز هر کلاس، دبیر متخصص، مشاوره، کلاس‌های انتخابی، آزمون‌ها و بازدید از مدرسه.">
 <meta property="og:url" content="https://afarineshshiraz.ir/blog/choosing-middle-school-shiraz">
-<meta property="og:image" content="https://afarineshshiraz.ir/assets/img/og-cover.jpg">
+<meta property="og:image" content="https://afarineshshiraz.ir/assets/img/blog/choosing-middle-school-shiraz-1280.webp">
 <meta name="twitter:card" content="summary_large_image">
+<meta property="article:published_time" content="2026-11-21">
+<meta property="article:section" content="انتخاب مدرسه">
+<link rel="preload" as="image" href="/assets/img/blog/choosing-middle-school-shiraz-1280.webp" fetchpriority="high">
+<link rel="alternate" type="application/rss+xml" title="وبلاگ دبیرستان آفرینش" href="https://afarineshshiraz.ir/blog/feed.xml">
 <link rel="icon" href="/assets/img/icon-48.png" type="image/png" sizes="48x48">
 <link rel="icon" href="/assets/img/icon-192.png" sizes="192x192">
 <link rel="apple-touch-icon" href="/assets/img/icon-180.png">
@@ -176,7 +180,7 @@ transition: border-color .2s, background-color .2s;
 .nav a {
 display: block; padding: var(--s2) var(--s3); border-radius: var(--r-sm);
 color: var(--ink); text-decoration: none; font-weight: 500; font-size: .98rem;
-transition: background-color .15s;
+transition: background-color .15s; white-space: nowrap;
 }
 .nav a:hover { background: color-mix(in srgb, var(--ink) 7%, transparent); }
 .nav a { position: relative; }
@@ -190,7 +194,7 @@ transform: scaleX(0); transform-origin: right; transition: transform var(--dur-f
 .ic-sun, .ic-shut, .menu-btn { display: none; }
 :root[data-theme="dark"] .ic-moon { display: none; }
 :root[data-theme="dark"] .ic-sun { display: block; }
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
 .menu-btn { display: inline-grid; }
 .nav {
 position: fixed; inset: 72px 0 auto 0; margin: 0;
@@ -270,7 +274,10 @@ transition: opacity .2s, transform .2s var(--ease), visibility 0s .2s;
 .lightbox { padding: 0; border: 0; background: transparent; max-width: 100vw; max-height: 100svh; width: 100vw; height: 100svh; }
 .lightbox::backdrop { background: rgba(4, 14, 22, .92); }
 .lightbox figure { margin: 0; height: 100%; display: grid; place-items: center; align-content: center; gap: var(--s3); padding: var(--s5); }
-.lightbox img { max-width: min(100%, 1280px); max-height: calc(100svh - 120px); object-fit: contain; border-radius: var(--r-sm); }
+.lightbox img { max-width: min(100%, 1280px); max-height: calc(100svh - 120px); object-fit: contain; border-radius: var(--r-sm); touch-action: none; cursor: zoom-in; transform-origin: center; user-select: none; -webkit-user-drag: none; }
+.lightbox.is-zoomed img { cursor: grab; border-radius: 0; }
+.lightbox.is-zoomed figcaption, .lightbox.is-zoomed .lb-prev, .lightbox.is-zoomed .lb-next { opacity: 0; pointer-events: none; }
+.lightbox figure { overflow: hidden; }
 .lightbox figcaption { color: #fff; font-weight: 700; }
 .lightbox button { position: fixed; top: 12px; inset-inline-start: 12px; width: 48px; height: 48px; border-radius: 50%; border: 0; background: rgba(255, 255, 255, .14); color: #fff; font-size: 1.4rem; cursor: pointer; }
 .lightbox .lb-prev, .lightbox .lb-next { top: 50%; translate: 0 -50%; }
@@ -540,17 +547,13 @@ grid-template-columns: minmax(0, 1fr); min-width: 0; justify-items: center; alig
 }
 .is-swipe .teacher[hidden] { display: none; }
 .is-swipe .teacher.is-current { visibility: visible; z-index: 2; }
-.is-swipe .team { perspective: 2000px; }
-.is-swipe .teacher { transform-origin: 100% 50%; backface-visibility: hidden; transform-style: preserve-3d; will-change: auto; }
 .is-swipe .teacher.is-current { box-shadow: -5px 5px 0 -1px var(--surface), -5px 5px 0 0 var(--line), -10px 10px 0 -1px var(--surface), -10px 10px 0 0 var(--line); }
 .is-swipe .teacher.is-under-now { visibility: visible; z-index: 3; }
 .is-swipe .teacher.is-turning { visibility: visible; z-index: 4; will-change: transform; box-shadow: -18px 14px 40px rgba(6, 20, 31, .22); }
 .is-swipe .teacher.is-dragging { transition: none; }
-@media (max-width: 700px) {
 .is-swipe .team { overflow-x: clip; padding: 0 0 12px 12px; margin: 0 0 -12px -12px; }
 .is-swipe .teacher { transform-origin: 50% 110%; }
 .is-swipe .teacher.is-turning { box-shadow: -14px 18px 36px rgba(6, 20, 31, .28); }
-}
 .hint-mouse { display: none; }
 @media (pointer: fine) { .hint-touch { display: none; } .hint-mouse { display: inline; } }
 .is-swipe.is-mouse-dragging { cursor: grabbing; }
@@ -758,14 +761,6 @@ background: var(--paper); color: var(--ink); font: inherit; font-weight: 600; cu
 .check input { width: 22px; height: 22px; min-height: 0; margin-top: 4px; flex: none; accent-color: #16789c; }
 .privacy-note { margin: 0; font-size: var(--t-sm); color: var(--ink-2); text-align: center; }
 .privacy-note a, .prose a { font-weight: 700; }
-.voice-btn { display: inline-flex; align-items: center; gap: var(--s2); min-height: 42px; margin-top: var(--s2); padding: 0 var(--s3); border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--surface); color: var(--sky-text); cursor: pointer; font-weight: 700; }
-.voice-btn:hover, .voice-btn.is-listening { background: color-mix(in srgb, var(--sky) 14%, var(--surface)); }
-.voice-note { margin: var(--s1) 0 0; color: var(--ink-2); font-size: var(--t-xs); }
-.map-check { margin: var(--s2) 0 0; font-size: var(--t-xs); color: var(--ink-2); }
-.map-check:empty { display: none; }
-.map-check.is-ok { color: var(--sky-text); }
-.map-check.is-warn { color: var(--ink); padding: var(--s2) var(--s3); border-radius: var(--r-sm); background: color-mix(in srgb, var(--sun, #f2b33d) 18%, var(--surface)); }
-.map-check a { color: inherit; font-weight: 700; text-decoration: underline; }
 .prose { display: grid; gap: var(--s5); }
 .prose section { padding: var(--s5) var(--s6); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
 .prose h2 { font-size: var(--t-md); font-weight: 800; margin-bottom: var(--s2); }
@@ -795,11 +790,11 @@ background: var(--paper); color: var(--ink); font: inherit; font-weight: 600; cu
 .site-footer ul { display: grid; gap: 0; }
 .site-footer a { color: #cfdbe4; text-decoration: none; display: inline-flex; gap: var(--s2); align-items: center; min-height: 44px; }
 .site-footer a:hover { color: #fff; text-decoration: underline; }
-.share-site { display: inline-flex; margin-bottom: var(--s2); font-weight: 800; color: #ffd166 !important; direction: ltr; }
-.share-text { max-width: 34ch; margin-bottom: var(--s2); font-size: var(--t-sm); line-height: 1.9; color: #b4c4d0; }
 .copy { margin-top: var(--s7); padding-bottom: var(--s4); border-bottom: 1px solid rgba(255, 255, 255, .22); font-size: var(--t-sm); color: #b4c4d0; display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--s2) var(--s5); }
 .copy p { margin: 0; }
-.credit { color: #c6d3dd; }
+.credit { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 999px; border: 1px solid rgba(255, 209, 102, .55); background: rgba(255, 209, 102, .08); color: #dbe5ec; }
+.credit b { color: #ffd166; font-weight: 800; }
+.credit-en { color: #b4c4d0; font-size: .85em; }
 .link-btn { min-height: 44px; padding: 0; border: 0; background: none; color: #cfdbe4; cursor: pointer; }
 .link-btn:hover { color: #fff; text-decoration: underline; }
 .site-footer { padding-bottom: calc(var(--s5) + 86px); }
@@ -892,7 +887,6 @@ html.lenis, html.lenis body { height: auto; }
 .site-header { view-transition-name: site-header; }
 ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .2s; animation-timing-function: var(--ease); }
 }
-#programs, #faq, #contact, .enrol, .site-footer { content-visibility: auto; contain-intrinsic-size: auto 900px; }
 .teacher { content-visibility: auto; contain-intrinsic-size: auto 190px; }
 .is-swipe .teacher { contain-intrinsic-size: auto 560px; }
 .section-head .h2 { position: relative; padding-bottom: var(--s2); }
@@ -914,14 +908,20 @@ html.lenis, html.lenis body { height: auto; }
 .cell:hover, .features > li:hover { transform: translateY(-4px); box-shadow: 0 14px 30px rgba(6, 20, 31, .16); z-index: 1; }
 }.receipt-code b { font-size: 1.5rem; letter-spacing: .12em; }
 .receipt-dialog h3 { color: var(--ok, #1d7a46); }
-.lang-en .path li::before { content: counter(step); }</style><!-- css:end -->
+.lang-en .path li::before { content: counter(step); }
+.features, .mondrian { border-radius: var(--r); }
+.features > li, .mondrian > .cell, .fact, .facts-wall > * { border-radius: 10px; }</style><!-- css:end -->
+<link rel="stylesheet" href="/assets/css/blog.css">
 <link rel="modulepreload" href="/assets/js/common.js">
-<script type="module" src="/assets/js/page.js"></script>
+<script type="module" src="/assets/js/blog.js"></script>
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"BlogPosting","headline":"انتخاب مدرسه‌ی دوره اول متوسطه در شیراز: والدین به چه چیزهایی نگاه کنند","description":"چک‌لیست والدین برای انتخاب دبیرستان دوره اول پسرانه در شیراز: تعداد دانش‌آموز هر کلاس، دبیر متخصص، مشاوره، کلاس‌های انتخابی، آزمون‌ها و بازدید از مدرسه.","inLanguage":"fa-IR","datePublished":"2026-11-21","dateModified":"2026-11-21","mainEntityOfPage":"https://afarineshshiraz.ir/blog/choosing-middle-school-shiraz","image":"https://afarineshshiraz.ir/assets/img/og-cover.jpg","author":{"@type":"Organization","name":"دبیرستان غیردولتی آفرینش شیراز","url":"https://afarineshshiraz.ir/"},"publisher":{"@id":"https://afarineshshiraz.ir/#school"}}
+{"@context":"https://schema.org","@type":"BlogPosting","headline":"انتخاب مدرسه‌ی دوره اول متوسطه در شیراز: والدین به چه چیزهایی نگاه کنند","description":"چک‌لیست والدین برای انتخاب دبیرستان دوره اول پسرانه در شیراز: تعداد دانش‌آموز هر کلاس، دبیر متخصص، مشاوره، کلاس‌های انتخابی، آزمون‌ها و بازدید از مدرسه.","inLanguage":"fa-IR","datePublished":"2026-11-21","dateModified":"2026-11-21","mainEntityOfPage":"https://afarineshshiraz.ir/blog/choosing-middle-school-shiraz","url":"https://afarineshshiraz.ir/blog/choosing-middle-school-shiraz","image":[{"@type":"ImageObject","url":"https://afarineshshiraz.ir/assets/img/blog/choosing-middle-school-shiraz-1280.webp","width":1280,"height":720,"caption":"تصویر مطلب «انتخاب مدرسه‌ی دوره اول» در وبلاگ دبیرستان آفرینش شیراز"},{"@type":"ImageObject","url":"https://afarineshshiraz.ir/assets/img/school/classroom-2-1280.webp","caption":"کلاس درس دبیرستان آفرینش شیراز با میز و نیمکت دانش‌آموزان"}],"articleSection":"انتخاب مدرسه","keywords":"انتخاب مدرسه شیراز، دبیرستان دوره اول شیراز، مدرسه غیردولتی شیراز","wordCount":401,"author":{"@type":"Organization","name":"دبیرستان غیردولتی آفرینش شیراز","url":"https://afarineshshiraz.ir/"},"publisher":{"@id":"https://afarineshshiraz.ir/#school"},"isPartOf":{"@id":"https://afarineshshiraz.ir/blog/#blog"},"about":{"@id":"https://afarineshshiraz.ir/#school"}}
 </script>
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"دبیرستان آفرینش","item":"https://afarineshshiraz.ir/"},{"@type":"ListItem","position":2,"name":"مطالب برای والدین","item":"https://afarineshshiraz.ir/blog/"},{"@type":"ListItem","position":3,"name":"انتخاب مدرسه‌ی دوره اول متوسطه در شیراز: والدین به چه چیزهایی نگاه کنند","item":"https://afarineshshiraz.ir/blog/choosing-middle-school-shiraz"}]}
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"مهم‌ترین معیار انتخاب مدرسه‌ی دوره اول متوسطه چیست؟","acceptedAnswer":{"@type":"Answer","text":"تعداد دانش‌آموزان هر کلاس، دبیر متخصص برای هر درس، مشاور در خود مدرسه و برنامه‌ای که به علاقه‌ی دانش‌آموز میدان بدهد، از مهم‌ترین معیارها هستند. بهتر است مدرسه را از نزدیک ببینید و پرسش‌هایتان را حضوری بپرسید."}},{"@type":"Question","name":"کلاس‌های دبیرستان آفرینش چند نفره است؟","acceptedAnswer":{"@type":"Answer","text":"کلاس‌های دبیرستان آفرینش شیراز ۱۵ تا ۱۷ نفره است تا دبیر بتواند پیشرفت هر دانش‌آموز را از نزدیک دنبال کند."}}]}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"دبیرستان آفرینش","item":"https://afarineshshiraz.ir/"},{"@type":"ListItem","position":2,"name":"وبلاگ","item":"https://afarineshshiraz.ir/blog/"},{"@type":"ListItem","position":3,"name":"انتخاب مدرسه‌ی دوره اول متوسطه در شیراز: والدین به چه چیزهایی نگاه کنند","item":"https://afarineshshiraz.ir/blog/choosing-middle-school-shiraz"}]}
 </script>
 </head>
 <body>
@@ -973,6 +973,7 @@ html.lenis, html.lenis body { height: auto; }
         <li><a href="/#campus">فضای مدرسه</a></li>
         <li><a href="/#team">دبیران</a></li>
         <li><a href="/#faq">پرسش‌ها</a></li>
+        <li><a href="/blog/">وبلاگ</a></li>
         <li><a href="#school-contacts">تماس</a></li>
       </ul>
     </nav>
@@ -988,61 +989,103 @@ html.lenis, html.lenis body { height: auto; }
   </div>
 </header>
 
-<main id="main" tabindex="-1" class="form-page">
-  <article>
-  <header class="page-hero">
-    <div class="wrap narrow">
-      <nav class="crumbs" aria-label="مسیر صفحه"><a href="/">صفحه اصلی</a><span aria-hidden="true">‹</span><a href="/blog/">مطالب</a><span aria-hidden="true">‹</span><span aria-current="page">انتخاب مدرسه‌ی دوره اول</span></nav>
-      <a class="context-back" data-context-back href="/blog/"><svg class="ic" aria-hidden="true"><use href="#i-back"/></svg><span>همه‌ی مطالب</span></a>
-      <h1 class="h1">انتخاب مدرسه‌ی دوره اول متوسطه در شیراز: والدین به چه چیزهایی نگاه کنند</h1>
+<main id="main" tabindex="-1" class="blog-page">
+  <article class="post">
+  <header class="post-hero">
+    <div class="wrap post-wrap">
+      <nav class="crumbs" aria-label="مسیر صفحه"><a href="/">صفحه اصلی</a><span aria-hidden="true">‹</span><a href="/blog/">وبلاگ</a><span aria-hidden="true">‹</span><span aria-current="page">انتخاب مدرسه‌ی دوره اول</span></nav>
+      <p class="post-cat"><a href="/blog/#school">انتخاب مدرسه</a></p>
+      <h1 class="post-title">انتخاب مدرسه‌ی دوره اول متوسطه در شیراز: والدین به چه چیزهایی نگاه کنند</h1>
       <p class="lede">پایه‌ی هفتم شروع سه سالی است که پسرتان در آن عادت‌های درس خواندن، علاقه‌ها و دوستی‌هایش را شکل می‌دهد. این چند پرسش کمک می‌کند مدرسه‌ها را با هم مقایسه کنید.</p>
-      <p class="post-date"><time datetime="2026-11-21">۳۰ آبان ۱۴۰۵</time> · دبیرستان آفرینش</p>
+      <p class="post-meta"><span>نوشته‌ی دبیرستان غیردولتی آفرینش شیراز</span> · <time datetime="2026-11-21">۳۰ آبان ۱۴۰۵</time> · ۲ دقیقه مطالعه</p>
     </div>
+    <figure class="post-cover wrap"><img src="/assets/img/blog/choosing-middle-school-shiraz-1280.webp" srcset="/assets/img/blog/choosing-middle-school-shiraz-640.webp 640w, /assets/img/blog/choosing-middle-school-shiraz-1280.webp 1280w" sizes="(max-width: 1180px) 100vw, 1180px" width="1280" height="720" alt="تصویر مطلب «انتخاب مدرسه‌ی دوره اول» در وبلاگ دبیرستان آفرینش شیراز" fetchpriority="high"></figure>
   </header>
-  <div class="section form-section">
-    <div class="wrap narrow prose">
+  <div class="wrap post-wrap post-body">
+      <nav class="post-toc" aria-label="فهرست این مطلب">
+        <p class="post-toc-h">در این مطلب</p>
+        <ol><li><a href="#s1">۱. هر کلاس چند دانش‌آموز دارد؟</a></li><li><a href="#s2">۲. هر درس را چه کسی درس می‌دهد؟</a></li><li><a href="#s3">۳. مشاوره در خود مدرسه است یا فقط در حد یک جلسه؟</a></li><li><a href="#s4">۴. بیرون از کتاب درسی چه چیزی یاد می‌گیرد؟</a></li><li><a href="#s5">۵. پیشرفت بچه‌ها چطور سنجیده می‌شود؟</a></li><li><a href="#s6">۶. پیش از ثبت‌نام، مدرسه را از نزدیک ببینید</a></li></ol>
+      </nav>
+    <div class="prose">
 <section>
-        <h2>۱. هر کلاس چند دانش‌آموز دارد؟</h2>
+        <h2 id="s1">۱. هر کلاس چند دانش‌آموز دارد؟</h2>
         <p>در کلاس کم‌جمعیت، دبیر فرصت دارد به پرسش تک‌تک بچه‌ها برسد و زودتر بفهمد کسی کجا جا مانده است. از هر مدرسه بپرسید کلاس‌های پایه‌ی هفتم دقیقاً چند نفره‌اند و آیا این عدد در طول سال ثابت می‌ماند.</p>
         <p>در دبیرستان آفرینش هر کلاس ۱۵ تا ۱۷ دانش‌آموز دارد.</p>
       </section>
+      <figure class="post-photo"><img src="/assets/img/school/classroom-2-1280.webp" srcset="/assets/img/school/classroom-2-640.webp 640w, /assets/img/school/classroom-2-1280.webp 1280w" sizes="(max-width: 780px) 100vw, 780px" width="1280" height="720" alt="کلاس درس دبیرستان آفرینش شیراز با میز و نیمکت دانش‌آموزان" loading="lazy" decoding="async"><figcaption>کلاس درس دبیرستان آفرینش شیراز با میز و نیمکت دانش‌آموزان</figcaption></figure>
       <section>
-        <h2>۲. هر درس را چه کسی درس می‌دهد؟</h2>
+        <h2 id="s2">۲. هر درس را چه کسی درس می‌دهد؟</h2>
         <p>در دوره اول، کتاب ریاضی و کتاب علوم چند شاخه را کنار هم دارند. بپرسید آیا یک دبیر همه‌ی کتاب را درس می‌دهد یا هر بخش دبیر متخصص خودش را دارد، و دبیران چه رشته و چه سابقه‌ای دارند. مدرسه‌ای که به کارش اطمینان دارد، نام و مدرک دبیرانش را پنهان نمی‌کند.</p>
         <p>در آفرینش ریاضی در دو درس حساب و هندسه و علوم در دو درس فیزیک‌-شیمی و زیست‌-زمین تدریس می‌شود، و <a href="/#team">نام، سمت و مدرک همه‌ی دبیران</a> در صفحه‌ی اصلی آمده است.</p>
       </section>
       <section>
-        <h2>۳. مشاوره در خود مدرسه است یا فقط در حد یک جلسه؟</h2>
+        <h2 id="s3">۳. مشاوره در خود مدرسه است یا فقط در حد یک جلسه؟</h2>
         <p>سال‌های نوجوانی پر از تغییر است: درس سخت‌تر می‌شود، دوستی‌ها عوض می‌شوند و خواب و تغذیه هم روی درس اثر می‌گذارد. بپرسید مشاور چند روز در هفته در مدرسه است و آیا خانواده هم می‌تواند با او صحبت کند.</p>
         <p>آفرینش سه مشاور تخصصی در خود مدرسه دارد: تحصیلی، بالینی و تغذیه.</p>
       </section>
       <section>
-        <h2>۴. بیرون از کتاب درسی چه چیزی یاد می‌گیرد؟</h2>
+        <h2 id="s4">۴. بیرون از کتاب درسی چه چیزی یاد می‌گیرد؟</h2>
         <p>کلاس‌های فوق‌برنامه وقتی اثر دارند که دانش‌آموز خودش انتخابشان کند و تا آخر سال ادامه پیدا کنند، نه این‌که چند جلسه‌ی نمایشی باشند. فهرست کلاس‌ها را بخواهید و بپرسید هر کدام چقدر طول می‌کشد.</p>
         <p>در آفرینش دانش‌آموز از میان <a href="/#programs">کلاس‌های انتخابی</a> پژوهشی (مثل برنامه‌نویسی و رباتیک)، هنری، زبان، فرهنگی، ورزشی و کارگاه‌های ویژه مسیرش را انتخاب می‌کند و تا پایان سال ادامه می‌دهد.</p>
       </section>
       <section>
-        <h2>۵. پیشرفت بچه‌ها چطور سنجیده می‌شود؟</h2>
+        <h2 id="s5">۵. پیشرفت بچه‌ها چطور سنجیده می‌شود؟</h2>
         <p>بپرسید در طول سال چند آزمون هماهنگ برگزار می‌شود، نتیجه چطور به خانواده گفته می‌شود و اگر دانش‌آموزی عقب بماند چه کاری برایش انجام می‌دهند.</p>
         <p>در آفرینش چهار مرحله آزمون هماهنگ تستی و تشریحی در طول سال برگزار می‌شود و دانش‌آموزان کتاب‌های تمرین اختصاصی مدرسه را دارند.</p>
       </section>
       <section>
-        <h2>۶. پیش از ثبت‌نام، مدرسه را از نزدیک ببینید</h2>
+        <h2 id="s6">۶. پیش از ثبت‌نام، مدرسه را از نزدیک ببینید</h2>
         <p>یک بازدید بیشتر از هر بروشوری می‌گوید: کلاس‌ها، کتابخانه، حیاط و رفتار کارکنان با بچه‌ها. اگر مدرسه پیش از پذیرش با خانواده و دانش‌آموز گفت‌وگو می‌کند، یعنی می‌خواهد هر دو طرف با شناخت تصمیم بگیرند.</p>
         <p>عکس‌های <a href="/#campus">فضای مدرسه‌ی آفرینش</a> در صفحه‌ی اصلی هست، و همه‌ی دانش‌آموزان ورودی همراه با والدین مصاحبه‌ی حضوری دارند. مراحل را در <a href="/blog/pre-registration-steps">راهنمای پیش‌ثبت‌نام</a> نوشته‌ایم.</p>
       </section>
-      <section class="post-cta">
-        <h2>برای سال تحصیلی ۱۴۰۶-۱۴۰۷</h2>
-        <p>پیش‌ثبت‌نام پایه‌های هفتم، هشتم و نهم در سایت باز است. اگر پیش از ثبت‌نام پرسشی دارید، از صفحه‌ی اصلی درخواست تماس مشاور بدهید.</p>
-        <p><a class="btn btn-cta" href="/pre-registration">پیش‌ثبت‌نام آنلاین</a></p>
-      </section>
-      <section class="more-posts">
-        <h2>مطالب دیگر</h2>
-        <ul><li><a href="/blog/pre-registration-steps">مراحل پیش‌ثبت‌نام دبیرستان آفرینش شیراز برای سال ۱۴۰۶-۱۴۰۷</a></li><li><a href="/blog/starting-seventh-grade">از دبستان به پایه‌ی هفتم: چطور پسرتان را برای دبیرستان آماده کنید</a></li></ul>
-      </section>
     </div>
+      <section class="post-faq" aria-labelledby="faq-h">
+        <h2 id="faq-h">پرسش‌های پرتکرار</h2>
+        <details><summary>مهم‌ترین معیار انتخاب مدرسه‌ی دوره اول متوسطه چیست؟</summary><p>تعداد دانش‌آموزان هر کلاس، دبیر متخصص برای هر درس، مشاور در خود مدرسه و برنامه‌ای که به علاقه‌ی دانش‌آموز میدان بدهد، از مهم‌ترین معیارها هستند. بهتر است مدرسه را از نزدیک ببینید و پرسش‌هایتان را حضوری بپرسید.</p></details>
+        <details><summary>کلاس‌های دبیرستان آفرینش چند نفره است؟</summary><p>کلاس‌های دبیرستان آفرینش شیراز ۱۵ تا ۱۷ نفره است تا دبیر بتواند پیشرفت هر دانش‌آموز را از نزدیک دنبال کند.</p></details>
+      </section>
+      <aside class="post-cta">
+        <h2>دبیرستان آفرینش؛ سال تحصیلی ۱۴۰۶-۱۴۰۷</h2>
+        <p>پیش‌ثبت‌نام پایه‌های هفتم، هشتم و نهم دبیرستان غیردولتی پسرانه‌ی آفرینش شیراز باز است. پیش از ثبت‌نام می‌توانید از صفحه‌ی اصلی درخواست تماس مشاور بدهید.</p>
+        <p class="post-cta-row"><a class="btn btn-cta" href="/pre-registration">پیش‌ثبت‌نام آنلاین</a> <a class="btn btn-ghost" href="/#contact">درخواست مشاوره</a></p>
+      </aside>
   </div>
   </article>
+  <section class="section related" aria-labelledby="rel-h">
+    <div class="wrap">
+      <h2 id="rel-h" class="related-h">مطالب مرتبط</h2>
+      <div class="post-grid">
+      <article class="post-card" data-cat="school">
+        <a class="post-card-img" href="/blog/best-boys-middle-school-shiraz" tabindex="-1" aria-hidden="true"><img src="/assets/img/blog/best-boys-middle-school-shiraz-640.webp" width="640" height="360" alt="تصویر مطلب «دبیرستان پسرانه در شیراز» در وبلاگ دبیرستان آفرینش شیراز" loading="lazy" decoding="async"></a>
+        <div class="post-card-body">
+          <p class="post-cat">انتخاب مدرسه</p>
+          <h3 class="post-card-title"><a href="/blog/best-boys-middle-school-shiraz">دبیرستان پسرانه‌ی دوره اول در شیراز: راهنمای انتخاب برای والدین</a></h3>
+          <p class="post-card-text">برای پایه‌ی هفتم پسرتان در شیراز دنبال دبیرستان هستید؟ معیارهای مقایسه‌ی مدرسه‌های پسرانه‌ی دوره اول متوسطه، از تعداد دانش‌آموز کلاس تا مشاور و فاصله تا خانه.</p>
+          <p class="post-meta"><time datetime="2026-11-23">۲ آذر ۱۴۰۵</time> · ۲ دقیقه مطالعه</p>
+        </div>
+      </article>
+      <article class="post-card" data-cat="school">
+        <a class="post-card-img" href="/blog/research-based-school" tabindex="-1" aria-hidden="true"><img src="/assets/img/blog/research-based-school-640.webp" width="640" height="360" alt="تصویر مطلب «مدرسه‌ی پژوهش‌محور» در وبلاگ دبیرستان آفرینش شیراز" loading="lazy" decoding="async"></a>
+        <div class="post-card-body">
+          <p class="post-cat">انتخاب مدرسه</p>
+          <h3 class="post-card-title"><a href="/blog/research-based-school">مدرسه‌ی پژوهش‌محور یعنی چه؟ نگاهی به دبیرستان پژوهش‌محور آفرینش شیراز</a></h3>
+          <p class="post-card-text">مدرسه یا دبیرستان پژوهش‌محور چه فرقی با مدرسه‌ی معمولی دارد؟ معنای پژوهش در دوره اول متوسطه، نمونه‌ی کلاس‌های پژوهشی و آنچه والدین باید بپرسند.</p>
+          <p class="post-meta"><time datetime="2026-11-23">۲ آذر ۱۴۰۵</time> · ۲ دقیقه مطالعه</p>
+        </div>
+      </article>
+      <article class="post-card" data-cat="study">
+        <a class="post-card-img" href="/blog/how-to-study-effectively" tabindex="-1" aria-hidden="true"><img src="/assets/img/blog/how-to-study-effectively-640.webp" width="640" height="360" alt="تصویر مطلب «روش‌های درست مطالعه» در وبلاگ دبیرستان آفرینش شیراز" loading="lazy" decoding="async"></a>
+        <div class="post-card-body">
+          <p class="post-cat">درس و مطالعه</p>
+          <h3 class="post-card-title"><a href="/blog/how-to-study-effectively">چطور درس بخوانیم؟ ۶ روش مطالعه که پژوهش‌ها اثرشان را نشان داده‌اند</a></h3>
+          <p class="post-card-text">روش مطالعه‌ی درست برای دانش‌آموزان دوره اول متوسطه: خودآزمایی، مرور فاصله‌دار، توضیح دادن با زبان خود و چند روش دیگر که از دوباره‌خوانی مؤثرترند.</p>
+          <p class="post-meta"><time datetime="2026-11-23">۲ آذر ۱۴۰۵</time> · ۲ دقیقه مطالعه</p>
+        </div>
+      </article>
+      </div>
+      <p class="related-all"><a href="/blog/">همه‌ی مطالب وبلاگ ‹</a></p>
+    </div>
+  </section>
 </main>
 
 <footer class="site-footer">
@@ -1058,23 +1101,13 @@ html.lenis, html.lenis body { height: auto; }
         <li><a href="/careers">دعوت به همکاری</a></li>
         <li><a href="/privacy">حریم خصوصی و شرایط استفاده</a></li>
             <li><a href="/library/">کتابخانه‌ی مدرسه</a></li>
-        <li><a href="/blog/">مطالب برای والدین</a></li>
+        <li><a href="/blog/">وبلاگ آفرینش</a></li>
         <li><a href="/en" hreflang="en" lang="en">English</a></li>
         <li><a href="https://instagram.com/afarinesh_sch" target="_blank" rel="noopener"><svg class="ic"><use href="#i-insta"/></svg>اینستاگرام مدرسه</a></li>
       </ul>
     </nav>
-    <div class="share">
-      <h2 class="footer-h">آفرینش را به دوستانتان معرفی کنید</h2>
-      <p class="share-text" data-share-text>دبیرستان غیردولتی آفرینش شیراز، دوره اول متوسطه‌ی پسرانه، از سال ۱۳۸۷: کلاس‌های ۱۵ تا ۱۷ نفره، دبیر متخصص برای هر درس، کلاس‌های انتخابی پژوهشی، هنری، زبان، فرهنگی و ورزشی و سه مشاور تخصصی در خود مدرسه. پیش‌ثبت‌نام سال تحصیلی ۱۴۰۶-۱۴۰۷ آغاز شده است.</p>
-      <a class="share-site" href="https://afarineshshiraz.ir/">afarineshshiraz.ir</a>
-      <ul role="list">
-        <li><a href="https://t.me/share/url?url=https%3A%2F%2Fafarineshshiraz.ir%2F&amp;text=%D8%AF%D8%A8%DB%8C%D8%B1%D8%B3%D8%AA%D8%A7%D9%86%20%D8%BA%DB%8C%D8%B1%D8%AF%D9%88%D9%84%D8%AA%DB%8C%20%D8%A2%D9%81%D8%B1%DB%8C%D9%86%D8%B4%20%D8%B4%DB%8C%D8%B1%D8%A7%D8%B2%D8%8C%20%D8%AF%D9%88%D8%B1%D9%87%20%D8%A7%D9%88%D9%84%20%D9%85%D8%AA%D9%88%D8%B3%D8%B7%D9%87%E2%80%8C%DB%8C%20%D9%BE%D8%B3%D8%B1%D8%A7%D9%86%D9%87%3A%20%DA%A9%D9%84%D8%A7%D8%B3%E2%80%8C%D9%87%D8%A7%DB%8C%20%DB%B1%DB%B5%20%D8%AA%D8%A7%20%DB%B1%DB%B7%20%D9%86%D9%81%D8%B1%D9%87%D8%8C%20%DA%A9%D9%84%D8%A7%D8%B3%E2%80%8C%D9%87%D8%A7%DB%8C%20%D8%A7%D9%86%D8%AA%D8%AE%D8%A7%D8%A8%DB%8C%20%D9%BE%DA%98%D9%88%D9%87%D8%B4%DB%8C%D8%8C%20%D9%87%D9%86%D8%B1%DB%8C%D8%8C%20%D8%B2%D8%A8%D8%A7%D9%86%20%D9%88%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C%20%D9%88%20%D8%B3%D9%87%20%D9%85%D8%B4%D8%A7%D9%88%D8%B1%20%D8%AA%D8%AE%D8%B5%D8%B5%DB%8C%20%D8%AF%D8%B1%20%D9%85%D8%AF%D8%B1%D8%B3%D9%87.%20%D9%BE%DB%8C%D8%B4%E2%80%8C%D8%AB%D8%A8%D8%AA%E2%80%8C%D9%86%D8%A7%D9%85%20%D8%B3%D8%A7%D9%84%20%D8%AA%D8%AD%D8%B5%DB%8C%D9%84%DB%8C%20%DB%B1%DB%B4%DB%B0%DB%B6-%DB%B1%DB%B4%DB%B0%DB%B7%20%D8%A2%D8%BA%D8%A7%D8%B2%20%D8%B4%D8%AF%D9%87%20%D8%A7%D8%B3%D8%AA." target="_blank" rel="noopener" data-share="tg">فرستادن در تلگرام</a></li>
-        <li><a href="https://wa.me/?text=%D8%AF%D8%A8%DB%8C%D8%B1%D8%B3%D8%AA%D8%A7%D9%86%20%D8%BA%DB%8C%D8%B1%D8%AF%D9%88%D9%84%D8%AA%DB%8C%20%D8%A2%D9%81%D8%B1%DB%8C%D9%86%D8%B4%20%D8%B4%DB%8C%D8%B1%D8%A7%D8%B2%D8%8C%20%D8%AF%D9%88%D8%B1%D9%87%20%D8%A7%D9%88%D9%84%20%D9%85%D8%AA%D9%88%D8%B3%D8%B7%D9%87%E2%80%8C%DB%8C%20%D9%BE%D8%B3%D8%B1%D8%A7%D9%86%D9%87%3A%20%DA%A9%D9%84%D8%A7%D8%B3%E2%80%8C%D9%87%D8%A7%DB%8C%20%DB%B1%DB%B5%20%D8%AA%D8%A7%20%DB%B1%DB%B7%20%D9%86%D9%81%D8%B1%D9%87%D8%8C%20%DA%A9%D9%84%D8%A7%D8%B3%E2%80%8C%D9%87%D8%A7%DB%8C%20%D8%A7%D9%86%D8%AA%D8%AE%D8%A7%D8%A8%DB%8C%20%D9%BE%DA%98%D9%88%D9%87%D8%B4%DB%8C%D8%8C%20%D9%87%D9%86%D8%B1%DB%8C%D8%8C%20%D8%B2%D8%A8%D8%A7%D9%86%20%D9%88%20%D9%88%D8%B1%D8%B2%D8%B4%DB%8C%20%D9%88%20%D8%B3%D9%87%20%D9%85%D8%B4%D8%A7%D9%88%D8%B1%20%D8%AA%D8%AE%D8%B5%D8%B5%DB%8C%20%D8%AF%D8%B1%20%D9%85%D8%AF%D8%B1%D8%B3%D9%87.%20%D9%BE%DB%8C%D8%B4%E2%80%8C%D8%AB%D8%A8%D8%AA%E2%80%8C%D9%86%D8%A7%D9%85%20%D8%B3%D8%A7%D9%84%20%D8%AA%D8%AD%D8%B5%DB%8C%D9%84%DB%8C%20%DB%B1%DB%B4%DB%B0%DB%B6-%DB%B1%DB%B4%DB%B0%DB%B7%20%D8%A2%D8%BA%D8%A7%D8%B2%20%D8%B4%D8%AF%D9%87%20%D8%A7%D8%B3%D8%AA.%20https%3A%2F%2Fafarineshshiraz.ir%2F" target="_blank" rel="noopener" data-share="wa">فرستادن در واتس‌اپ</a></li>
-        <li><button type="button" class="link-btn" data-copy-link>رونوشت متن معرفی و نشانی سایت</button></li>
-      </ul>
-    </div>
   </div>
-  <div class="wrap copy"><button type="button" class="theme-foot" data-theme-toggle aria-label="تغییر به حالت تاریک"><svg class="ic ic-moon" aria-hidden="true"><use href="#i-moon"/></svg><svg class="ic ic-sun" aria-hidden="true"><use href="#i-sun"/></svg><span>حالت روشن و تاریک</span></button><p>© ۱۴۰۵ دبیرستان آفرینش شیراز <span lang="en" dir="ltr">· Afarinesh Boys' Junior High School, Shiraz, Iran</span></p><p class="credit">طراحی و ساخت: محمدسینا اصغرپور</p></div>
+  <div class="wrap copy"><button type="button" class="theme-foot" data-theme-toggle aria-label="تغییر به حالت تاریک"><svg class="ic ic-moon" aria-hidden="true"><use href="#i-moon"/></svg><svg class="ic ic-sun" aria-hidden="true"><use href="#i-sun"/></svg><span>حالت روشن و تاریک</span></button><p>© ۱۴۰۵ دبیرستان آفرینش شیراز <span lang="en" dir="ltr">· Afarinesh Boys' Junior High School, Shiraz, Iran</span></p><p class="credit"><span>طراحی و برنامه‌نویسی سایت:</span> <b>محمدسینا اصغرپور</b> <span class="credit-en" lang="en" dir="ltr">Mohammad Sina Asgharpour</span></p></div>
 </footer>
 <a class="insta-fab" href="https://instagram.com/afarinesh_sch" target="_blank" rel="noopener" aria-label="اینستاگرام مدرسه (afarinesh_sch)"><svg class="ic" aria-hidden="true"><use href="#i-insta"/></svg></a>
 <button class="to-top icon-btn" type="button" aria-label="بازگشت به بالای صفحه" data-to-top hidden><svg class="ic"><use href="#i-up"/></svg></button>
