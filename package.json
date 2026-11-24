@@ -9,7 +9,8 @@
   },
   "scripts": {
     "build": "node scripts/inline-css.mjs && node scripts/render-team.mjs && node scripts/render-blog.mjs && node scripts/seo-sync.mjs && node scripts/render-en.mjs && node scripts/render-pages.mjs && node scripts/vercel-config.mjs && node scripts/htaccess-config.mjs && node scripts/build-library.mjs",
-    "build:covers": "python -I scripts/blog_covers.py .",
+    "build:covers": "python -I scripts/blog_photos.py . && python -I scripts/blog_covers.py .",
+    "build:meta": "python -I scripts/image_meta.py .",
     "build:images": "python -I scripts/build_images.py source-images public/assets/img",
     "start": "node server/index.mjs",
     "dev": "node --watch server/index.mjs",

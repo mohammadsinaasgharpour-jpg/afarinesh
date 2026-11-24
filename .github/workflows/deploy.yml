@@ -23,3 +23,13 @@ jobs:
             sleep 65
           done
           exit 1
+      # Bing (and Yandex, Naver, Seznam) hear about every page right after a push instead of waiting for a crawl.
+      # The key is public by design: it only proves the site owns the list, it grants no access.
+      - name: Tell IndexNow search engines about the pages
+        if: github.event_name == 'push'
+        continue-on-error: true
+        run: |
+          sleep 20
+          urls=$(curl -s --max-time 60 https://afarineshshiraz.ir/sitemap.xml | grep -o '<loc>[^<]*</loc>' | sed 's/<[^>]*>//g' | head -9000 | jq -R . | jq -s .)
+          jq -n --argjson u "$urls" '{host:"afarineshshiraz.ir",key:"b3a153acb7e0da70fa1cfda4f63e4c5b",keyLocation:"https://afarineshshiraz.ir/b3a153acb7e0da70fa1cfda4f63e4c5b.txt",urlList:$u}' > indexnow.json
+          curl -s -o /dev/null -w 'IndexNow: %{http_code}\n' -X POST -H 'Content-Type: application/json; charset=utf-8' --data @indexnow.json https://api.indexnow.org/indexnow

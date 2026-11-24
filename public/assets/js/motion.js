@@ -25,7 +25,7 @@ export const MOTION = {
 const WIDE = "(min-width: 861px)";
 const NARROW = "(max-width: 860px)";
 const STILL = "(prefers-reduced-motion: reduce)";
-// Smooth scrolling is shared by touch, mouse and trackpad. Magnetic buttons remain pointer-only.
+// Smooth scrolling glides mouse-wheel and trackpad steps; touch scrolls natively. Magnetic buttons remain pointer-only.
 const DESK = "(min-width: 861px) and (hover: hover) and (pointer: fine)";
 const VENDOR = "/assets/js/vendor/";
 
@@ -241,7 +241,8 @@ function smoothScroll(gsap, ScrollTrigger) {
   const Lenis = window.Lenis;
   if (!Lenis) return undefined;
   // lerp 0.09: each wheel step glides out over about half a second instead of stopping short
-  const lenis = new Lenis({ lerp: 0.09, wheelMultiplier: 1, syncTouch: true, syncTouchLerp: 0.1, touchInertiaMultiplier: 35, allowNestedScroll: true, autoRaf: false, stopInertiaOnNavigate: true });
+  // touch keeps the phone's own scrolling: a flick travels as far and as fast as on the enrolment page
+  const lenis = new Lenis({ lerp: 0.09, wheelMultiplier: 1, syncTouch: false, allowNestedScroll: true, autoRaf: false, stopInertiaOnNavigate: true });
   lenis.on("scroll", ScrollTrigger.update);
   // in-page links glide to their section instead of jumping. Sections further down are laid out only as
   // they come near (content-visibility), so the target can move while the page travels: on arrival the

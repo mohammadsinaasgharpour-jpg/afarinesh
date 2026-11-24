@@ -86,6 +86,10 @@ export function initChrome() {
     setTheme(next);
   }));
   syncTheme();
+  // the footer's switch floats beside the to-top arrow (phones); moved out of the footer so no entrance
+  // transform on the footer can pin it inside the footer box
+  const themeFab = $(".theme-foot");
+  if (themeFab) { themeFab.classList.add("is-floating"); document.body.append(themeFab); }
 
   /* header: menu and scrolled state */
   const header = $("[data-header]");

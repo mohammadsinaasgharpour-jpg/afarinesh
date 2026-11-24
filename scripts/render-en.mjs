@@ -71,7 +71,7 @@ export function translate(html, dict, missing = new Set()) {
     .replace(/(\s(?:alt|aria-label|title|placeholder|content|data-label)=")([^"]*)"/g, (m, a, s) => `${a}${t(s).replace(/"/g, "&quot;")}"`))).join("");
 }
 
-function head(index, faqLd) {
+function head(index, faqLd, teamLd) {
   const theme = between(index, "<script>(function(){var t;", "</script>");
   const css = between(index, "<!-- css:start -->", "<!-- css:end -->");
   return `<!doctype html>
@@ -127,12 +127,12 @@ ${JSON.stringify({
   image: `${SITE}/assets/img/og-cover.jpg`,
   foundingDate: "2008",
   email: "afarineshsch@afarineshshiraz.ir",
-  telephone: ["+98-71-32293194", "+98-71-32295122"],
+  telephone: ["+98-71-32293194", "+98-71-32295122", "+98-917-302-3856", "+98-917-787-3940"],
   address: { "@type": "PostalAddress", streetAddress: "Narvan Street, corner of Alley 14, Chenchene", addressLocality: "Shiraz", addressRegion: "Fars", addressCountry: "IR" },
   geo: { "@type": "GeoCoordinates", latitude: 29.6368, longitude: 52.5353 },
   openingHoursSpecification: { "@type": "OpeningHoursSpecification", dayOfWeek: ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday"], opens: "07:00", closes: "14:00" },
   keywords: "Afarinesh High School, Afarinesh School Shiraz, private school Shiraz, research-based high school, high school in Shiraz",
-  sameAs: ["https://instagram.com/afarinesh_sch"],
+  sameAs: ["https://www.instagram.com/afarinesh_sch/"],
 }).replace(/</g, "\\u003c")}
 </script>
 <script type="application/ld+json">
@@ -141,8 +141,19 @@ ${JSON.stringify({ "@context": "https://schema.org", "@type": "WebPage", "@id": 
 <script type="application/ld+json">
 ${JSON.stringify(faqLd).replace(/</g, "\\u003c")}
 </script>
+<script type="application/ld+json">
+${JSON.stringify(teamLd).replace(/</g, "\\u003c")}
+</script>
 </head>
 `;
+}
+
+/** The translated teacher cards as Person entries, so a search for a teacher's name in English finds the photo. */
+function teamOf(body) {
+  const cards = [...body.matchAll(/<li class="teacher">[\s\S]*?src="\/assets\/img\/team\/([a-z-]+)\.webp"[^>]*alt="([^"]*)"[\s\S]*?<p class="teacher-role">([^<]*)<\/p>\s*<p class="teacher-name">([^<]*)<\/p>/g)];
+  return { "@context": "https://schema.org", "@graph": cards.map(([, id, alt, role, name]) => ({
+    "@type": "Person", "@id": `${SITE}/#team-${id}`, name, jobTitle: role, worksFor: { "@id": `${SITE}/#school` },
+    image: { "@type": "ImageObject", contentUrl: `${SITE}/assets/img/team/${id}.webp`, url: `${SITE}/assets/img/team/${id}.webp`, caption: alt.replace(/&#39;|&quot;/g, "'"), creditText: "Afarinesh High School, Shiraz" } })) };
 }
 
 /** The questions and answers of the translated FAQ section, as schema.org FAQPage. */
@@ -165,7 +176,7 @@ export function renderEnglish(index, dict) {
   }
   const left = body.replace(/<script[\s\S]*?<\/script>|<svg width="0"[\s\S]*?<\/svg>/g, "").replace(/lang="fa">فارسی</g, "");
   if (FA.test(left)) throw new Error(`render-en: Persian text left in the page near: ${left.slice(Math.max(0, left.search(FA) - 80), left.search(FA) + 40)}`);
-  return `${head(index, faqOf(body))}${body}\n</html>\n`;
+  return `${head(index, faqOf(body), teamOf(body))}${body}\n</html>\n`;
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

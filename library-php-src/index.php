@@ -6,7 +6,7 @@ require __DIR__ . '/api/_lib/lib.php';
 
 const PREVIEW = 3; // keep in step with PREVIEW in app.js
 $esc = fn($s) => htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');
-$json = fn($v) => str_replace('<', '<', json_encode($v, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+$json = fn($v) => json_encode($v, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP); // < and & as JSON escapes: a title can never close the script element
 $html = (string)file_get_contents(__DIR__ . '/home.html');
 $data = catalog_current()['data'];
 $books = $data['books'] ?? [];

@@ -58,7 +58,8 @@ function handle_form(string $kind): void {
   // bots fill the hidden "website" field or post within seconds of loading the page; pretend success
   if (!empty($body['website'])) out(201, ['ok' => true]);
   $started = (float)($body['startedAt'] ?? 0);
-  if ($started > 0 && microtime(true) * 1000 - $started < MIN_FILL_MS) out(201, ['ok' => true]);
+  // the site's own forms always send the time the page opened; a request without it was not sent by them
+  if ($started <= 0 || microtime(true) * 1000 - $started < MIN_FILL_MS) out(201, ['ok' => true]);
 
   $result = ($spec['validate'])($body);
   if (!$result['ok']) out(422, ['error' => 'invalid', 'errors' => $result['errors']]);

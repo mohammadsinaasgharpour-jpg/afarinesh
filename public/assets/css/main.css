@@ -373,7 +373,9 @@ button, input, textarea { font: inherit; color: inherit; }
 .section { padding-block: var(--s9); }
 .section + .section { padding-top: 0; }
 @media (max-width: 640px) { .section, .programs { padding-block: var(--s8) !important; } .section + .section { padding-top: 0 !important; } }
-.h2 { font-size: var(--t-xl); font-weight: 800; letter-spacing: -.01em; margin-bottom: var(--s4); }
+.h2 { font-size: var(--t-xl); font-weight: 800; letter-spacing: 0; margin-bottom: var(--s4); }
+/* Persian letters join; any letter spacing pulls them apart or squeezes them together, so only Latin headings get it */
+.lang-en .h2 { letter-spacing: -.01em; }
 .section-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: var(--s6); align-items: end; margin-bottom: var(--s7); }
 .section-head p { color: var(--ink-2); margin: 0; max-width: 60ch; }
 @media (max-width: 800px) { .section-head { grid-template-columns: 1fr; gap: var(--s2); margin-bottom: var(--s6); } }
@@ -861,6 +863,14 @@ html:not(.js) .stepper { display: none; }
 .credit { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 999px; border: 1px solid rgba(255, 209, 102, .55); background: rgba(255, 209, 102, .08); color: #dbe5ec; }
 .credit b { color: #ffd166; font-weight: 800; }
 .credit-en { color: #b4c4d0; font-size: .85em; }
+/* phones: the same gold-rimmed badge as on a computer, the Persian line on top and the English name under it */
+@media (max-width: 520px) {
+  .copy { justify-content: center; text-align: center; }
+  .credit { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px 6px; padding: 8px 20px; border-radius: 22px; }
+  .credit-en { flex-basis: 100%; text-align: center; white-space: nowrap; }
+  .copy-sep { display: none; }
+  .copy-en { display: block; }
+}
 .link-btn { min-height: 44px; padding: 0; border: 0; background: none; color: #cfdbe4; cursor: pointer; }
 .link-btn:hover { color: #fff; text-decoration: underline; }
 .site-footer { padding-bottom: calc(var(--s5) + 86px); }
@@ -868,6 +878,12 @@ html:not(.js) .stepper { display: none; }
 /* floating */
 .to-top { position: fixed; bottom: 20px; inset-inline-end: 20px; z-index: 30; background: var(--surface); border: 1px solid var(--line); box-shadow: 0 6px 20px rgba(14, 42, 63, .14); }
 .to-top[hidden] { display: none; }
+/* phones: the day/night switch floats in the corner, with the to-top arrow beside it */
+@media (max-width: 520px) {
+  .theme-foot.is-floating { position: fixed; bottom: 20px; left: 16px; z-index: 30; width: 48px; height: 48px; min-height: 48px; padding: 0; margin: 0; justify-content: center; border-radius: 50%; background: var(--surface); color: var(--ink); border: 1px solid var(--line); box-shadow: 0 6px 20px rgba(14, 42, 63, .14); }
+  .theme-foot.is-floating span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .to-top { inset-inline-end: auto; left: 74px; }
+}
 /* Instagram stays in the bottom-right corner (physical right, so it never collides with the to-top button in RTL) */
 .insta-fab {
   position: fixed; bottom: 18px; right: 18px; z-index: 30;
@@ -1010,3 +1026,6 @@ html.lenis, html.lenis body { height: auto; }
 /* rounded tiles: the grids keep their dark rule lines between cells, with soft corners on every tile */
 .features, .mondrian { border-radius: var(--r); }
 .features > li, .mondrian > .cell, .fact, .facts-wall > * { border-radius: 10px; }
+/* the English page reads left to right: the progress fills from the left and the card stack peeks out on the right */
+[dir="ltr"] .team-progress span { transform-origin: left; }
+[dir="ltr"] .is-swipe .teacher.is-current { box-shadow: 5px 5px 0 -1px var(--surface), 5px 5px 0 0 var(--line), 10px 10px 0 -1px var(--surface), 10px 10px 0 0 var(--line); }

@@ -2,8 +2,8 @@
 // Git deploy without shell access: downloads a commit of the public repository as a zip and copies public/,
 // php/ and library-php/ into the web root. Called by GitHub's webhook on every push, and with ?poll=1 by a cron
 // job, which deploys only when main has a new commit (the host's firewall often refuses GitHub's calls). The
-// request carries nothing that is used beyond the commit id: whoever calls it can only redeploy what is already
-// on GitHub, at most once a minute. The settings file and stored data are never touched.
+// request carries nothing that is used: whoever calls it can only redeploy the current head of main, at most
+// once a minute. The settings file and stored data are never touched.
 declare(strict_types=1);
 require_once __DIR__ . '/_lib/bootstrap.php';
 set_time_limit(120);
@@ -28,11 +28,16 @@ function main_sha(): string {
   curl_close($ch);
   return preg_match('/^[0-9a-f]{40}$/', $sha) ? $sha : '';
 }
+// limited before GitHub is asked anything, so a flood of calls cannot use up the host's GitHub quota
+if (!rate_hit('deploy-check', 10, 60)) out(429, ['error' => 'too_soon'], ['Retry-After' => '60']);
 $deployed = json_decode((string)@file_get_contents(STATE), true)['sha'] ?? '';
-$sha = preg_match('/^[0-9a-f]{40}$/', (string)($event['after'] ?? '')) ? $event['after'] : main_sha();
+// only the current head of main is ever installed; a commit id in the request is ignored, because anyone can
+// send one (an old commit, or a commit from a fork that GitHub serves under this repository's address)
+$sha = main_sha();
+if ($sha === '') out(503, ['error' => 'github_unreachable'], ['Retry-After' => '60']);
 // ?poll=1 (a cron job every few minutes): deploy only when main has moved, because GitHub's webhook calls are
 // often refused by the host's firewall before they reach this script
-if (isset($_GET['poll']) && ($sha === '' || $sha === $deployed)) out(200, ['ok' => true, 'unchanged' => $deployed]);
+if (isset($_GET['poll']) && $sha === $deployed) out(200, ['ok' => true, 'unchanged' => $deployed]);
 if (!rate_hit('deploy', 1, 60)) out(429, ['error' => 'too_soon'], ['Retry-After' => '60']);
 
 // GitHub gives up on a webhook after 10 seconds and PHP then stopped the copy halfway: keep going after the

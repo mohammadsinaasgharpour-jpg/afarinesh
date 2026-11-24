@@ -134,7 +134,7 @@ test("FAQ has no sports-hall question and opens and closes", async ({ page }) =>
   await page.addInitScript(() => sessionStorage.setItem("theme", "light"));
   await page.goto("/");
   await expect(page.locator(".faq")).not.toContainText("سالن ورزشی");
-  await expect(page.locator(".faq details")).toHaveCount(9);
+  await expect(page.locator(".faq details")).toHaveCount(12);
   const first = page.locator(".faq details").first();
   await first.locator("summary").click();
   await expect(first).toHaveAttribute("open", "");
@@ -235,7 +235,7 @@ test.describe("callback form", () => {
 test("Instagram button sits in the bottom-right corner", async ({ page }) => {
   await page.goto("/");
   const fab = page.locator(".insta-fab");
-  await expect(fab).toHaveAttribute("href", "https://instagram.com/afarinesh_sch");
+  await expect(fab).toHaveAttribute("href", "https://www.instagram.com/afarinesh_sch/");
   const box = await fab.boundingBox();
   const vp = page.viewportSize();
   expect(vp.width - (box.x + box.width)).toBeLessThanOrEqual(24);
@@ -532,11 +532,26 @@ test("the blog is in the main menu and lists articles with photos", async ({ pag
   if (isMobile) await page.locator("[data-menu]").click();
   await page.locator('#nav a[href="/blog/"]').click();
   await expect(page).toHaveURL(/\/blog\/$/);
-  expect(await page.locator(".post-card").count()).toBeGreaterThanOrEqual(8);
+  // before the first Saturday the index lists what is coming instead of cards
+  if (!(await page.locator(".post-card").count())) {
+    await expect(page.locator(".blog-soon-list li").first()).toBeVisible();
+    return;
+  }
   await expect(page.locator(".post-card img").first()).toHaveAttribute("alt", /.+/);
   await page.locator('[data-cat-link="study"]').click();
   await expect(page.locator('[data-cat-link="study"]')).toHaveAttribute("aria-current", "true");
   for (const c of await page.locator(".blog-list .post-card:visible").all()) await expect(c).toHaveAttribute("data-cat", "study");
+});
+
+test("on phones the day/night switch floats beside the to-top arrow", async ({ page, isMobile }) => {
+  test.skip(!isMobile, "phones only");
+  await page.goto("/");
+  const sw = page.locator("body > .theme-foot");
+  await expect(sw).toBeVisible();
+  expect(await sw.evaluate((el) => getComputedStyle(el).position)).toBe("fixed");
+  const before = await page.evaluate(() => document.documentElement.dataset.theme);
+  await sw.click();
+  await expect.poll(() => page.evaluate(() => document.documentElement.dataset.theme)).not.toBe(before);
 });
 
 test("a campus photo opens large and zooms on double click", async ({ page }) => {

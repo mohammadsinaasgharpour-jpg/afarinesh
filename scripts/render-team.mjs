@@ -23,12 +23,28 @@ export function renderTeam(people) {
 
 /** Each staff member as a schema.org Person working at the school, for search results about the teachers. */
 export function teamLd(people) {
+  const SITE = "https://afarineshshiraz.ir";
   const graph = people.map((p) => ({
     "@type": "Person",
+    "@id": `${SITE}/#team-${p.id}`,
     name: p.name,
+    ...(p.en ? { alternateName: p.en } : {}),
     jobTitle: p.role,
-    image: `https://afarineshshiraz.ir/assets/img/team/${p.id}.webp`,
-    worksFor: { "@id": "https://afarineshshiraz.ir/#school" },
+    // the photo described as its own object, so an image search for the name can show it with its caption
+    image: {
+      "@type": "ImageObject",
+      "@id": `${SITE}/assets/img/team/${p.id}.webp`,
+      contentUrl: `${SITE}/assets/img/team/${p.id}.webp`,
+      url: `${SITE}/assets/img/team/${p.id}.webp`,
+      width: 400, height: 400,
+      caption: `${p.name}، ${p.role} دبیرستان آفرینش شیراز`,
+      creditText: "دبیرستان غیردولتی آفرینش شیراز",
+      copyrightNotice: "© دبیرستان غیردولتی آفرینش شیراز",
+      creator: { "@id": `${SITE}/#school` },
+    },
+    url: `${SITE}/#team`,
+    worksFor: { "@id": `${SITE}/#school` },
+    affiliation: { "@id": `${SITE}/#school` },
     hasCredential: p.edu.map((e) => ({ "@type": "EducationalOccupationalCredential", name: e })),
     ...(p.note ? { description: p.note } : {}),
   }));
@@ -43,7 +59,9 @@ const LD_START = "<!-- team-ld:start -->";
 const LD_END = "<!-- team-ld:end -->";
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const people = JSON.parse(await readFile(new URL("content/team.json", root), "utf8"));
+  const en = JSON.parse(await readFile(new URL("content/en.json", root), "utf8"));
+  // each name also in Latin letters (from the English page's dictionary), for searches typed in English
+  const people = JSON.parse(await readFile(new URL("content/team.json", root), "utf8")).map((p) => ({ ...p, en: en[p.name] }));
   const file = new URL("public/index.html", root);
   const html = await readFile(file, "utf8");
   const a = html.indexOf(START), b = html.indexOf(END);

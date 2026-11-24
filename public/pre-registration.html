@@ -354,7 +354,8 @@ display: grid; grid-template-columns: 1.3fr 1fr 1.15fr 1fr .35fr; gap: 8px; marg
 .section { padding-block: var(--s9); }
 .section + .section { padding-top: 0; }
 @media (max-width: 640px) { .section, .programs { padding-block: var(--s8) !important; } .section + .section { padding-top: 0 !important; } }
-.h2 { font-size: var(--t-xl); font-weight: 800; letter-spacing: -.01em; margin-bottom: var(--s4); }
+.h2 { font-size: var(--t-xl); font-weight: 800; letter-spacing: 0; margin-bottom: var(--s4); }
+.lang-en .h2 { letter-spacing: -.01em; }
 .section-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: var(--s6); align-items: end; margin-bottom: var(--s7); }
 .section-head p { color: var(--ink-2); margin: 0; max-width: 60ch; }
 @media (max-width: 800px) { .section-head { grid-template-columns: 1fr; gap: var(--s2); margin-bottom: var(--s6); } }
@@ -790,11 +791,23 @@ background: var(--paper); color: var(--ink); font: inherit; font-weight: 600; cu
 .credit { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 999px; border: 1px solid rgba(255, 209, 102, .55); background: rgba(255, 209, 102, .08); color: #dbe5ec; }
 .credit b { color: #ffd166; font-weight: 800; }
 .credit-en { color: #b4c4d0; font-size: .85em; }
+@media (max-width: 520px) {
+.copy { justify-content: center; text-align: center; }
+.credit { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px 6px; padding: 8px 20px; border-radius: 22px; }
+.credit-en { flex-basis: 100%; text-align: center; white-space: nowrap; }
+.copy-sep { display: none; }
+.copy-en { display: block; }
+}
 .link-btn { min-height: 44px; padding: 0; border: 0; background: none; color: #cfdbe4; cursor: pointer; }
 .link-btn:hover { color: #fff; text-decoration: underline; }
 .site-footer { padding-bottom: calc(var(--s5) + 86px); }
 .to-top { position: fixed; bottom: 20px; inset-inline-end: 20px; z-index: 30; background: var(--surface); border: 1px solid var(--line); box-shadow: 0 6px 20px rgba(14, 42, 63, .14); }
 .to-top[hidden] { display: none; }
+@media (max-width: 520px) {
+.theme-foot.is-floating { position: fixed; bottom: 20px; left: 16px; z-index: 30; width: 48px; height: 48px; min-height: 48px; padding: 0; margin: 0; justify-content: center; border-radius: 50%; background: var(--surface); color: var(--ink); border: 1px solid var(--line); box-shadow: 0 6px 20px rgba(14, 42, 63, .14); }
+.theme-foot.is-floating span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.to-top { inset-inline-end: auto; left: 74px; }
+}
 .insta-fab {
 position: fixed; bottom: 18px; right: 18px; z-index: 30;
 display: grid; place-items: center; width: 58px; height: 58px; border-radius: 16px; color: #fff;
@@ -905,7 +918,9 @@ html.lenis, html.lenis body { height: auto; }
 .receipt-dialog h3 { color: var(--ok, #1d7a46); }
 .lang-en .path li::before { content: counter(step); }
 .features, .mondrian { border-radius: var(--r); }
-.features > li, .mondrian > .cell, .fact, .facts-wall > * { border-radius: 10px; }</style><!-- css:end -->
+.features > li, .mondrian > .cell, .fact, .facts-wall > * { border-radius: 10px; }
+[dir="ltr"] .team-progress span { transform-origin: left; }
+[dir="ltr"] .is-swipe .teacher.is-current { box-shadow: 5px 5px 0 -1px var(--surface), 5px 5px 0 0 var(--line), 10px 10px 0 -1px var(--surface), 10px 10px 0 0 var(--line); }</style><!-- css:end -->
 <link rel="modulepreload" href="/assets/js/validate.js">
 <link rel="modulepreload" href="/assets/js/common.js">
 <script type="module" src="/assets/js/form-page.js"></script>
@@ -1212,13 +1227,13 @@ html.lenis, html.lenis body { height: auto; }
             <li><a href="/library/">کتابخانه‌ی مدرسه</a></li>
         <li><a href="/blog/">وبلاگ آفرینش</a></li>
         <li><a href="/en" hreflang="en" lang="en">English</a></li>
-        <li><a href="https://instagram.com/afarinesh_sch" target="_blank" rel="noopener"><svg class="ic"><use href="#i-insta"/></svg>اینستاگرام مدرسه</a></li>
+        <li><a href="https://www.instagram.com/afarinesh_sch/" target="_blank" rel="noopener"><svg class="ic"><use href="#i-insta"/></svg>اینستاگرام مدرسه</a></li>
       </ul>
     </nav>
   </div>
-  <div class="wrap copy"><button type="button" class="theme-foot" data-theme-toggle aria-label="تغییر به حالت تاریک"><svg class="ic ic-moon" aria-hidden="true"><use href="#i-moon"/></svg><svg class="ic ic-sun" aria-hidden="true"><use href="#i-sun"/></svg><span>حالت روشن و تاریک</span></button><p>© ۱۴۰۵ دبیرستان آفرینش شیراز <span lang="en" dir="ltr">· Afarinesh Boys' Junior High School, Shiraz, Iran</span></p><p class="credit"><span>طراحی و برنامه‌نویسی سایت:</span> <b>محمدسینا اصغرپور</b> <span class="credit-en" lang="en" dir="ltr">Mohammad Sina Asgharpour</span></p></div>
+  <div class="wrap copy"><button type="button" class="theme-foot" data-theme-toggle aria-label="تغییر به حالت تاریک"><svg class="ic ic-moon" aria-hidden="true"><use href="#i-moon"/></svg><svg class="ic ic-sun" aria-hidden="true"><use href="#i-sun"/></svg><span>حالت روشن و تاریک</span></button><p class="copy-line">© ۱۴۰۵ دبیرستان آفرینش شیراز<span class="copy-sep" aria-hidden="true"> · </span><span class="copy-en" lang="en" dir="ltr">Afarinesh Boys' Junior High School, Shiraz, Iran</span></p><p class="credit"><span>طراحی و برنامه‌نویسی سایت:</span> <b>محمدسینا اصغرپور</b> <span class="credit-en" lang="en" dir="ltr">Mohammad Sina Asgharpour</span></p></div>
 </footer>
-<a class="insta-fab" href="https://instagram.com/afarinesh_sch" target="_blank" rel="noopener" aria-label="اینستاگرام مدرسه (afarinesh_sch)"><svg class="ic" aria-hidden="true"><use href="#i-insta"/></svg></a>
+<a class="insta-fab" href="https://www.instagram.com/afarinesh_sch/" target="_blank" rel="noopener" aria-label="اینستاگرام مدرسه (afarinesh_sch)"><svg class="ic" aria-hidden="true"><use href="#i-insta"/></svg></a>
 <button class="to-top icon-btn" type="button" aria-label="بازگشت به بالای صفحه" data-to-top hidden><svg class="ic"><use href="#i-up"/></svg></button>
 
 <dialog class="dialog" data-confirm-dialog aria-labelledby="cd-title">

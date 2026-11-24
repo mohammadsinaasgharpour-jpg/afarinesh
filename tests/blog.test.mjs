@@ -14,7 +14,12 @@ test("every published article is built with its own canonical, description, one 
   const today = tehranToday();
   const all = await loadArticles();
   const slugs = all.filter((a) => a.date <= today).map((a) => a.slug);
-  assert.ok(slugs.length >= 8);
+  // before the first Saturday the blog is empty: the index names the start date and the home page has no blog section
+  if (!slugs.length) {
+    const index = await readFile(new URL("public/blog/index.html", root), "utf8");
+    assert.match(index, /نخستین مطلب وبلاگ/);
+    assert.ok(!(await readFile(new URL("public/index.html", root), "utf8")).includes('id="blog"'));
+  }
   // articles whose day has not come are not built (they appear with the weekly rebuild)
   const built = new Set((await readdir(new URL("public/blog/", root))).map((f) => f.replace(/.html$/, "")));
   for (const a of all.filter((x) => x.date > today)) assert.ok(!built.has(a.slug), `${a.slug} is published before ${a.date}`);
@@ -31,6 +36,7 @@ test("every published article is built with its own canonical, description, one 
 test("a year of weekly articles is scheduled, one per Saturday", async () => {
   const later = (await loadArticles()).filter((a) => a.date > "2026-11-23").map((a) => a.date).sort();
   assert.ok(later.length >= 52);
+  assert.equal(later[0], "2026-11-28", "the blog starts on Saturday 7 Azar 1405");
   for (let i = 1; i < later.length; i++) assert.equal((Date.parse(later[i]) - Date.parse(later[i - 1])) / 864e5, 7, later[i]);
   for (const d of later) assert.equal(new Date(`${d}T12:00:00Z`).getUTCDay(), 6, `${d} is not a Saturday`);
 });

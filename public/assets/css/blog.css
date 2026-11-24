@@ -114,6 +114,36 @@
 .related-all { margin: var(--s5) 0 0; font-weight: 800; }
 .related-all a { text-decoration: none; }
 
+/* phones and tablets: contents, then the article, then the school box; wide screens: the article beside a
+   sticky column with the contents and the school box, so a laptop screen is used instead of left empty */
+.post-main { display: grid; gap: var(--s6); min-width: 0; }
+.post-side { display: contents; }
+.post-side .post-toc { order: -1; }
+.post-cta-facts { margin: 0 0 var(--s4); padding: 0; list-style: none; display: grid; gap: var(--s2); color: #d2dde6; }
+.post-cta-facts b { color: #ffd166; }
+@media (min-width: 1100px) {
+  .post-body.post-wrap { max-width: 1180px; grid-template-columns: minmax(0, 1fr) 340px; align-items: start; column-gap: var(--s8); }
+  .post-hero .post-wrap { max-width: 1180px; }
+  .post-hero .post-wrap > * { max-width: 820px; }
+  .post-side { display: grid; gap: var(--s5); position: sticky; top: 96px; }
+  .post-side .post-toc { order: 0; }
+  .post-cta { padding: var(--s5); }
+  .post-cta h2 { font-size: 1.35rem; }
+  .post-cta-row .btn { flex: 1 1 100%; justify-content: center; }
+}
+
+/* the blog before its first article: the start date and the first titles */
+.blog-soon { max-width: 860px; margin-inline: auto; display: grid; gap: var(--s4); }
+.blog-soon-lead { margin: 0; padding: var(--s5); border-radius: var(--r); background: var(--surface); border: 2px solid var(--rule); font-size: 1.15rem; font-weight: 700; box-shadow: 6px 6px 0 var(--sun); }
+.blog-soon-h { margin: var(--s4) 0 0; font-family: var(--display); font-weight: 400; font-size: clamp(1.6rem, 1.2rem + 1.2vw, 2.2rem); }
+.blog-soon-list { margin: 0; padding: 0; list-style: none; display: grid; gap: var(--s3); }
+.blog-soon-list li { display: grid; grid-template-columns: auto auto 1fr; align-items: center; gap: var(--s3); padding: var(--s3) var(--s4); border-radius: var(--r-sm); background: var(--surface); border: 1px solid var(--line); }
+.blog-soon-list time { font-weight: 800; color: var(--sky-text); white-space: nowrap; }
+.blog-soon-cat { padding: 2px 10px; border-radius: 999px; background: color-mix(in srgb, var(--sun) 25%, transparent); font-size: var(--t-sm); font-weight: 700; white-space: nowrap; }
+.blog-soon-title { font-weight: 700; }
+.blog-soon-cta { margin: var(--s3) 0 0; color: var(--ink-2); line-height: 2; }
+@media (max-width: 620px) { .blog-soon-list li { grid-template-columns: auto 1fr; } .blog-soon-title { grid-column: 1 / -1; } }
+
 .read-bar { position: fixed; inset: 0 0 auto; z-index: 60; height: 4px; background: linear-gradient(90deg, var(--sun), var(--brick)); transform-origin: right; transform: scaleX(var(--read, 0)); pointer-events: none; }
 
 /* the school photo inside an article */

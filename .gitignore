@@ -24,3 +24,4 @@ threat-model/
 *.local.txt
 !library-php/data/
 !library-php/data/books.json
+__pycache__/

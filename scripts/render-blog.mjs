@@ -122,7 +122,7 @@ function card(a, { big = false, level = 2 } = {}) {
 /** The article body with the school photo placed after its first section. */
 function withPhoto(a) {
   const fig = `
-      <figure class="post-photo"><img src="${photo(a, "1280")}" srcset="${photo(a, "640")} 640w, ${photo(a, "1280")} 1280w" sizes="(max-width: 780px) 100vw, 780px" width="1280" height="${a.image === "library" || a.image === "path" ? 2276 : 720}" alt="${esc(a.imageAlt)}" loading="lazy" decoding="async"><figcaption>${esc(a.imageAlt)}</figcaption></figure>`;
+      <figure class="post-photo"><img src="${photo(a, "1280")}" srcset="${photo(a, "640")} 640w, ${["library", "path", "stairs"].includes(a.image) ? "" : `${photo(a, "800")} 800w, `}${photo(a, "1280")} 1280w" sizes="(max-width: 780px) 100vw, 780px" width="1280" height="${a.image === "library" || a.image === "path" ? 2276 : 720}" alt="${esc(a.imageAlt)}" loading="lazy" decoding="async"><figcaption>${esc(a.imageAlt)}</figcaption></figure>`;
   const i = a.body.indexOf("</section>");
   return i < 0 ? a.body + fig : a.body.slice(0, i + 10) + fig + a.body.slice(i + 10);
 }
@@ -176,15 +176,20 @@ export function renderArticle(a, all) {
     </div>
     <figure class="post-cover wrap"><img src="${image}" srcset="${cover(a, "640")} 640w, ${image} 1280w" sizes="(max-width: 1180px) 100vw, 1180px" width="1280" height="720" alt="${esc(coverAlt(a))}" fetchpriority="high"></figure>
   </header>
-  <div class="wrap post-wrap post-body">${toc}
+  <div class="wrap post-wrap post-body">
+    <div class="post-main">
     <div class="prose">
 ${withPhoto(a)}
     </div>${faq}${sources}
+    </div>
+    <div class="post-side">${toc}
       <aside class="post-cta">
         <h2>دبیرستان آفرینش؛ سال تحصیلی ۱۴۰۶-۱۴۰۷</h2>
         <p>پیش‌ثبت‌نام پایه‌های هفتم، هشتم و نهم دبیرستان غیردولتی پسرانه‌ی آفرینش شیراز باز است. پیش از ثبت‌نام می‌توانید از صفحه‌ی اصلی درخواست تماس مشاور بدهید.</p>
+        <ul class="post-cta-facts" role="list"><li><b>۱۵ تا ۱۷</b> دانش‌آموز در هر کلاس</li><li><b>از ۱۳۸۷</b> در چنچنه، خیابان نارون</li><li><b>پژوهش‌محور</b> با کلاس‌های انتخابی</li></ul>
         <p class="post-cta-row"><a class="btn btn-cta" href="/pre-registration">پیش‌ثبت‌نام آنلاین</a> <a class="btn btn-ghost" href="/#contact">درخواست مشاوره</a></p>
       </aside>
+    </div>
   </div>
   </article>
   <section class="section related" aria-labelledby="rel-h">
@@ -199,15 +204,28 @@ ${withPhoto(a)}
 ` + tail;
 }
 
-export function renderIndex(all) {
+/** Before the first article is out: the blog says when it starts and which titles come first. */
+function upcomingList(upcoming) {
+  return `
+      <div class="blog-soon">
+        <p class="blog-soon-lead">نخستین مطلب وبلاگ <b>${esc(upcoming[0].dateFa)}</b> منتشر می‌شود و از آن پس هر شنبه یک مطلب تازه.</p>
+        <h2 class="blog-soon-h">مطالب هفته‌های آینده</h2>
+        <ol class="blog-soon-list" role="list">${upcoming.slice(0, 6).map((a) => `
+          <li><time datetime="${a.date}">${esc(a.dateFa)}</time><span class="blog-soon-cat">${esc(CATEGORIES[a.category])}</span><span class="blog-soon-title">${esc(a.title)}</span></li>`).join("")}
+        </ol>
+        <p class="blog-soon-cta">تا آن روز می‌توانید با <a href="/#approach">رویکرد آموزشی مدرسه</a>، <a href="/#team">دبیران</a> و <a href="/#faq">پرسش‌های پرتکرار</a> آشنا شوید یا <a href="/pre-registration">پیش‌ثبت‌نام</a> کنید.</p>
+      </div>`;
+}
+
+export function renderIndex(all, upcoming = []) {
   const url = `${SITE}/blog/`;
   const [first, ...rest] = all;
   const cats = Object.entries(CATEGORIES).filter(([k]) => all.some((a) => a.category === k));
   return head({
     title: "وبلاگ دبیرستان آفرینش شیراز | راهنمای والدین و دانش‌آموزان دوره اول متوسطه",
     description: "وبلاگ دبیرستان غیردولتی آفرینش شیراز: راهنمای انتخاب مدرسه، پیش‌ثبت‌نام و آزمون‌ها، روش مطالعه، نوجوانی، سلامت و مهارت‌های پژوهشی برای والدین و دانش‌آموزان پایه‌های هفتم تا نهم.",
-    url, type: "website", image: cover(first, "1280"),
-    extraHead: `<link rel="preload" as="image" imagesrcset="${cover(first, "640")} 640w, ${cover(first, "1280")} 1280w" imagesizes="(max-width: 860px) 100vw, 60vw" fetchpriority="high">\n`,
+    url, type: "website", image: first ? cover(first, "1280") : "/assets/img/og-cover.jpg",
+    extraHead: first ? `<link rel="preload" as="image" imagesrcset="${cover(first, "640")} 640w, ${cover(first, "1280")} 1280w" imagesizes="(max-width: 860px) 100vw, 60vw" fetchpriority="high">\n` : "",
     extraLd: [
       { "@context": "https://schema.org", "@type": "Blog", "@id": `${url}#blog`, name: "وبلاگ دبیرستان آفرینش شیراز", url, inLanguage: "fa-IR", publisher: { "@id": `${SITE}/#school` },
         blogPost: all.slice(0, 20).map((a) => ({ "@type": "BlogPosting", headline: a.title, url: `${SITE}/blog/${a.slug}`, datePublished: a.date, image: `${SITE}${cover(a, "1280")}` })) },
@@ -227,10 +245,10 @@ export function renderIndex(all) {
     </div>
   </section>
   <section class="section blog-list" aria-label="مطالب">
-    <div class="wrap">${card(first, { big: true })}
+    <div class="wrap">${first ? `${card(first, { big: true })}
       <div class="post-grid" data-post-grid>${rest.map((a) => card(a)).join("")}
       </div>
-      <p class="blog-empty" data-blog-empty hidden>در این دسته هنوز مطلبی منتشر نشده است.</p>
+      <p class="blog-empty" data-blog-empty hidden>در این دسته هنوز مطلبی منتشر نشده است.</p>` : upcomingList(upcoming)}
     </div>
   </section>
 </main>
@@ -257,7 +275,7 @@ export function renderFeed(all) {
   <atom:link href="${SITE}/blog/feed.xml" rel="self" type="application/rss+xml"/>
   <description>راهنمای والدین و دانش‌آموزان دوره اول متوسطه، از دبیرستان غیردولتی آفرینش شیراز</description>
   <language>fa-IR</language>
-  <lastBuildDate>${new Date(`${all[0].date}T05:00:00Z`).toUTCString()}</lastBuildDate>${items}
+${all.length ? `  <lastBuildDate>${new Date(`${all[0].date}T05:00:00Z`).toUTCString()}</lastBuildDate>` : ""}${items}
 </channel>
 </rss>
 `;
@@ -273,6 +291,7 @@ export async function loadArticles() {
 
 /** The home page's "from the blog" section: the three newest articles, linked. */
 export function homeTeaser(all) {
+  if (!all.length) return "<!-- blog:start --><!-- blog:end -->"; // the section appears with the first article
   return `<!-- blog:start -->
   <section id="blog" class="section home-blog" aria-labelledby="blog-title">
     <div class="wrap">
@@ -304,10 +323,14 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   // pages of articles not yet due are removed, so nothing early is ever served
   await rm(new URL("content/pages/blog/", root), { recursive: true, force: true });
   await mkdir(new URL("content/pages/blog/", root), { recursive: true });
-  for (const a of every.filter((x) => x.date > today)) await rm(new URL(`public/blog/${a.slug}.html`, root), { force: true });
+  // built pages of articles not out yet, or deleted from content/blog, are removed
+  const live = new Set(all.map((a) => `${a.slug}.html`));
+  for (const f of await readdir(new URL("public/blog/", root)).catch(() => [])) {
+    if (f.endsWith(".html") && f !== "index.html" && !live.has(f)) await rm(new URL(`public/blog/${f}`, root), { force: true });
+  }
   for (const a of all) await writeFile(new URL(`content/pages/blog/${a.slug}.html`, root), renderArticle(a, all));
   // the index lives inside the folder: Apache skips its clean-URL rule for a path that is also a directory
-  await writeFile(new URL("content/pages/blog/index.html", root), renderIndex(all));
+  await writeFile(new URL("content/pages/blog/index.html", root), renderIndex(all, every.filter((x) => x.date > today).reverse()));
   const indexFile = new URL("public/index.html", root);
   const home = await readFile(indexFile, "utf8");
   const BLOCK = /<!-- blog:start -->[\s\S]*?<!-- blog:end -->/;
