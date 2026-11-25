@@ -69,6 +69,9 @@ ${headers}
   <FilesMatch "\\.(css|js|html)$">
     Header set Cache-Control "public, max-age=0, must-revalidate"
   </FilesMatch>
+  <FilesMatch "^admin(\\.html)?$">
+    Header set X-Robots-Tag "noindex, nofollow, noarchive"
+  </FilesMatch>
 </IfModule>
 
 <IfModule mod_deflate.c>

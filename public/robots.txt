@@ -1,7 +1,6 @@
 User-agent: *
 Allow: /
 Disallow: /api/
-Disallow: /admin
 Disallow: /library/admin/
 
 # Search and AI answer engines are welcome to read and cite the school's public pages (a summary is in /llms.txt).
@@ -19,7 +18,6 @@ User-agent: Applebot
 User-agent: Applebot-Extended
 Allow: /
 Disallow: /api/
-Disallow: /admin
 Disallow: /library/admin/
 
 Sitemap: https://afarineshshiraz.ir/sitemap.xml
