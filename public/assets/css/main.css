@@ -368,6 +368,12 @@ button, input, textarea { font: inherit; color: inherit; }
   .fact { min-height: 128px; padding: var(--s4); }
   .fact-fill { display: none; }
 }
+/* a phone zoomed to 150-200%: two cards no longer fit side by side */
+@media (max-width: 300px) {
+  .facts-wall { grid-template-columns: minmax(0, 1fr); }
+  .fact { min-height: 0; }
+}
+.fact { min-width: 0; overflow-wrap: anywhere; }
 
 /* sections */
 .section { padding-block: var(--s9); }
@@ -383,8 +389,9 @@ button, input, textarea { font: inherit; color: inherit; }
 .split { display: grid; grid-template-columns: 1.1fr .9fr; gap: var(--s8); align-items: center; }
 .split-text p { max-width: 62ch; color: var(--ink-2); }
 .split-text p:first-of-type { color: var(--ink); font-size: var(--t-md); line-height: 1.85; }
-.split-solo { grid-template-columns: 1fr; }
-.split-solo .split-text { padding: var(--s6); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
+.split-solo { grid-template-columns: minmax(0, 1fr); }
+.split > * { min-width: 0; overflow-wrap: break-word; }
+.split-solo .split-text { padding: clamp(var(--s4), 6vw, var(--s6)); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
 .split-solo .split-text p:last-child { margin-bottom: 0; }
 /* shorter lines and a heavier weight: the thin face at full width was hard to read on light laptop screens */
 .split-solo .split-text p { max-width: 60ch; font-weight: 500; line-height: 2; color: var(--ink); }
@@ -905,6 +912,9 @@ address.contact-addr, address.footer-addr { font-style: normal; }
   background: var(--surface); color: var(--ink); box-shadow: 0 30px 80px rgba(4, 17, 27, .35);
 }
 .dialog::backdrop { background: rgba(6, 20, 31, .6); }
+/* old iPhones without <dialog> (common.js opens it this way instead) */
+dialog:not([open]) { display: none; }
+.dialog-shim { position: fixed; inset: 0; margin: auto; height: fit-content; max-height: 90vh; overflow: auto; z-index: 1000; box-shadow: 0 0 0 100vmax rgba(6, 20, 31, .6); }
 @media (prefers-reduced-motion: no-preference) {
   .dialog[open] { animation: pop var(--dur-fast) var(--ease); }
   .dialog[open]::backdrop { animation: fade var(--dur-fast); }

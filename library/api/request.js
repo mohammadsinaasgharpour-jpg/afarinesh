@@ -5,6 +5,7 @@ import { randomUUID } from "node:crypto";
 import { fail, origin, readJson, sameOrigin, send } from "./_lib/http.js";
 import { current } from "./_lib/store.js";
 import { configured as dbConfigured, purgeExpired, saveRequest } from "./_lib/supabase.js";
+import { sharedHits } from "./_lib/limit.js";
 import { TelegramError, chatId, clientIp, configured, faDate, limiter, send as tgSend } from "./_lib/telegram.js";
 
 const MAX_BYTES = 4 * 1024;
@@ -74,6 +75,10 @@ export default async function handler(req, res) {
   }
   if (!book) return send(res, 422, { error: "invalid", errors: { book: "این کتاب در فهرست نیست." } }, { "Cache-Control": "no-store" });
   if (!perStudentBook(`${value.name}|${value.bookId}`)) return send(res, 429, { error: "duplicate" }, { "Cache-Control": "no-store", "Retry-After": "1800" });
+  // the same limits counted across every instance (the ones above see only this instance)
+  const used = await sharedHits([[`book:${value.name}|${value.bookId}`, 1, 30 * 60 * 1000], [`ip:${clientIp(req)}`, 5, 10 * 60 * 1000], ["all", 60, 60 * 60 * 1000]]);
+  if (used === 0) return send(res, 429, { error: "duplicate" }, { "Cache-Control": "no-store", "Retry-After": "1800" });
+  if (used > 0) return send(res, 429, { error: "rate_limited" }, { "Cache-Control": "no-store", "Retry-After": "600" });
 
   const now = new Date();
   const due = new Date(now.getTime() + value.days * DAY);

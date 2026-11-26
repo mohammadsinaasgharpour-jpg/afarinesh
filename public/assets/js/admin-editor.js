@@ -89,15 +89,42 @@ $("#ed-open").addEventListener("click", async () => {
   } catch { edStatus("صفحه باز نشد؛ دوباره امتحان کنید."); }
 });
 
+/** Draws the photo at most 2400 pixels wide and returns it as a JPG, or null if this browser cannot open it. */
+async function asJpeg(file) {
+  try {
+    // a data: address, not a blob: one: the site's security header allows only data: and its own pictures
+    const img = new Image();
+    img.src = await new Promise((ok, fail) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = fail; r.readAsDataURL(file); });
+    await img.decode();
+    const scale = Math.min(1, 2400 / img.naturalWidth);
+    const canvas = Object.assign(document.createElement("canvas"), { width: Math.round(img.naturalWidth * scale), height: Math.round(img.naturalHeight * scale) });
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    return await new Promise((ok) => canvas.toBlob(ok, "image/jpeg", 0.86));
+  } catch {
+    return null;
+  }
+}
+
 $("#ed-file").addEventListener("change", async () => {
   const file = $("#ed-file").files[0];
   $("#ed-file").value = "";
   const img = imageOf(ED.sel);
   if (!file || !img) return;
-  if (file.size > 10e6) { edStatus("عکس بزرگ‌تر از ۱۰ مگابایت است."); return; }
+  if (!file.type.startsWith("image/") && !/\.(heic|heif)$/i.test(file.name)) { edStatus("این فایل عکس نیست؛ یک عکس انتخاب کنید."); return; }
+  edStatus("در حال آماده کردن عکس…");
+  let photo = file;
+  // big photos and formats the server does not take (HEIC from iPhones, GIF, …) are redrawn here as a JPG
+  if (file.size > 4e6 || !/^image\/(jpeg|png|webp)$/.test(file.type)) {
+    photo = await asJpeg(file);
+    if (!photo) { edStatus("این عکس باز نشد. آن را با JPG یا PNG ذخیره کنید و دوباره امتحان کنید."); return; }
+  }
+  if (photo.size > 10e6) { edStatus("عکس بزرگ‌تر از ۱۰ مگابایت است."); return; }
   edStatus("در حال بارگذاری عکس…");
   try {
-    const data = await new Promise((ok, fail) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(",")[1]); r.onerror = fail; r.readAsDataURL(file); });
+    const data = await new Promise((ok, fail) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(",")[1]); r.onerror = fail; r.readAsDataURL(photo); });
     const up = await post("/api/site-edit?action=upload", { data });
     $$("source", img.closest("picture") ?? document.createElement("i")).forEach((s) => s.replaceWith());
     img.removeAttribute("srcset");

@@ -1,6 +1,25 @@
 // Shared by every page: header, theme, menu, Instagram button, image protection, toasts and forms.
 import { toPersianDigits, jalaliMonthDays } from "./validate.js";
 
+// iPhones before iOS 15.4 have no <dialog>: without these the form's review box throws and nothing is sent
+if (!window.HTMLDialogElement?.prototype.showModal) {
+  const proto = (window.HTMLDialogElement || window.HTMLUnknownElement).prototype;
+  proto.showModal = proto.show = function () { this.setAttribute("open", ""); this.classList.add("dialog-shim"); };
+  proto.close = function (value) {
+    if (!this.hasAttribute("open")) return;
+    this.removeAttribute("open");
+    if (value !== undefined) this.returnValue = value;
+    this.dispatchEvent(new Event("close"));
+  };
+}
+/** AbortSignal.timeout is missing before iOS 16; same TimeoutError name, so callers need no change. */
+export function timeoutSignal(ms) {
+  if (AbortSignal.timeout) return AbortSignal.timeout(ms);
+  const c = new AbortController();
+  setTimeout(() => c.abort(new DOMException("timed out", "TimeoutError")), ms);
+  return c.signal;
+}
+
 export const $ = (sel, root = document) => root.querySelector(sel);
 export const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 /** The English page (/en) uses the same scripts; labels the scripts write themselves follow its language. */
@@ -476,7 +495,7 @@ export function createFormController({ form, validate, review, success, draftKey
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(pending),
-        signal: AbortSignal.timeout(15000),
+        signal: timeoutSignal(15000),
       });
       const body = await res.json().catch(() => ({}));
       if (res.status === 422 && body.errors) { showAllErrors(body.errors); throw new Error("چند مورد نیاز به اصلاح دارد."); }

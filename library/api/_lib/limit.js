@@ -94,3 +94,46 @@ export async function releaseAttempt(req) {
   release(memory, keys);
   await updateStored((all) => (release(all, keys), 0));
 }
+
+const HITS = "security/request-hits.json";
+let hitQueue = Promise.resolve();
+
+/**
+ * Fixed-window counts shared by every instance, for the borrow form (the in-memory limiter alone starts again on
+ * each new instance). `rules` is [[key, max, windowMs], ...], all counted in one stored update. Returns the index
+ * of the first rule that is used up (nothing is counted then), or -1. If storage is unreachable the request is
+ * allowed: the memory limits still apply. Keys are stored only as salted hashes.
+ */
+export function sharedHits(rules) {
+  const ids = rules.map(([key]) => createHash("sha256").update(`afarinash-hit\0${process.env.ADMIN_PASSWORD || ""}\0${key}`).digest("hex").slice(0, 24));
+  const run = hitQueue.then(async () => {
+    for (let i = 0; i < RETRIES; i++) {
+      let doc;
+      try {
+        doc = await readDocVersioned(HITS);
+      } catch (e) {
+        console.error("request limit read:", e.message);
+        return -1;
+      }
+      const now = Date.now();
+      const all = doc?.data ?? {};
+      for (const [k, e] of Object.entries(all)) if (now - e.first > e.window) delete all[k];
+      const used = rules.findIndex(([, max], j) => (all[ids[j]]?.n ?? 0) >= max);
+      if (used !== -1) return used;
+      rules.forEach(([, , window], j) => { const e = all[ids[j]] ?? { first: now, n: 0, window }; e.n += 1; all[ids[j]] = e; });
+      try {
+        await writeDocIf(HITS, all, doc?.version ?? null);
+        return -1;
+      } catch (e) {
+        if (!(e instanceof ConflictError)) {
+          console.error("request limit write:", e.message);
+          return -1;
+        }
+      }
+      await new Promise((r) => setTimeout(r, 20 + Math.random() * 80));
+    }
+    return -1;
+  });
+  hitQueue = run.catch(() => {});
+  return run;
+}

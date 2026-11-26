@@ -7,6 +7,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/_lib/bootstrap.php';
 
 const SESSION_SEC = 30 * 60; // signed out after 30 minutes without using the panel, and when the browser closes
+const LIST_MAX = 2000;
 const STATUSES = ['new', 'called', 'interview', 'accepted', 'rejected'];
 
 admin_session();
@@ -81,7 +82,19 @@ if ($method === 'POST' && $action === 'update') {
   $status = (string)($body['status'] ?? '');
   $note = mb_substr(trim((string)($body['note'] ?? '')), 0, 1000);
   if (!preg_match('/^[0-9a-f-]{36}$/', $id) || !in_array($status, STATUSES, true)) out(422, ['error' => 'invalid']);
+  $pdo->beginTransaction();
+  $q = $pdo->prepare("SELECT status, note FROM submissions WHERE id = ? FOR UPDATE");
+  $q->execute([$id]);
+  $now = $q->fetch();
+  if (!$now) { $pdo->rollBack(); out(404, ['error' => 'not_found']); }
+  // the panel sends what it showed; if another device saved since, say so instead of writing over it
+  $was = $body['was'] ?? null;
+  if (is_array($was) && ((string)($was['status'] ?? '') !== $now['status'] || (string)($was['note'] ?? '') !== (string)($now['note'] ?? ''))) {
+    $pdo->rollBack();
+    out(409, ['error' => 'changed', 'status' => $now['status'], 'note' => (string)($now['note'] ?? '')]);
+  }
   $pdo->prepare("UPDATE submissions SET status = ?, note = ? WHERE id = ?")->execute([$status, $note, $id]);
+  $pdo->commit();
   out(200, ['ok' => true]);
 }
 // settings: the Gemini keys for voice input, the Neshan map key and Google's verification file name. The panel only
@@ -127,8 +140,9 @@ $where = [];
 $args = [];
 if (isset($_GET['id']) && $_GET['id'] !== '') { $where[] = 'id = ?'; $args[] = (string)$_GET['id']; }
 if (in_array($kind, ['inquiry', 'preRegistration', 'career', 'language', 'library'], true)) { $where[] = 'kind = ?'; $args[] = $kind; }
-$sql = 'SELECT * FROM submissions' . ($where ? ' WHERE ' . implode(' AND ', $where) : '') . ' ORDER BY created_at DESC LIMIT 2000';
-$q = $pdo->prepare($sql);
+$filter = $where ? ' WHERE ' . implode(' AND ', $where) : '';
+// the panel shows the newest LIST_MAX; the CSV download always has every record
+$q = $pdo->prepare('SELECT * FROM submissions' . $filter . ' ORDER BY created_at DESC' . ($action === 'csv' ? '' : ' LIMIT ' . LIST_MAX));
 $q->execute($args);
 $rows = array_map('row_out', $q->fetchAll());
 
@@ -150,4 +164,6 @@ if ($action === 'csv') {
   }
   exit;
 }
-out(200, ['ok' => true, 'records' => $rows]);
+$total = count($rows);
+if ($total >= LIST_MAX) { $c = $pdo->prepare('SELECT COUNT(*) FROM submissions' . $filter); $c->execute($args); $total = (int)$c->fetchColumn(); }
+out(200, ['ok' => true, 'records' => $rows, 'total' => $total]);

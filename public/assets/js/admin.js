@@ -23,12 +23,16 @@ const COLUMNS = {
 };
 
 let all = [];
+let total = 0;
 let kind = "preRegistration";
+/** What was typed in an open record when the session ran out; put back after signing in again. */
+let unsaved = null;
 
 const api = async (url, options = {}) => {
   const res = await fetch(url, { credentials: "same-origin", ...options });
   const body = await res.json().catch(() => ({}));
-  if (!res.ok) throw Object.assign(new Error(body.error || "error"), { status: res.status });
+  if (res.status === 401 && !url.includes("action=login")) sessionEnded();
+  if (!res.ok) throw Object.assign(new Error(body.error || "error"), { status: res.status, body });
   return body;
 };
 const value = (k, v) => (k === "grade" ? GRADE[v] ?? v : fa(v));
@@ -38,6 +42,15 @@ function show(which) {
   $("#login-card").classList.toggle("hidden", which !== "login");
   $("#records-card").classList.toggle("hidden", which !== "records");
   $("#logout").classList.toggle("hidden", which !== "records");
+}
+
+/** Signed out after 30 idle minutes: back to the sign-in card, keeping an open record's typed note. */
+function sessionEnded() {
+  const d = $("#detail");
+  if (d.open && d.dataset.id) unsaved = { id: d.dataset.id, status: $("#detail-status").value, note: $("#detail-note").value };
+  if (d.open) d.close();
+  show("login");
+  $("#login-error").textContent = unsaved ? "نشست شما تمام شده بود. دوباره وارد شوید؛ یادداشتی که نوشتید نگه داشته شده است." : "نشست شما تمام شده بود؛ دوباره وارد شوید.";
 }
 
 function render() {
@@ -59,6 +72,10 @@ function render() {
     return tr;
   }));
   $("#empty").classList.toggle("hidden", rows.length > 0);
+  let cap = $("#cap-note");
+  if (!cap) { cap = Object.assign(document.createElement("p"), { id: "cap-note", className: "muted" }); $("#table").before(cap); }
+  cap.textContent = total > all.length ? `فقط ${fa(all.length)} فرم تازه‌تر از ${fa(total)} فرم اینجا نشان داده می‌شود؛ همه‌ی فرم‌ها در فایل اکسل (CSV) هستند.` : "";
+  cap.classList.toggle("hidden", !cap.textContent);
   $("#csv").href = `/api/admin?action=csv&kind=${kind}`;
 }
 
@@ -73,16 +90,27 @@ function openRecord(r) {
     if (/Mobile$|^phone$/.test(k)) { const a = document.createElement("a"); a.href = `tel:${v}`; a.textContent = fa(v); a.dir = "ltr"; dd.replaceChildren(a); }
     dl.append(dt, dd);
   }
+  $("#detail").dataset.id = r.id;
   $("#detail-status").value = r.status;
   $("#detail-note").value = r.note || "";
   $("#detail-saved").textContent = "";
   $("#detail-save").onclick = async () => {
     try {
-      await api("/api/admin?action=update", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: r.id, status: $("#detail-status").value, note: $("#detail-note").value }) });
+      await api("/api/admin?action=update", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: r.id, status: $("#detail-status").value, note: $("#detail-note").value, was: { status: r.status, note: r.note || "" } }) });
       r.status = $("#detail-status").value; r.note = $("#detail-note").value;
       $("#detail-saved").textContent = "ذخیره شد.";
       render();
-    } catch { $("#detail-saved").textContent = "ذخیره نشد؛ دوباره امتحان کنید."; }
+    } catch (err) {
+      if (err.status === 401) return;
+      if (err.status === 409) {
+        // saved from another device meanwhile: show what is stored there, keep what was typed here
+        r.status = err.body.status; r.note = err.body.note;
+        render();
+        $("#detail-saved").textContent = `این پرونده در این فاصله روی دستگاه دیگری عوض شده است: وضعیت «${STATUS[r.status] ?? r.status}»${r.note ? `، یادداشت «${r.note}»` : ""}. اگر نوشته‌ی شما درست است، دوباره «ذخیره» را بزنید.`;
+        return;
+      }
+      $("#detail-saved").textContent = "ذخیره نشد؛ دوباره امتحان کنید.";
+    }
   };
   $("#detail-delete").onclick = async () => {
     if (!confirm("این رکورد برای همیشه حذف شود؟ (برای فرم‌های آزمایشی یا اسپم)")) return;
@@ -91,7 +119,7 @@ function openRecord(r) {
       all = all.filter((x) => x !== r);
       $("#detail").close();
       render();
-    } catch { $("#detail-saved").textContent = "حذف نشد؛ دوباره امتحان کنید."; }
+    } catch (err) { if (err.status !== 401) $("#detail-saved").textContent = "حذف نشد؛ دوباره امتحان کنید."; }
   };
   $("#detail").showModal();
 }
@@ -116,10 +144,17 @@ async function load() {
   loadSettings();
   const body = await api("/api/admin");
   all = body.records || [];
+  total = body.total ?? all.length;
   show("records");
-  const id = new URLSearchParams(location.search).get("record");
+  const id = unsaved?.id || new URLSearchParams(location.search).get("record");
   const target = id && all.find((r) => r.id === id);
   if (target) { kind = target.kind; selectTab(); openRecord(target); }
+  if (target && unsaved) {
+    $("#detail-status").value = unsaved.status;
+    $("#detail-note").value = unsaved.note;
+    $("#detail-saved").textContent = "یادداشتی که پیش از پایان نشست نوشتید برگردانده شد؛ «ذخیره» را بزنید.";
+  }
+  unsaved = null;
   render();
 }
 
@@ -156,5 +191,6 @@ $("#send-code").addEventListener("click", async () => {
 $("#logout").addEventListener("click", async () => { await api("/api/admin?action=logout", { method: "POST" }).catch(() => {}); all = []; show("login"); });
 load().catch((err) => {
   show("login");
-  if (err.status !== 401) $("#login-error").textContent = "ارتباط با سرور برقرار نشد.";
+  if (err.status === 401) $("#login-error").textContent = "";
+  else $("#login-error").textContent = "ارتباط با سرور برقرار نشد.";
 });
