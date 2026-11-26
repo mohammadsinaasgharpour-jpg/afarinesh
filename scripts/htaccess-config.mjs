@@ -19,12 +19,12 @@ ErrorDocument 404 /404.html
   RewriteEngine On
   RewriteBase /
 
-  # one address: https, no www
+  # one address: https, no www, in a single redirect (www first, so http://www does not hop twice)
+  RewriteCond %{HTTP_HOST} ^www\\.(.+)$ [NC]
+  RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]
   RewriteCond %{HTTPS} !=on
   RewriteCond %{HTTP:X-Forwarded-Proto} !=https
   RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
-  RewriteCond %{HTTP_HOST} ^www\\.(.+)$ [NC]
-  RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]
 
   # server code and settings are never served
   RewriteRule ^api/_lib/ - [F,L]

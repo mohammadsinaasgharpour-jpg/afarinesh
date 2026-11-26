@@ -96,7 +96,7 @@ def logo_mark(src: Path, out: Path):
 def main(src_dir: str, out_dir: str):
     src, out = Path(src_dir), Path(out_dir)
     (out / "team").mkdir(parents=True, exist_ok=True)
-    # The hero keeps the photo's detail: never upscaled, lightly sharpened, quality 80 (wide) and 86 (phone crop).
+    # The hero keeps the photo's detail: never upscaled, lightly sharpened, quality 80 (wide) and 76 (phone crop; 86 looked the same and cost 20 kB more).
     # (A median filter and quality 52 used to smear it, and the phone crop was blown up ~2.5x from a 1280 px photo.)
     hero = Image.open(src / HERO["wall"][0]).convert("RGB")
     sharp = lambda im: im.filter(ImageFilter.UnsharpMask(radius=1.1, percent=60, threshold=2))
@@ -106,7 +106,7 @@ def main(src_dir: str, out_dir: str):
     # phones: the sign and the gate at the photo's own resolution (box measured on the 1280 x 720 source)
     k = hero.width / 1280
     crop = hero.crop(tuple(round(v * k) for v in (330, 205, 840, 720)))
-    sharp(crop).save(out / "hero-gate-510.webp", "WEBP", quality=86, method=6)
+    sharp(crop).save(out / "hero-gate-510.webp", "WEBP", quality=76, method=6)
     for name, (f, widths) in PHOTOS.items():
         save_widths(Image.open(src / f).convert("RGB"), out, name, widths)
     Image.open(src / HERO["wall"][0]).convert("RGB").resize((1200, 640), Image.LANCZOS).save(

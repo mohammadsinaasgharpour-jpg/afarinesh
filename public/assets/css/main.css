@@ -852,6 +852,8 @@ html:not(.js) .stepper { display: none; }
 /* the brand block starts at the top like the two link columns beside it (it used to float to their middle) */
 .footer-brand { display: flex; gap: var(--s4); align-items: center; align-self: flex-start; }
 .footer-brand img { width: 64px; height: 64px; background: #fff; border-radius: var(--r-sm); padding: 6px; }
+address.contact-addr, address.footer-addr { font-style: normal; }
+.footer-addr { margin-top: var(--s2); font-size: var(--t-sm); }
 .footer-brand b { color: #fff; font-family: var(--display); font-weight: 400; font-size: 1.3rem; }
 .footer-h { font-size: 1rem; color: #fff; margin-bottom: var(--s3); }
 .site-footer ul { display: grid; gap: 0; }
