@@ -16,6 +16,8 @@ export async function buildVercelConfig() {
     framework: null,
     cleanUrls: true,
     trailingSlash: false,
+    // every page and form address goes to the real site, so no visitor fills a form whose message never reaches the panel
+    redirects: [{ source: "/:path((?!api/relay$).*)", destination: "https://afarineshshiraz.ir/:path", permanent: true }],
     headers: [
       { source: "/(.*)", headers: toList(buildSecurityHeaders(inlineScriptHashes(html), inlineStyleHashes(html))) },
       // the copy on Vercel only carries the Telegram relay; the site itself lives at afarineshshiraz.ir and only
